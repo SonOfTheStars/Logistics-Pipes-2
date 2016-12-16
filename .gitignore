@@ -1,0 +1,10 @@
+.classpath
+run/
+saves/
+config/
+build/
+logs/
+options.txt
+.gradle/
+usercache.json
+usernamecache.json
