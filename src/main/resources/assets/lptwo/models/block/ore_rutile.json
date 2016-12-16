@@ -1,6 +1,4 @@
 {
 	"parent": "block/cube_all",
-  	"textures": {
-    	"all": "lptwo:blocks/solid/ore_rutile"
-  	}
+	"textures": {"all": "lptwo:blocks/solid/ore_rutile"}
 }
