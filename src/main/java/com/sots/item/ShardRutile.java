@@ -7,6 +7,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.oredict.OreDictionary;
 
 public class ShardRutile extends LPItemBase{
 	
@@ -14,6 +15,7 @@ public class ShardRutile extends LPItemBase{
 		setRegistryName(References.RN_SHARD_RUTILE);
 		setUnlocalizedName(References.NAME_SHARD_RUTILE);
 		setCreativeTab(CreativeTabs.MATERIALS);
+		OreDictionary.registerOre("dust_Titanium", this);
 	}
 	
 	@SideOnly(Side.CLIENT)
