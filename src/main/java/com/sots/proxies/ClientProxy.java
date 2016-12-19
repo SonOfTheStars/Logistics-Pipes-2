@@ -1,7 +1,8 @@
 package com.sots.proxies;
 
-import com.sots.util.BlockRegistry;
 import com.sots.util.References;
+import com.sots.util.registries.BlockRegistry;
+import com.sots.util.registries.ItemRegistry;
 
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -14,6 +15,7 @@ public class ClientProxy extends CommonProxy{
 		
 		OBJLoader.INSTANCE.addDomain(References.MODID);
 		BlockRegistry.initModels();
+		ItemRegistry.initModels();
 	}
 	
 	@Override

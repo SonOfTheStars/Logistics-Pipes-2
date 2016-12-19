@@ -8,6 +8,12 @@ public abstract class References {
 	//Block Names
 	public static final String NAME_ORE_RUTILE = MODID + ".ore_rutile";
 	
+	//Item Names
+	public static final String NAME_SHARD_RUTILE = MODID + ".shard_rutile";
+	public static final String NAME_INGOT_TITANIUM = MODID + ".ingot_titanium";
+	
 	//Registry Names
 	public static final String RN_ORE_RUTILE = "ore_rutile";
+	public static final String RN_SHARD_RUTILE = "shard_rutile";
+	public static final String RN_INGOT_TITANIUM = "ingot_titanium";
 }

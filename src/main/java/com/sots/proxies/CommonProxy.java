@@ -2,8 +2,9 @@ package com.sots.proxies;
 
 import java.io.File;
 
-import com.sots.util.BlockRegistry;
 import com.sots.util.Config;
+import com.sots.util.registries.BlockRegistry;
+import com.sots.util.registries.ItemRegistry;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -22,6 +23,9 @@ public class CommonProxy {
 		
 		//Load Blocks
 		BlockRegistry.init();
+		
+		//Load Items
+		ItemRegistry.init();
 	}
 	
 	public void init(FMLInitializationEvent event){
