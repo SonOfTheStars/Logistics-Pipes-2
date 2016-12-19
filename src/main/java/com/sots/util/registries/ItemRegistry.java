@@ -1,6 +1,10 @@
 package com.sots.util.registries;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.sots.item.IngotTitanium;
+import com.sots.item.LPItemBase;
 import com.sots.item.ShardRutile;
 
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -8,8 +12,9 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class ItemRegistry {
 	
 	//All Items to be Registered
-	public static ShardRutile shard_rutile;
-	public static IngotTitanium ingot_titanium;
+	public static List<LPItemBase> registry = new ArrayList<LPItemBase>();
+	//public static ShardRutile shard_rutile;
+	//public static IngotTitanium ingot_titanium;
 	
 	/**
 	 * Initialize all Items for preInit
@@ -17,12 +22,14 @@ public class ItemRegistry {
 	 */
 	public static void init(){
 		//Init Items
-		shard_rutile= new ShardRutile();
-		ingot_titanium = new IngotTitanium();
+		registry.add(new ShardRutile());
+		registry.add(new IngotTitanium());
 		
 		//Register Items
-		GameRegistry.register(shard_rutile);
-		GameRegistry.register(ingot_titanium);
+		for(LPItemBase item : registry) {
+			GameRegistry.register(item);
+		}
+		
 	}
 	
 	/**
@@ -30,7 +37,8 @@ public class ItemRegistry {
 	 * Call this in Init on the Client Proxy
 	 */
 	public static void initModels(){
-		shard_rutile.initModel();
-		ingot_titanium.initModel();
+		for(LPItemBase item : registry) {
+			item.initModel();
+		}
 	}
 }
