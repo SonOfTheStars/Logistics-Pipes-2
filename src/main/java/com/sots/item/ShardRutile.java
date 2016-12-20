@@ -15,7 +15,7 @@ public class ShardRutile extends LPItemBase{
 		setRegistryName(References.RN_SHARD_RUTILE);
 		setUnlocalizedName(References.NAME_SHARD_RUTILE);
 		setCreativeTab(CreativeTabs.MATERIALS);
-		OreDictionary.registerOre("dust_Titanium", this);
+		setOreName("dustTitanium");
 	}
 	
 	@SideOnly(Side.CLIENT)

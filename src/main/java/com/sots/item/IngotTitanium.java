@@ -15,7 +15,7 @@ public class IngotTitanium extends LPItemBase{
 		setRegistryName(References.RN_INGOT_TITANIUM);
 		setUnlocalizedName(References.NAME_INGOT_TITANIUM);
 		setCreativeTab(CreativeTabs.MATERIALS);
-		OreDictionary.registerOre("ingot_Titanium", this);
+		setOreName("ingotTitanium");
 	}
 	
 	@Override

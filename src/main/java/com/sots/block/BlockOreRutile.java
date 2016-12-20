@@ -9,7 +9,6 @@ import net.minecraft.item.Item;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.oredict.OreDictionary;
 
 public class BlockOreRutile extends LPBlockBase{
 	public BlockOreRutile(){
@@ -17,7 +16,7 @@ public class BlockOreRutile extends LPBlockBase{
 		setUnlocalizedName(References.NAME_ORE_RUTILE);
 		setRegistryName(References.RN_ORE_RUTILE);
 		setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
-		OreDictionary.registerOre("ore_Titanium", this);
+		setOreName("oreTitanium");
 	}
 	
 	@SideOnly(Side.CLIENT)

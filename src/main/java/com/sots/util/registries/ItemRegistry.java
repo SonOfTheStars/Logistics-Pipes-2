@@ -6,8 +6,10 @@ import java.util.List;
 import com.sots.item.IngotTitanium;
 import com.sots.item.LPItemBase;
 import com.sots.item.ShardRutile;
+import com.sots.util.StringUtil;
 
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.oredict.OreDictionary;
 
 public class ItemRegistry {
 	
@@ -27,7 +29,11 @@ public class ItemRegistry {
 		
 		//Register Items
 		for(LPItemBase item : registry) {
+			//Register Item
 			GameRegistry.register(item);
+			//Register Ordedict Names
+			if(!StringUtil.isNullOrWhitespace(item.getOreName()) && !StringUtil.isNullOrEmpty(item.getOreName()))
+				OreDictionary.registerOre(item.getOreName(), item);
 		}
 		
 	}
