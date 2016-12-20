@@ -1,6 +1,7 @@
 package com.sots.util.registries;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.sots.item.IngotTitanium;
@@ -15,8 +16,8 @@ public class ItemRegistry {
 	
 	//All Items to be Registered
 	public static List<LPItemBase> registry = new ArrayList<LPItemBase>();
-	//public static ShardRutile shard_rutile;
-	//public static IngotTitanium ingot_titanium;
+	public static ShardRutile shard_rutile;
+	public static IngotTitanium ingot_titanium;
 	
 	/**
 	 * Initialize all Items for preInit
@@ -24,8 +25,11 @@ public class ItemRegistry {
 	 */
 	public static void init(){
 		//Init Items
-		registry.add(new ShardRutile());
-		registry.add(new IngotTitanium());
+		shard_rutile = new ShardRutile();
+		ingot_titanium = new IngotTitanium();
+		
+		registry.add(shard_rutile);
+		registry.add(ingot_titanium);
 		
 		//Register Items
 		for(LPItemBase item : registry) {
@@ -35,7 +39,6 @@ public class ItemRegistry {
 			if(!StringUtil.isNullOrWhitespace(item.getOreName()) && !StringUtil.isNullOrEmpty(item.getOreName()))
 				OreDictionary.registerOre(item.getOreName(), item);
 		}
-		
 	}
 	
 	/**

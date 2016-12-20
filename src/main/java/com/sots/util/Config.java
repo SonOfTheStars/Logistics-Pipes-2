@@ -16,7 +16,7 @@ public class Config {
 	public static int[] oreRutile = new int[] {4, 8, 30, 5, 80};
 	public static boolean retroGen = false;				//Wether or not to perform Retrogen
 	public static boolean retrogenRemaining = false;	//Wether or not there is remianing chunks to be retrogenned
-	public static boolean retroGenFlagLog = false;		//Wether or not to log thwe Flagging of chunks for Retrogen
+	public static boolean retroGenFlagLog = true;		//Wether or not to log thwe Flagging of chunks for Retrogen
 	public static boolean allowTierTwo = true; 			//Wether or not to allow the making of Industrial grade Pipes
 	public static float baseNetCost = 30.0f; 			//Cost in RF/t
 	
@@ -80,6 +80,6 @@ public class Config {
 		
 		retroGen = cfg.getBoolean("retroGen", CAT_WORLD, false, "Wether or not Post-Creation World Gen should be performed.");
 		retrogenRemaining = cfg.getBoolean("retrogenRemianing", CAT_WORLD, false, "Wether or not there are still Chunks to be retro Generated with LP Ore. DO NOT TOUCH THIS!");
-		retroGenFlagLog = cfg.getBoolean("retrogenFlagLogging", CAT_WORLD, false, "Wether or not you want LP to log wich Chunks it flags for Retrogen. This can be a bit spammy!");
+		retroGenFlagLog = cfg.getBoolean("retrogenFlagLogging", CAT_WORLD, true, "Wether or not you want LP to log wich Chunks it flags for Retrogen. This can be a bit spammy!");
 	}
 }

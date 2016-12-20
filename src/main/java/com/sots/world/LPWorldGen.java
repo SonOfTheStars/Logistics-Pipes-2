@@ -93,7 +93,7 @@ public class LPWorldGen implements IWorldGenerator{
 	public void chunkLoad(ChunkDataEvent.Load event)
 	{
 		int dimension = event.getWorld().provider.getDimension();
-		if((!event.getData().getCompoundTag("LPTwo").hasKey("LPRetroGen")))
+		if((!event.getData().getCompoundTag("LPTwo").hasKey("LPRetroGen") && Config.retroGen))
 		{
 			if(Config.retroGenFlagLog)
 				LogisticsPipes2.logger.info("Chunk "+event.getChunk().getChunkCoordIntPair()+" has been flagged for Ore RetroGeneration by LP2.");
