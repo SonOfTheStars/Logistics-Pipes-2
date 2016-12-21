@@ -1,0 +1,23 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "custom": {
+    	"flip-v": true,
+    	"groupConfigs": {
+				"center": { "show": ["CENTER"], "flags": ["alwaysActive"] },
+				"up": { "show": ["UP"] },
+				"down": { "show": ["DOWN"] },
+				"north": { "show": ["NORTH"] },
+				"south": { "show": ["SOUTH"] },
+				"east": { "show": ["EAST"] },
+				"west": { "show": ["WEST"] }
+			}
+	},
+    "model": "lptwo:obj/pipe_basic.obj",
+    "transform": "forge:default-block"
+  },
+  "variants": {
+    "normal": [{}],
+    "inventory": [{}]
+  }
+}
