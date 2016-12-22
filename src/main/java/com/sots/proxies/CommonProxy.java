@@ -5,6 +5,8 @@ import java.io.File;
 import com.sots.util.Config;
 import com.sots.util.registries.BlockRegistry;
 import com.sots.util.registries.ItemRegistry;
+import com.sots.util.registries.PipeRegistry;
+import com.sots.util.registries.TileRegistry;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -24,8 +26,13 @@ public class CommonProxy {
 		//Load Blocks
 		BlockRegistry.init();
 		
+		//Load Pipes
+		PipeRegistry.init();
+		
 		//Load Items
 		ItemRegistry.init();
+		
+		TileRegistry.init();
 	}
 	
 	public void init(FMLInitializationEvent event){

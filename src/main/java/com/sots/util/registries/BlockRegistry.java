@@ -41,7 +41,7 @@ public class BlockRegistry {
 				OreDictionary.registerOre(block.getOreName(), block);
 			
 			if(block instanceof BlockOreRutile) {
-				addConfiguredWorldgen(block.getStateFromMeta(0), References.RN_ORE_RUTILE, Config.oreRutile);
+				addConfiguredWorldgen(block.getDefaultState(), References.RN_ORE_RUTILE, Config.oreRutile);
 			}
 		}
 	}
