@@ -3,8 +3,11 @@ package com.sots.tiles;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Level;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.UnmodifiableIterator;
+import com.sots.LogisticsPipes2;
 import com.sots.util.Connections;
 
 import net.minecraft.block.state.IBlockState;
@@ -99,64 +102,83 @@ public class TileBasicPipe extends TileEntity{
 		
 		//North Connection
 		if(canConnect(world, pos.north())) {
-			//if(hidden.contains("UP"))
+			if(hidden.contains("UP")){
 				hidden.remove(Connections.NORTH.toString());
 				hasChanged=true;
+				LogisticsPipes2.logger.log(Level.INFO, "Found an attached pipe on the Up side of Block at (" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + ")");
+			}
+			
 		}
-		else {hidden.add(Connections.NORTH.toString());hasChanged=true;}
+		else if(!hidden.contains("UP")){hidden.add(Connections.NORTH.toString());hasChanged=true;}
 		
 		//South Connection
 		if(canConnect(world, pos.south())) {
-			//if(hidden.contains("DOWN"))
+			if(hidden.contains("DOWN")){
 				hidden.remove(Connections.SOUTH.toString());
 				hasChanged=true;
+				LogisticsPipes2.logger.log(Level.INFO, "Found an attached pipe on the Down side of Block at (" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + ")");
+			}
 		}
-		else{hidden.add(Connections.SOUTH.toString());hasChanged=true;}
+		else if(!hidden.contains("DOWN")){hidden.add(Connections.SOUTH.toString());hasChanged=true;}
 		
 		//East Connection
 		if(canConnect(world, pos.east())) {
-			//if(hidden.contains("EAST"))
+			if(hidden.contains("EAST")){
 				hidden.remove(Connections.EAST.toString());
 				hasChanged=true;
+				LogisticsPipes2.logger.log(Level.INFO, "Found an attached pipe on the East side of Block at (" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + ")");
+			}
 		}
-		else{hidden.add(Connections.EAST.toString());hasChanged=true;}
+		else if(!hidden.contains("EAST")){hidden.add(Connections.EAST.toString());hasChanged=true;}
 		
 		//West Connection
 		if(canConnect(world, pos.west())) {
-			//if(hidden.contains("WEST"))
+			if(hidden.contains("WEST")){
 				hidden.remove(Connections.WEST.toString());
 				hasChanged=true;
+				LogisticsPipes2.logger.log(Level.INFO, "Found an attached pipe on the West side of Block at (" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + ")");
+			}
 		}
-		else{hidden.add(Connections.WEST.toString());hasChanged=true;}
+		else if(!hidden.contains("WEST")){hidden.add(Connections.WEST.toString());hasChanged=true;LogisticsPipes2.logger.log(Level.INFO, "Lost an attached pipe on the West side of Block at (" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + ")");}
 		
 		//Up Connection
 		if(canConnect(world, pos.up())) {
-			//if(hidden.contains("SOUTH"))
+			if(hidden.contains("SOUTH")){
 				hidden.remove(Connections.UP.toString());
 				hasChanged=true;
+				LogisticsPipes2.logger.log(Level.INFO, "Found an attached pipe on the South side of Block at (" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + ")");
+			}
 		}
-		else{hidden.add(Connections.UP.toString());hasChanged=true;}
+		else if(!hidden.contains("SOUTH")){hidden.add(Connections.UP.toString());hasChanged=true;}
 		
 		//Down Connection
 		if(canConnect(world, pos.down())) {
-			//if(hidden.contains("NORTH"))
+			if(hidden.contains("NORTH")){
 				hidden.remove(Connections.DOWN.toString());
 				hasChanged=true;
+				LogisticsPipes2.logger.log(Level.INFO, "Found an attached pipe on the North side of Block at (" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + ")");
+			}
 		}
-		else{hidden.add(Connections.DOWN.toString());hasChanged=true;}
+		else if(!hidden.contains("NORTH")){hidden.add(Connections.DOWN.toString());hasChanged=true;}
 		
-		if(worldObj.isRemote) {
-			this.worldObj.markBlockRangeForRenderUpdate(this.pos, this.pos);
-			this.worldObj.notifyBlockUpdate(pos, getState(), getState(), 3);
-			this.worldObj.scheduleBlockUpdate(this.pos, this.getBlockType(), 0, 0);
-			
-			markDirty();
-		}
+		
+		updateBlock();
 		
 	}
 	
 	private IBlockState getState() {
 		return worldObj.getBlockState(pos);
+	}
+	
+	public void updateBlock(){
+		if(hasChanged){
+			this.worldObj.markBlockRangeForRenderUpdate(this.pos, this.pos);
+			this.worldObj.notifyBlockUpdate(pos, getState(), getState(), 3);
+			this.worldObj.scheduleBlockUpdate(this.pos, this.getBlockType(), 0, 0);
+			
+			markDirty();
+			hasChanged=false;
+		}
 	}
 	
 }

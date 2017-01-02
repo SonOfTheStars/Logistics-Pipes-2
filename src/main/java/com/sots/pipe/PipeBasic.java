@@ -3,7 +3,6 @@ package com.sots.pipe;
 import com.sots.tiles.TileBasicPipe;
 import com.sots.util.References;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;

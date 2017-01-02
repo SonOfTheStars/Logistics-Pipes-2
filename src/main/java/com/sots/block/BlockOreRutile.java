@@ -2,7 +2,6 @@ package com.sots.block;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import com.sots.util.References;
 import com.sots.util.registries.ItemRegistry;
@@ -16,7 +15,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
