@@ -3,12 +3,12 @@ package com.sots.util;
 public enum Connections{
 	NORTH{
 		public String toString() {
-			return "NORTH";
+			return "UP";
 		}
 	},
 	SOUTH{
 		public String toString() {
-			return "SOUTH";
+			return "DOWN";
 		}
 	},
 	EAST{
@@ -23,12 +23,12 @@ public enum Connections{
 	},
 	UP{
 		public String toString() {
-			return "UP";
+			return "SOUTH";
 		}
 	},
 	DOWN{
 		public String toString() {
-			return "DOWN";
+			return "NORTH";
 		}
 	}
 }
