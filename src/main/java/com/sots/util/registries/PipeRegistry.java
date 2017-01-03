@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.sots.pipe.BlockGenericPipe;
 import com.sots.pipe.PipeBasic;
+import com.sots.pipe.PipeRouted;
 
 import net.minecraft.item.ItemBlock;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -14,12 +15,15 @@ public class PipeRegistry {
 	public static List<BlockGenericPipe> registry = new ArrayList<BlockGenericPipe>();
 	
 	public static BlockGenericPipe pipe_basic;
+	public static BlockGenericPipe pipe_routed;
 	
 	public static void init() {
 		pipe_basic = new PipeBasic();
+		pipe_routed = new PipeRouted();
 		
 		
 		registry.add(pipe_basic);
+		registry.add(pipe_routed);
 		
 		for(BlockGenericPipe pipe : registry) {
 			GameRegistry.register(pipe);

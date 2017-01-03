@@ -21,9 +21,8 @@ import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.Models;
 import net.minecraftforge.common.model.TRSRTransformation;
 
-public class TileBasicPipe extends TileEntity implements IRoutable, IPipe{
-	
-	private boolean hasChanged = false;
+public class TileRoutedPipe extends TileEntity implements IRoutable, IPipe{
+private boolean hasChanged = false;
 	
 	private final List<String> hidden = new ArrayList<String>();
 	public final IModelState state = new IModelState()
@@ -79,18 +78,16 @@ public class TileBasicPipe extends TileEntity implements IRoutable, IPipe{
     }
 	
 	public void checkConnections(IBlockAccess world, BlockPos pos) {
-		ArrayList<String> check = ConnectionHelper.checkForPipes(world, pos);
+		ArrayList<String> check = ConnectionHelper.checkInventoriesAndPipes(world, pos);
 		
 		if(!hidden.equals(check)) {
-			hasChanged=true;
+			hasChanged = true;
 			hidden.clear();
 			for(String s : check) {
 				hidden.add(s);
 			}
 		}
-		
 		updateBlock();
-		
 	}
 	
 	private IBlockState getState() {
@@ -109,7 +106,7 @@ public class TileBasicPipe extends TileEntity implements IRoutable, IPipe{
 	}
 	
 	@Override
-	public boolean isRouted() {return false;}
+	public boolean isRouted() {return true;}
 
 	@Override
 	public boolean isRoutable() {return true;}
@@ -121,9 +118,8 @@ public class TileBasicPipe extends TileEntity implements IRoutable, IPipe{
 	public boolean hasPower() {return false;}
 
 	@Override
-	public boolean consumesPower() {return false;}
+	public boolean consumesPower() {return true;}
 	
 	@Override
-	public int powerConsumed() {return 0;}
-	
+	public int powerConsumed() {return 1;}
 }

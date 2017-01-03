@@ -1,7 +1,6 @@
 package com.sots.util.registries;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.sots.item.IngotTitanium;

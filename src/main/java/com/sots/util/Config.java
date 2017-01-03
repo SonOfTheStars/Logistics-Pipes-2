@@ -19,6 +19,7 @@ public class Config {
 	public static boolean retroGenFlagLog = true;		//Wether or not to log thwe Flagging of chunks for Retrogen
 	public static boolean allowTierTwo = true; 			//Wether or not to allow the making of Industrial grade Pipes
 	public static float baseNetCost = 30.0f; 			//Cost in RF/t
+	public static float routedIdleCost = 4.0f;          //Routed Pipe idle power consumption in RF/t
 	
 	/**
 	 * Read the config file ordered by Category
@@ -62,6 +63,7 @@ public class Config {
 		cfg.addCustomCategoryComment(CAT_NETWORK, "Network specific settings:");
 		
 		baseNetCost = cfg.getFloat("baseNetworkCost", CAT_NETWORK, 30.0f, 5.0f, 10000.0f, "The Base energy consumption of the Network Core");
+		routedIdleCost = cfg.getFloat("routedIdleCost", CAT_NETWORK, 4.0f, 1.0f, 100.0f, "The idle power consumption of a Routed Pipe in a Network, between 1 and 100 RF/t");
 	}
 	
 	/**

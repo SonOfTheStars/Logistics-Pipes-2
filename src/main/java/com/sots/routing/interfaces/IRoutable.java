@@ -1,12 +1,37 @@
 package com.sots.routing.interfaces;
 
 public interface IRoutable {
-	public boolean isRoutable = true;
+	/**
+	 * Wether or not the Pipe itself is a Routed Node
+	 * @return true=Routed Node, False=passive Pipe
+	 */
+	public boolean isRouted();
 	
-	public boolean hasNetwork=false;
+	/**
+	 * Wether or not the Pipe is Routeable, aka. if the Network can send stuff through it.
+	 * @return true=Can be routed through, false=Can't be routed through
+	 */
+	public boolean isRoutable();
 	
-	public boolean hasPower=false;
+	/**
+	 * Wether or not this Pipe is Part of a Network
+	 */
+	public boolean hasNetwork();
 	
-	public boolean consumesPower=true;
+	/**
+	 * Wether or not this Pipe is powered by a Network
+	 */
+	public boolean hasPower();
+	
+	/**
+	 * Wether or not this Pipe actually actively consumes Power
+	 */
+	public boolean consumesPower();
+	
+	/**
+	 * The amount of power that this pipe consumes by default
+	 * @return Idle Power Cost
+	 */
+	public int powerConsumed();
 	
 }
