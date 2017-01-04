@@ -61,4 +61,34 @@ public enum Connections{
 			return "CNORTH";
 		}
 	},
+	G_NORTH{
+		public String toString() {
+			return "GUP";
+		}
+	},
+	G_SOUTH{
+		public String toString() {
+			return "GDOWN";
+		}
+	},
+	G_EAST{
+		public String toString() {
+			return "GEAST";
+		}
+	},
+	G_WEST{
+		public String toString() {
+			return "GWEST";
+		}
+	},
+	G_UP{
+		public String toString() {
+			return "GSOUTH";
+		}
+	},
+	G_DOWN{
+		public String toString() {
+			return "GNORTH";
+		}
+	}
 }

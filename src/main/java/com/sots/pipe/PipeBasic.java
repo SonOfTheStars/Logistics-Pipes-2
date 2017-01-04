@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -25,7 +26,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class PipeBasic extends BlockGenericPipe implements ITileEntityProvider{
-
+	
 	public PipeBasic() {
 		super(Material.IRON);
 		setUnlocalizedName(References.NAME_PIPE_BASIC);
@@ -52,11 +53,19 @@ public class PipeBasic extends BlockGenericPipe implements ITileEntityProvider{
 	}
 	
 	@Override
+	public boolean canRenderInLayer(BlockRenderLayer layer) {
+		return layer == BlockRenderLayer.SOLID || layer == BlockRenderLayer.TRANSLUCENT;
+	}
+	
+	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess worldIn, BlockPos pos, EnumFacing side) {return false;}
 	
 	@Override
 	public boolean isBlockNormalCube(IBlockState state) {return false;}
+	
+	@Override
+    public boolean isFullCube(IBlockState state) { return false; }
 	
 	@Override
 	public boolean isOpaqueCube(IBlockState state) {return false;}

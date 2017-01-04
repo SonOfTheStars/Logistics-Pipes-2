@@ -1,12 +1,23 @@
 {
   "forge_marker": 1,
   "defaults": {
-    "custom": {"flip-v": true},
-    "model": "lptwo:pipe_basic.obj",
-    "transform": "forge:default-block"
+    "model": "forge:multi-layer",
+    "transform": "forge:default-block",
+    "custom": {
+    	"base": "lptwo:pipe_basic#normal",
+    	"Solid": "lptwo:pipe_basic#normal",
+    	"Translucent": "lptwo:pipe_basic#glass"
+    }
   },
   "variants": {
-    "normal": [{}],
+    "normal": [{
+    	"model": "lptwo:pipe_basic.obj",
+    	"custom": {"flip-v": true}
+    }],
+    "glass": [{
+    	"model": "lptwo:pipe_glass.obj",
+    	"custom": {"flip-v": true}
+    }],
     "inventory": [{}]
   }
 }

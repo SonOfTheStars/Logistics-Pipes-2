@@ -2,7 +2,7 @@
   "forge_marker": 1,
   "defaults": {
     "custom": {"flip-v": true},
-    "model": "lptwo:pipe_basic.obj",
+    "model": "lptwo:pipe_routed.obj",
     "transform": "forge:default-block"
   },
   "variants": {
