@@ -1,5 +1,7 @@
 package com.sots.pipe;
 
+import java.util.ArrayList;
+
 import com.sots.tiles.TileRoutedPipe;
 import com.sots.util.References;
 
@@ -45,7 +47,16 @@ public class PipeRouted extends BlockGenericPipe implements ITileEntityProvider{
 		if(world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileRoutedPipe) {
 			TileRoutedPipe te = (TileRoutedPipe)world.getTileEntity(pos);
 			te.checkConnections(world, pos);
-			return ((IExtendedBlockState) state).withProperty(Properties.AnimationProperty, te.state);
+			ArrayList<String> check = te.checkConnections(world, pos);
+			if(!hidden.equals(check)) {
+				te.setHasChanged(true);
+				hidden.clear();
+				for(String s : check) {
+					hidden.add(s);
+				}
+				te.updateBlock();
+			}
+			return ((IExtendedBlockState) state).withProperty(Properties.AnimationProperty, this.state);
 		}
 		return state;
 	}

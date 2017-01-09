@@ -4,30 +4,32 @@ import java.util.ArrayList;
 
 import com.sots.routing.interfaces.IPipe;
 
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.ChunkCache;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.items.CapabilityItemHandler;
 
 public class ConnectionHelper {
 	public static boolean canConnectTile(IBlockAccess world, BlockPos pos) {
 		return world.getTileEntity(pos)!=null;
 	}
 	
-	public static boolean isPipe(IBlockAccess world, BlockPos pos) {
-		TileEntity te = world.getTileEntity(pos);
-		return(te instanceof IPipe);
+	public static boolean isPipe(IBlockAccess worldIn, BlockPos pos, EnumFacing facing) {
+		TileEntity target = worldIn instanceof ChunkCache ? ((ChunkCache)worldIn).getTileEntity(pos.offset(facing), Chunk.EnumCreateEntityType.CHECK) : worldIn.getTileEntity(pos.offset(facing));
+		return(target instanceof IPipe);
 	}
 	
-	public static boolean isInventory(IBlockAccess world, BlockPos pos) {
-		TileEntity te = world.getTileEntity(pos);
-		return(te instanceof IInventory || te instanceof ISidedInventory);
-	}
-	
-	public static boolean isSidedInventory(IBlockAccess world, BlockPos pos) {
-		TileEntity te = world.getTileEntity(pos);
-		return(te instanceof ISidedInventory);
+	public static boolean isInventory(IBlockAccess world, BlockPos pos, EnumFacing facing) {
+		TileEntity target = world instanceof ChunkCache ? ((ChunkCache)world).getTileEntity(pos.offset(facing), Chunk.EnumCreateEntityType.CHECK) : world.getTileEntity(pos.offset(facing));
+		if(target !=null) {
+			return(target.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite()));
+		}
+		else {
+			return false;
+		}
 	}
 	
 	public static ArrayList<String> checkForPipes(IBlockAccess world, BlockPos pos) {
@@ -35,37 +37,37 @@ public class ConnectionHelper {
 		//The Center Block of the Pipe allways has to be shown, thus its never added here
 		
 		//North Connection
-		if(!isPipe(world, pos.north())) {
+		if(!isPipe(world, pos, EnumFacing.NORTH)) {
 			hidden.add(Connections.NORTH.toString());
 			hidden.add(Connections.G_NORTH.toString());
 		}
 		
 		//South Connection
-		if(!isPipe(world, pos.south())) {
+		if(!isPipe(world, pos, EnumFacing.SOUTH)) {
 			hidden.add(Connections.SOUTH.toString());
 			hidden.add(Connections.G_SOUTH.toString());
 		}
 		
 		//East Connection
-		if(!isPipe(world, pos.east())) {
+		if(!isPipe(world, pos, EnumFacing.EAST)) {
 			hidden.add(Connections.EAST.toString());
 			hidden.add(Connections.G_EAST.toString());
 		}
 		
 		//West Connection
-		if(!isPipe(world, pos.west())) {
+		if(!isPipe(world, pos, EnumFacing.WEST)) {
 			hidden.add(Connections.WEST.toString());
 			hidden.add(Connections.G_WEST.toString());
 		}
 		
 		//Up Connection
-		if(!isPipe(world, pos.up())) {
+		if(!isPipe(world, pos, EnumFacing.UP)) {
 			hidden.add(Connections.UP.toString());
 			hidden.add(Connections.G_UP.toString());
 		}
 		
 		//Down Connection
-		if(!isPipe(world, pos.down())) {
+		if(!isPipe(world, pos, EnumFacing.DOWN)) {
 			hidden.add(Connections.DOWN.toString());
 			hidden.add(Connections.G_DOWN.toString());
 		}
@@ -76,54 +78,45 @@ public class ConnectionHelper {
 	public static ArrayList<String> checkInventoriesAndPipes(IBlockAccess world, BlockPos pos){
 		ArrayList<String> hidden = new ArrayList<String>();
 		//The Center Block of the Pipe allways has to be shown, thus its never added here
-		//Pipe Glass is currently not implemented
-		hidden.add("GUP");
-		hidden.add("GDOWN");
-		hidden.add("GNORTH");
-		hidden.add("GWEST");
-		hidden.add("GSOUTH");
-		hidden.add("GEAST");
-		hidden.add("GCENTER");
-		
 		//North Side Check
-		if(!isInventory(world, pos.north())) {
+		if(!isInventory(world, pos, EnumFacing.NORTH)) {
 			hidden.add(Connections.C_NORTH.toString());
-			if(!isPipe(world, pos.north())) 
+			if(!isPipe(world, pos, EnumFacing.NORTH)) 
 				hidden.add(Connections.NORTH.toString());
 		}
 		
 		//South Side Check
-		if(!isInventory(world, pos.south())) {
+		if(!isInventory(world, pos, EnumFacing.SOUTH)) {
 			hidden.add(Connections.C_SOUTH.toString());
-			if(!isPipe(world, pos.south())) 
+			if(!isPipe(world, pos, EnumFacing.SOUTH)) 
 				hidden.add(Connections.SOUTH.toString());
 		}
 		
 		//East Side Check
-		if(!isInventory(world, pos.east())) {
+		if(!isInventory(world, pos, EnumFacing.EAST)) {
 			hidden.add(Connections.C_EAST.toString());
-			if(!isPipe(world, pos.east()))
+			if(!isPipe(world, pos, EnumFacing.EAST))
 				hidden.add(Connections.EAST.toString());
 		}
 		
 		//West Side Check
-		if(!isInventory(world, pos.west())) {
+		if(!isInventory(world, pos, EnumFacing.WEST)) {
 			hidden.add(Connections.C_WEST.toString());
-			if(!isPipe(world, pos.west())) 
+			if(!isPipe(world, pos, EnumFacing.WEST)) 
 				hidden.add(Connections.WEST.toString());
 		}
 		
 		//Up Side Check
-		if(!isInventory(world, pos.up())) {
+		if(!isInventory(world, pos, EnumFacing.UP)) {
 			hidden.add(Connections.C_UP.toString());
-			if(!isPipe(world, pos.up())) 
+			if(!isPipe(world, pos, EnumFacing.UP)) 
 				hidden.add(Connections.UP.toString());
 		}
 		
 		//Down Side Check
-		if(!isInventory(world, pos.down())) {
+		if(!isInventory(world, pos, EnumFacing.DOWN)) {
 			hidden.add(Connections.C_DOWN.toString());
-			if(!isPipe(world, pos.down())) 
+			if(!isPipe(world, pos, EnumFacing.DOWN)) 
 				hidden.add(Connections.DOWN.toString());
 		}
 		

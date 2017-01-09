@@ -1,5 +1,7 @@
 package com.sots.pipe;
 
+import java.util.ArrayList;
+
 import com.sots.tiles.TileBasicPipe;
 import com.sots.util.References;
 
@@ -46,11 +48,20 @@ public class PipeBasic extends BlockGenericPipe implements ITileEntityProvider{
 	public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
 		if(world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileBasicPipe) {
 			TileBasicPipe te = (TileBasicPipe)world.getTileEntity(pos);
-			te.checkConnections(world, pos);
-			return ((IExtendedBlockState) state).withProperty(Properties.AnimationProperty, te.state);
+			ArrayList<String> check = te.checkConnections(world, pos);
+			if(!hidden.equals(check)) {
+				te.setHasChanged(true);
+				hidden.clear();
+				for(String s : check) {
+					hidden.add(s);
+				}
+				te.updateBlock();
+			}
+			return ((IExtendedBlockState) state).withProperty(Properties.AnimationProperty, this.state);
 		}
 		return state;
 	}
+	
 	
 	@Override
 	public boolean canRenderInLayer(BlockRenderLayer layer) {

@@ -6,6 +6,16 @@ import java.util.List;
 import com.sots.item.IngotTitanium;
 import com.sots.item.LPItemBase;
 import com.sots.item.ShardRutile;
+import com.sots.item.modules.ItemModuleBase;
+import com.sots.item.modules.ModuleOrder;
+import com.sots.item.modules.ModuleProvide;
+import com.sots.item.modules.ModuleSink;
+import com.sots.item.modules.ModuleSort;
+import com.sots.item.parts.PartExtractProc;
+import com.sots.item.parts.PartFPGA;
+import com.sots.item.parts.PartOrderProc;
+import com.sots.item.parts.PartProviderProc;
+import com.sots.item.parts.PartSinkProc;
 import com.sots.util.StringUtil;
 
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -15,8 +25,18 @@ public class ItemRegistry {
 	
 	//All Items to be Registered
 	public static List<LPItemBase> registry = new ArrayList<LPItemBase>();
-	public static ShardRutile shard_rutile;
-	public static IngotTitanium ingot_titanium;
+	public static LPItemBase shard_rutile;
+	public static LPItemBase ingot_titanium;
+	public static LPItemBase part_fpga;
+	public static LPItemBase part_order;
+	public static LPItemBase part_sink;
+	public static LPItemBase part_extract;
+	public static LPItemBase part_provider;
+	public static LPItemBase module_base;
+	public static LPItemBase module_order;
+	public static LPItemBase module_provide;
+	public static LPItemBase module_sink;
+	public static LPItemBase module_sort;
 	
 	/**
 	 * Initialize all Items for preInit
@@ -26,9 +46,29 @@ public class ItemRegistry {
 		//Init Items
 		shard_rutile = new ShardRutile();
 		ingot_titanium = new IngotTitanium();
+		part_fpga = new PartFPGA();
+		part_order = new PartOrderProc();
+		part_sink = new PartSinkProc();
+		part_extract = new PartExtractProc();
+		part_provider = new PartProviderProc();
+		module_base = new ItemModuleBase();
+		module_order = new ModuleOrder();
+		module_provide = new ModuleProvide();
+		module_sink = new ModuleSink();
+		module_sort = new ModuleSort();
 		
 		registry.add(shard_rutile);
 		registry.add(ingot_titanium);
+		registry.add(part_fpga);
+		registry.add(part_order);
+		registry.add(part_extract);
+		registry.add(part_provider);
+		registry.add(part_sink);
+		registry.add(module_provide);
+		registry.add(module_sink);
+		registry.add(module_sort);
+		registry.add(module_order);
+		
 		
 		//Register Items
 		for(LPItemBase item : registry) {
