@@ -41,5 +41,7 @@ public class NetworkNode {
 		this.nodeLevel = nodeLevel;
 	}
 	
-	
+	public boolean addNeighbor(NetworkNode node) {
+		
+	}
 }
