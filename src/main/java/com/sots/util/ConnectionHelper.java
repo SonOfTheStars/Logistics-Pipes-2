@@ -3,13 +3,12 @@ package com.sots.util;
 import java.util.ArrayList;
 
 import com.sots.routing.interfaces.IPipe;
+import com.sots.tiles.TileGenericPipe;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ChunkCache;
 import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.items.CapabilityItemHandler;
 
 public class ConnectionHelper {
@@ -18,12 +17,12 @@ public class ConnectionHelper {
 	}
 	
 	public static boolean isPipe(IBlockAccess worldIn, BlockPos pos, EnumFacing facing) {
-		TileEntity target = worldIn instanceof ChunkCache ? ((ChunkCache)worldIn).getTileEntity(pos.offset(facing), Chunk.EnumCreateEntityType.CHECK) : worldIn.getTileEntity(pos.offset(facing));
+		TileEntity target = AccessHelper.getTileSafe(worldIn, pos, facing);
 		return(target instanceof IPipe);
 	}
 	
-	public static boolean isInventory(IBlockAccess world, BlockPos pos, EnumFacing facing) {
-		TileEntity target = world instanceof ChunkCache ? ((ChunkCache)world).getTileEntity(pos.offset(facing), Chunk.EnumCreateEntityType.CHECK) : world.getTileEntity(pos.offset(facing));
+	public static boolean isInventory(IBlockAccess worldIn, BlockPos pos, EnumFacing facing) {
+		TileEntity target = AccessHelper.getTileSafe(worldIn, pos, facing);
 		if(target !=null) {
 			return(target.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite()));
 		}
@@ -121,5 +120,15 @@ public class ConnectionHelper {
 		}
 		
 		return hidden;
+	}
+	
+	public static TileGenericPipe getAdjacentPipe(IBlockAccess worldIn, BlockPos pos, EnumFacing facing) {
+		if(isPipe(worldIn,pos,facing)) {
+			TileGenericPipe target = (TileGenericPipe)AccessHelper.getTileSafe(worldIn, pos, facing);
+			if(target!=null) {
+				return target;
+			}
+		}
+		return null;
 	}
 }

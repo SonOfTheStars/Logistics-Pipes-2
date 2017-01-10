@@ -18,6 +18,8 @@ public interface IRoutable {
 	 */
 	public boolean hasNetwork();
 	
+	public void network();
+	
 	/**
 	 * Wether or not this Pipe is powered by a Network
 	 */

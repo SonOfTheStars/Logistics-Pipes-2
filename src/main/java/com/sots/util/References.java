@@ -9,6 +9,7 @@ public abstract class References {
 	public static final String NAME_ORE_RUTILE = MODID + ".ore_rutile";
 	public static final String NAME_PIPE_BASIC = MODID + ".pipe_basic";
 	public static final String NAME_PIPE_ROUTED = MODID + ".pipe_routed";
+	public static final String NAME_NETWORK_CORE = MODID + ".network_core";
 	
 	//Item Names
 	public static final String NAME_SHARD_RUTILE = MODID + ".shard_rutile";
@@ -43,6 +44,8 @@ public abstract class References {
 	public static final String RN_INGOT_TITANIUM = "ingot_titanium";
 	public static final String RN_PIPE_BASIC = "pipe_basic";
 	public static final String RN_PIPE_ROUTED = "pipe_routed";
+	public static final String RN_NETWORK_CORE = "network_core";
+	
 	public static final String RN_MODULE_BASE = "module_base";
 	public static final String RN_FPGA = "part_fpga";
 	public static final String RN_SINK_PROC = "part_sink_proc";
