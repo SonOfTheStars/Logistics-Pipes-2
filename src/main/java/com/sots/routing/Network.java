@@ -27,6 +27,8 @@ public class Network {
 		name=n;
 		
 		root = new NetworkNode(null, 0, master);
+		nodes.add(root);
+		root.getMember().network(this);
 	}
 	
 	public void registerDestination(IDestination in) {
@@ -42,7 +44,13 @@ public class Network {
 		
 	}
 	
-	
+	public void purgeNetwork() {
+		for(int i=1; i<nodes.size(); i++) {
+			nodes.get(i).dissolve();
+			nodes.remove(i);
+		}
+		ID_Range=1;
+	}
 	
 	public void discover(NetworkNode node) {
 		NetworkNode nodeHelper;
@@ -53,9 +61,10 @@ public class Network {
 				TileGenericPipe adj = (TileGenericPipe)AccessHelper.getTileSafe(pipe.getWorld(), pipe.getPos(), EnumFacing.getFront(i));
 				if(!adj.hasNetwork()) {
 					nodeHelper = new NetworkNode(node,ID_Range,adj);
-					adj.network();
+					adj.network(this);
 					ID_Range++;
-					nodes.add(nodeHelper);
+					if(!nodes.contains(nodeHelper))
+						nodes.add(nodeHelper);
 					discover(nodeHelper);
 				}
 				
@@ -65,6 +74,10 @@ public class Network {
 	
 	public NetworkNode getRoot() {
 		return root;
+	}
+
+	public String getName() {
+		return name;
 	}
 	
 }

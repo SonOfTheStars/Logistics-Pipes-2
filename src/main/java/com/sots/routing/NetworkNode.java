@@ -29,9 +29,11 @@ public class NetworkNode {
 		return pipe.isRoutable();
 	}
 	
-	public int getId() {
-		return id;
+	public void dissolve() {
+		pipe.disconnect();
 	}
+	
+	public int getId() {return id;}
 	
 	public IRoutable getMember() {return pipe;}
 }

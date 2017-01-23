@@ -1,9 +1,13 @@
 package com.sots.pipe;
 
+import org.apache.logging.log4j.Level;
+
+import com.sots.LogisticsPipes2;
 import com.sots.tiles.TileNetworkCore;
 import com.sots.util.AccessHelper;
 import com.sots.util.References;
 
+import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -21,7 +25,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class NetworkCore extends BlockGenericPipe{
+public class NetworkCore extends BlockGenericPipe implements ITileEntityProvider{
 
 	public NetworkCore() {
 		super(Material.IRON);
@@ -45,7 +49,7 @@ public class NetworkCore extends BlockGenericPipe{
 	public boolean hasTileEntity() { return true;}
 	
 	@Override
-	public TileEntity createTileEntity(World world, IBlockState state) {
+	public TileEntity createNewTileEntity(World worldIn, int meta) {
 		TileNetworkCore self = new TileNetworkCore();
 		self.makeNetwork();
 		return self;
@@ -54,8 +58,13 @@ public class NetworkCore extends BlockGenericPipe{
 	@Override
 	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
 			EnumHand hand, ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
-		TileNetworkCore self = (TileNetworkCore) AccessHelper.getTileSafe(worldIn, pos);
-		self.updateNetwork();
+		if(!worldIn.isRemote) {
+			TileNetworkCore self = (TileNetworkCore) AccessHelper.getTileSafe(worldIn, pos);
+			LogisticsPipes2.logger.log(Level.DEBUG, (self!=null ? "Tile is present!" : "Tile is absent!"));
+			if(self!=null) {
+				self.updateNetwork();
+			}
+		}
 		
 		return true;
 	}

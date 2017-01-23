@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.Level;
+
+import com.sots.LogisticsPipes2;
+import com.sots.routing.Network;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.ConnectionHelper;
@@ -21,6 +25,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe{
 	
 	protected boolean hasChanged = false;
 	protected boolean hasNetwork = false;
+	
+	protected Network network = null;
 	
 	public void setHasChanged(boolean hasChanged) {
 		this.hasChanged = hasChanged;
@@ -79,10 +85,21 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe{
 	public boolean isRoutable() {return true;}
 
 	@Override
-	public boolean hasNetwork() {return false;}
+	public boolean hasNetwork() {return hasNetwork;}
 	
 	@Override
-	public void network() {hasNetwork=true;}
+	public void network(Network parent) {
+		LogisticsPipes2.logger.log(Level.DEBUG, "Added TileGenericPipe" + toString() + " to Network:" + parent.getName());
+		network = parent;
+		hasNetwork=true;
+		}
+	
+	@Override
+	public void disconnect() {
+		LogisticsPipes2.logger.log(Level.DEBUG, "Removed TileGenericPipe" + toString() + " from Network:" + network.getName());
+		hasNetwork=false;
+		network=null;
+		}
 
 	@Override
 	public boolean hasPower() {return false;}

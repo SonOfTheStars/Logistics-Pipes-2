@@ -23,9 +23,6 @@ public class TileChassisI extends TileGenericPipe implements IPipe, IRoutable{
 	public boolean isRoutable() {return true;}
 
 	@Override
-	public boolean hasNetwork() {return false;}
-
-	@Override
 	public boolean hasPower() {return false;}
 
 	@Override

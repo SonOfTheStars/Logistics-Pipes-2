@@ -23,9 +23,6 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe{
 	public boolean isRoutable() {return true;}
 
 	@Override
-	public boolean hasNetwork() {return false;}
-
-	@Override
 	public boolean hasPower() {return false;}
 
 	@Override

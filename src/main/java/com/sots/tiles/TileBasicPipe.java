@@ -22,9 +22,6 @@ public class TileBasicPipe extends TileGenericPipe{
 	public boolean isRoutable() {return true;}
 
 	@Override
-	public boolean hasNetwork() {return false;}
-
-	@Override
 	public boolean hasPower() {return false;}
 
 	@Override

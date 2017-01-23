@@ -1,5 +1,7 @@
 package com.sots.routing.interfaces;
 
+import com.sots.routing.Network;
+
 public interface IRoutable {
 	/**
 	 * Wether or not the Pipe itself is a Routed Node
@@ -18,7 +20,15 @@ public interface IRoutable {
 	 */
 	public boolean hasNetwork();
 	
-	public void network();
+	/**
+	 * Override this to specify behavior of a Pipe when it gets added to a Network
+	 */
+	public void network(Network parent);
+	
+	/**
+	 * Override this to specify behavior of a Pipe when it gets removed from a Network
+	 */
+	public void disconnect();
 	
 	/**
 	 * Wether or not this Pipe is powered by a Network

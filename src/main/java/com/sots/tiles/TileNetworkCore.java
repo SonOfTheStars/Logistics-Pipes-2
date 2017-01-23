@@ -17,6 +17,7 @@ public class TileNetworkCore extends TileGenericPipe {
 	}
 	
 	public void updateNetwork() {
+		network.purgeNetwork();
 		network.discover(network.getRoot());
 	}
 }
