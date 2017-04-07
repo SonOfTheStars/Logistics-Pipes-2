@@ -11,6 +11,7 @@ import com.sots.routing.Network;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.ConnectionHelper;
+import com.sots.util.data.Tuple;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
@@ -27,6 +28,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe{
 	protected boolean hasNetwork = false;
 	
 	protected Network network = null;
+	
+	protected Map<EnumFacing, Boolean> connections = new HashMap<EnumFacing, Boolean>();
 	
 	public void setHasChanged(boolean hasChanged) {
 		this.hasChanged = hasChanged;

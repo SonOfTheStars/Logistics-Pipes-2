@@ -1,0 +1,6 @@
+{
+	"parent": "lptwo:item/lpitembase",
+	"textures":{
+		"layer0": "lptwo:items/part_order_proc"
+	}
+}

@@ -1,0 +1,6 @@
+{
+	"parent": "lptwo:item/lpitembase",
+	"textures":{
+		"layer0": "lptwo:items/modules/module_provider"
+	}
+}
