@@ -1,34 +1,30 @@
 package com.sots.routing;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
 
 import com.sots.LogisticsPipes2;
 import com.sots.routing.interfaces.IDestination;
 import com.sots.routing.interfaces.IRoutable;
-import com.sots.tiles.TileGenericPipe;
-import com.sots.util.AccessHelper;
-import com.sots.util.ConnectionHelper;
-
-import net.minecraft.util.EnumFacing;
 
 public class Network {
 	private volatile List<IDestination> destinations = new ArrayList<IDestination>();
 	private volatile List<WeightedEdge> wEdges = new ArrayList<WeightedEdge>();
-	private volatile List<NetworkNode> nodes = new ArrayList<NetworkNode>();
-	private NetworkNode root;
+	private volatile Map<UUID, NetworkNode> nodes = new HashMap<UUID, NetworkNode>();
+	private NetworkNode root = null;
 	
-	private String name;
-	private int ID_Range=1;
+	private UUID name;
+	private int ID_RANGE=1;
 	
-	public Network(String n, IRoutable master) {
+	public Network(UUID n) {
 		name=n;
-		
-		root = new NetworkNode(null, 0, master);
-		nodes.add(root);
-		root.getMember().network(this);
 	}
 	
 	public void registerDestination(IDestination in) {
@@ -40,36 +36,55 @@ public class Network {
 		}
 	}
 	
-	public void addNode() {
-		
+	public UUID addNode(IRoutable Pipe) {
+		UUID id = UUID.randomUUID();
+		NetworkNode node = new NetworkNode(id, Pipe);
+		nodes.put(id, node);
+		return id;
+	}
+	
+	public UUID setRoot(IRoutable pipe) {
+		if(root!=null) {
+			UUID id = UUID.randomUUID();
+			NetworkNode node = new NetworkNode(id, pipe);
+			nodes.put(id, node);
+			root = node;
+			return id;
+		}
+		return UUID.fromString("00000000-0000-0000-0000-000000000000");
 	}
 	
 	public void purgeNetwork() {
-		for(int i=1; i<nodes.size(); i++) {
-			nodes.get(i).dissolve();
-			nodes.remove(i);
+		Set<Entry<UUID, NetworkNode>> _nodes = nodes.entrySet();
+		for(Entry<UUID, NetworkNode> e : _nodes) {
+			e.getValue().dissolve();
 		}
-		ID_Range=1;
+		nodes.clear();
 	}
 	
+	public NetworkNode getNodeByID(UUID id) {
+		return nodes.get(id);
+	}
+	
+	@Deprecated
 	public void discover(NetworkNode node) {
-		NetworkNode nodeHelper;
-		TileGenericPipe pipe = (TileGenericPipe)node.getMember();
-		
-		for(int i=0; i<6; i++) {
-			if(ConnectionHelper.isPipe(pipe.getWorld(), pipe.getPos(), EnumFacing.getFront(i))) {
-				TileGenericPipe adj = (TileGenericPipe)AccessHelper.getTileSafe(pipe.getWorld(), pipe.getPos(), EnumFacing.getFront(i));
-				if(!adj.hasNetwork()) {
-					nodeHelper = new NetworkNode(node,ID_Range,adj);
-					adj.network(this);
-					ID_Range++;
-					if(!nodes.contains(nodeHelper))
-						nodes.add(nodeHelper);
-					discover(nodeHelper);
-				}
-				
-			}
-		}
+//		NetworkNode nodeHelper;
+//		TileGenericPipe pipe = (TileGenericPipe)node.getMember();
+//		
+//		for(int i=0; i<6; i++) {
+//			if(ConnectionHelper.isPipe(pipe.getWorld(), pipe.getPos(), EnumFacing.getFront(i))) {
+//				TileGenericPipe adj = (TileGenericPipe)AccessHelper.getTileSafe(pipe.getWorld(), pipe.getPos(), EnumFacing.getFront(i));
+//				if(!adj.hasNetwork()) {
+//					nodeHelper = new NetworkNode(node,ID_Range,adj);
+//					adj.network(this);
+//					ID_Range++;
+//					if(!nodes.contains(nodeHelper))
+//						nodes.add(nodeHelper);
+//					discover(nodeHelper);
+//				}
+//				
+//			}
+//		}
 	}
 	
 	public NetworkNode getRoot() {
@@ -77,7 +92,7 @@ public class Network {
 	}
 
 	public String getName() {
-		return name;
+		return name.toString();
 	}
 	
 }

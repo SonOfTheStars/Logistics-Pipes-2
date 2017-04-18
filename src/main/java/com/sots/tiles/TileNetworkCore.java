@@ -11,13 +11,13 @@ public class TileNetworkCore extends TileGenericPipe {
 	
 	public void makeNetwork() {
 		if(!ownsNetwork) {
-			network = new Network(UUID.randomUUID().toString(), this);
+			network = new Network(UUID.randomUUID());
 			ownsNetwork=true;
+			nodeID = network.setRoot(this);
 		}
 	}
 	
 	public void updateNetwork() {
 		network.purgeNetwork();
-		network.discover(network.getRoot());
 	}
 }

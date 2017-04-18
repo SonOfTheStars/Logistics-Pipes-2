@@ -1,24 +1,21 @@
 package com.sots.routing;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
-import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 
 public class NetworkNode {
-	private List<NetworkNode> neighbors = new ArrayList<NetworkNode>();
-	private int id;
+	private NetworkNode[] neighbors = new NetworkNode[6];
+	private UUID id;
 	private IRoutable pipe;
 	
-	public NetworkNode(NetworkNode adj, int id, IRoutable pipe) {
-		neighbors.add(adj);
+	public NetworkNode(UUID id, IRoutable pipe) {
 		this.id=id;
 		this.pipe=pipe;
 	}
 
-	public void addNeighbor(NetworkNode node) {
-		neighbors.add(node);
+	public void addNeighbor(NetworkNode node, int index) {
+		neighbors[index]=node;
 	}
 	
 	public boolean isRoutedNode() {
@@ -33,7 +30,7 @@ public class NetworkNode {
 		pipe.disconnect();
 	}
 	
-	public int getId() {return id;}
+	public UUID getId() {return id;}
 	
 	public IRoutable getMember() {return pipe;}
 }

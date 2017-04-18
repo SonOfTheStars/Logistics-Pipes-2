@@ -3,6 +3,7 @@ package com.sots.tiles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
 
@@ -11,7 +12,6 @@ import com.sots.routing.Network;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.ConnectionHelper;
-import com.sots.util.data.Tuple;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
@@ -19,15 +19,17 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
-public class TileGenericPipe extends TileEntity implements IRoutable, IPipe{
+public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable{
 	
 	protected boolean hasChanged = false;
 	protected boolean hasNetwork = false;
 	
 	protected Network network = null;
+	protected UUID nodeID;
 	
 	protected Map<EnumFacing, Boolean> connections = new HashMap<EnumFacing, Boolean>();
 	
@@ -90,6 +92,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe{
 	@Override
 	public boolean hasNetwork() {return hasNetwork;}
 	
+	public Network getNetwork() {return network;}
+	
 	@Override
 	public void network(Network parent) {
 		LogisticsPipes2.logger.log(Level.DEBUG, "Added TileGenericPipe" + toString() + " to Network:" + parent.getName());
@@ -114,16 +118,33 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe{
 	public int powerConsumed() {return 0;}
 	
 	@Override
-	public Map<EnumFacing, IPipe> getAdjacentPipes() {
-		Map<EnumFacing, IPipe> out = new HashMap<EnumFacing, IPipe>();
+	public Map<EnumFacing, Boolean> getAdjacentPipes() {
 		
 		for(int i=0; i<6; i++) {
-			out.put(EnumFacing.getFront(i), ConnectionHelper.getAdjacentPipe(worldObj, pos, EnumFacing.getFront(i)));
+			EnumFacing direction = EnumFacing.getFront(i);
+			if(ConnectionHelper.isPipe(worldObj, pos, direction)) {
+				if(connections.containsKey(direction)) {
+					connections.replace(direction, true);
+				}
+				else {
+					connections.put(direction, true);
+					}
+				
+			}
+			else {
+				if(connections.containsKey(direction)) {
+					connections.replace(direction, false);
+				}
+				else {
+					connections.put(direction, false);
+				}
+			}
 		}
 		
-		return out;
+		return connections;
 	}
 	
+	@Deprecated
 	@Override
 	public boolean hasAdjacent() {
 		boolean out=false;
@@ -136,6 +157,38 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe{
 		}
 		
 		return out;
+	}
+	
+	@Override
+	public void update() {
+		if(!hasNetwork) {
+			network();
+		}
+	}
+	
+	protected void network() {
+		for(int i=0; i<6; i++) {
+			EnumFacing direction = EnumFacing.getFront(i);
+			if(connections.get(direction)) {
+				TileGenericPipe target = ConnectionHelper.getAdjacentPipe(worldObj, pos, direction);
+				
+				//First network contact
+				if(target.hasNetwork() && !hasNetwork) {
+					nodeID = target.network.addNode(this);//Subscribe to network
+					LogisticsPipes2.logger.log(Level.DEBUG, "Added TileGenericPipe" + nodeID.toString() + " to Network:" + network.getName());
+					hasNetwork=true;
+					
+					network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
+					network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
+				}
+				
+				//Notify other Neighbors of our presence
+				if(target.hasNetwork && hasNetwork) {
+					network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
+					network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
+				}
+			}
+		}
 	}
 }
 

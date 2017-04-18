@@ -61,9 +61,6 @@ public class NetworkCore extends BlockGenericPipe implements ITileEntityProvider
 		if(!worldIn.isRemote) {
 			TileEntity self =  AccessHelper.getTileSafe(worldIn, pos);
 			LogisticsPipes2.logger.log(Level.DEBUG, (self!=null ? "Tile is present!" : "Tile is absent!"));
-			if(self!=null && self instanceof TileNetworkCore) {
-				((TileNetworkCore) self).updateNetwork();
-			}
 		}
 		
 		return true;
