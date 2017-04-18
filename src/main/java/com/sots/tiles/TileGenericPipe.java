@@ -146,26 +146,20 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		return connections;
 	}
 	
-	@Deprecated
 	@Override
-	public boolean hasAdjacent() {
-		boolean out=false;
-		
-		for(int i =0; i<6; i++) {
-			if(!out) {
-				out = (ConnectionHelper.isPipe(worldObj, pos, EnumFacing.getFront(i)));
-			}
-			else {break;}
-		}
-		
-		return out;
+	public void invalidate() {
+		if(network!=null)
+			network.purgeNetwork();
 	}
+	
 	
 	@Override
 	public void update() {
 		getAdjacentPipes();
-		if(!hasNetwork) {
-			network();
+		if(!worldObj.isRemote) {
+			if(!hasNetwork) {
+				network();
+			}
 		}
 	}
 	
@@ -179,7 +173,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					//First network contact
 					if(target.hasNetwork() && !hasNetwork) {
 						LogisticsPipes2.logger.log(Level.INFO, "Attempting to connect GenericPipe " + nodeID.toString() + (hasNetwork ? " with network" : " without network") + " to " + target.getBlockType() + (target.hasNetwork ? " with network." : " without network."));
-						nodeID = target.network.addNode(this);//Subscribe to network
+						nodeID = target.network.subscribeNode(this);//Subscribe to network
 						LogisticsPipes2.logger.log(Level.INFO, "Added TileGenericPipe " + nodeID.toString() + " to Network: " + network.getName());
 						hasNetwork=true;
 						
@@ -198,6 +192,12 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 				}
 			}
 		}
+	}
+
+	@Override
+	public boolean hasAdjacent() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
 

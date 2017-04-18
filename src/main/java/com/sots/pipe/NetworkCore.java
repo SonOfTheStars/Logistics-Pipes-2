@@ -25,7 +25,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class NetworkCore extends BlockGenericPipe implements ITileEntityProvider{
+public class NetworkCore extends BlockGenericPipe{
 
 	public NetworkCore() {
 		super(Material.IRON);
@@ -46,13 +46,15 @@ public class NetworkCore extends BlockGenericPipe implements ITileEntityProvider
 	}
 	
 	@Override
-	public boolean hasTileEntity() { return true;}
+	public boolean hasTileEntity(IBlockState state) {
+
+		return true;
+	}
 	
 	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta) {
-		TileNetworkCore self = new TileNetworkCore();
-		self.makeNetwork();
-		return self;
+	public TileEntity createTileEntity(World world, IBlockState state) {
+		TileNetworkCore te = new TileNetworkCore();
+		return te;
 	}
 	
 	@Override
@@ -65,5 +67,7 @@ public class NetworkCore extends BlockGenericPipe implements ITileEntityProvider
 		
 		return true;
 	}
+	
+	
 
 }

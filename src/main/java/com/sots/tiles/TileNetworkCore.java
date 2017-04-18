@@ -8,7 +8,7 @@ public class TileNetworkCore extends TileGenericPipe {
 	
 	private boolean ownsNetwork = false;
 	
-	public void makeNetwork() {
+	private void makeNetwork() {
 		if(!ownsNetwork) {
 			network = new Network(UUID.randomUUID());
 			nodeID = network.setRoot(this);
@@ -23,5 +23,10 @@ public class TileNetworkCore extends TileGenericPipe {
 	
 	@Override
 	public void update() {
+		if(!worldObj.isRemote) {
+			if(!ownsNetwork) {
+				makeNetwork();
+			}
+		}
 	}
 }

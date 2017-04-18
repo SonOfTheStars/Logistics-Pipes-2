@@ -36,7 +36,7 @@ public class Network {
 		}
 	}
 	
-	public UUID addNode(IRoutable Pipe) {
+	public UUID subscribeNode(IRoutable Pipe) {
 		UUID id = UUID.randomUUID();
 		NetworkNode node = new NetworkNode(id, Pipe);
 		nodes.put(id, node);
@@ -58,10 +58,14 @@ public class Network {
 	public void purgeNetwork() {
 		Set<Entry<UUID, NetworkNode>> _nodes = nodes.entrySet();
 		for(Entry<UUID, NetworkNode> e : _nodes) {
-			e.getValue().dissolve();
+			if(e.getKey()!=root.getId())
+				e.getValue().dissolve();
 		}
 		nodes.clear();
+		nodes.put(root.getId(), root);
 	}
+	
+	
 	
 	public NetworkNode getNodeByID(UUID id) {
 		return nodes.get(id);

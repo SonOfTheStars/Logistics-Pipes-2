@@ -26,7 +26,7 @@ import net.minecraftforge.common.property.Properties;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class PipeRouted extends BlockGenericPipe implements ITileEntityProvider{
+public class PipeRouted extends BlockGenericPipe{
 
 	public PipeRouted() {
 		super(Material.IRON);
@@ -78,10 +78,10 @@ public class PipeRouted extends BlockGenericPipe implements ITileEntityProvider{
 	public int getMetaFromState(IBlockState state) {return 0;}
 	
 	@Override
-	public boolean hasTileEntity() {return true;}
+	public boolean hasTileEntity(IBlockState state) {return true;}
 
 	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta) {
+	public TileEntity createTileEntity(World world, IBlockState state) {
 		return new TileRoutedPipe();
 	}
 	
