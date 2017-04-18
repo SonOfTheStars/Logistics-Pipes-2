@@ -40,11 +40,12 @@ public class Network {
 		UUID id = UUID.randomUUID();
 		NetworkNode node = new NetworkNode(id, Pipe);
 		nodes.put(id, node);
+		Pipe.subscribe(this);
 		return id;
 	}
 	
 	public UUID setRoot(IRoutable pipe) {
-		if(root!=null) {
+		if(root==null) {
 			UUID id = UUID.randomUUID();
 			NetworkNode node = new NetworkNode(id, pipe);
 			nodes.put(id, node);

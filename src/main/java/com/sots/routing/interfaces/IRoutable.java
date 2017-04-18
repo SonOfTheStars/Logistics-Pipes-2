@@ -23,7 +23,7 @@ public interface IRoutable {
 	/**
 	 * Override this to specify behavior of a Pipe when it gets added to a Network
 	 */
-	public void network(Network parent);
+	public void subscribe(Network parent);
 	
 	/**
 	 * Override this to specify behavior of a Pipe when it gets removed from a Network

@@ -22,6 +22,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable{
 	
@@ -29,7 +31,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	protected boolean hasNetwork = false;
 	
 	protected Network network = null;
-	protected UUID nodeID;
+	protected UUID nodeID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 	
 	protected Map<EnumFacing, Boolean> connections = new HashMap<EnumFacing, Boolean>();
 	
@@ -95,8 +97,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	public Network getNetwork() {return network;}
 	
 	@Override
-	public void network(Network parent) {
-		LogisticsPipes2.logger.log(Level.DEBUG, "Added TileGenericPipe" + toString() + " to Network:" + parent.getName());
+	public void subscribe(Network parent) {
+		LogisticsPipes2.logger.log(Level.DEBUG, "Subscribed TileGenericPipe" + toString() + " to Network:" + parent.getName());
 		network = parent;
 		hasNetwork=true;
 		}
@@ -161,6 +163,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	@Override
 	public void update() {
+		getAdjacentPipes();
 		if(!hasNetwork) {
 			network();
 		}
@@ -169,23 +172,29 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	protected void network() {
 		for(int i=0; i<6; i++) {
 			EnumFacing direction = EnumFacing.getFront(i);
-			if(connections.get(direction)) {
-				TileGenericPipe target = ConnectionHelper.getAdjacentPipe(worldObj, pos, direction);
-				
-				//First network contact
-				if(target.hasNetwork() && !hasNetwork) {
-					nodeID = target.network.addNode(this);//Subscribe to network
-					LogisticsPipes2.logger.log(Level.DEBUG, "Added TileGenericPipe" + nodeID.toString() + " to Network:" + network.getName());
-					hasNetwork=true;
+			if(connections.containsKey(direction)) {
+				if(connections.get(direction)) {
+					TileGenericPipe target = ConnectionHelper.getAdjacentPipe(worldObj, pos, direction);
 					
-					network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
-					network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
-				}
-				
-				//Notify other Neighbors of our presence
-				if(target.hasNetwork && hasNetwork) {
-					network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
-					network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
+					//First network contact
+					if(target.hasNetwork() && !hasNetwork) {
+						LogisticsPipes2.logger.log(Level.INFO, "Attempting to connect GenericPipe " + nodeID.toString() + (hasNetwork ? " with network" : " without network") + " to " + target.getBlockType() + (target.hasNetwork ? " with network." : " without network."));
+						nodeID = target.network.addNode(this);//Subscribe to network
+						LogisticsPipes2.logger.log(Level.INFO, "Added TileGenericPipe " + nodeID.toString() + " to Network: " + network.getName());
+						hasNetwork=true;
+						
+						network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
+						network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
+						continue;
+					}
+					
+					//Notify other Neighbors of our presence
+					if(target.hasNetwork && hasNetwork) {
+						LogisticsPipes2.logger.log(Level.INFO, "Notified GenericPipe " + target.nodeID.toString() + " of presence of: " + nodeID.toString());
+						network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
+						network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
+						continue;
+					}
 				}
 			}
 		}
