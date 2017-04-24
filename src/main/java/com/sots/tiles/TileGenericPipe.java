@@ -199,5 +199,14 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	@Override
+	public int posX() {return pos.getX();}
+
+	@Override
+	public int posY() {return pos.getY();}
+
+	@Override
+	public int posZ() {return pos.getZ();}
 }
 

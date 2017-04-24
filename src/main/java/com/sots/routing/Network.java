@@ -16,12 +16,12 @@ import com.sots.routing.interfaces.IRoutable;
 
 public class Network {
 	private volatile List<IDestination> destinations = new ArrayList<IDestination>();
+	@SuppressWarnings("unused")
 	private volatile List<WeightedEdge> wEdges = new ArrayList<WeightedEdge>();
 	private volatile Map<UUID, NetworkNode> nodes = new HashMap<UUID, NetworkNode>();
 	private NetworkNode root = null;
 	
 	private UUID name;
-	private int ID_RANGE=1;
 	
 	public Network(UUID n) {
 		name=n;

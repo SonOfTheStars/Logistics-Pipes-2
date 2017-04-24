@@ -46,4 +46,10 @@ public interface IRoutable {
 	 */
 	public int powerConsumed();
 	
+	public int posX();
+	
+	public int posY();
+	
+	public int posZ();
+	
 }
