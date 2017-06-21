@@ -14,7 +14,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-@Mod(modid = References.MODID, name = References.MODNAME, version = References.VERSION, dependencies = "required-after:Forge@[11.16.0.1865,)", useMetadata = true)
+@Mod(modid = References.MODID, name = References.MODNAME, version = References.VERSION, dependencies = "", useMetadata = true)
 public class LogisticsPipes2 {
 	
 	@SidedProxy(clientSide = "com.sots.proxies.ClientProxy", serverSide = "com.sots.proxies.ServerProxy")
@@ -28,6 +28,7 @@ public class LogisticsPipes2 {
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event){
 		logger = event.getModLog();
+		MinecraftForge.EVENT_BUS.register(new EventManager());
 		proxy.preInit(event);
 	}
 	
