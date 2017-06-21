@@ -12,9 +12,9 @@ public class WeightComparator implements Comparator<NetworkNode>{
 	@Override
 	public int compare(NetworkNode o1, NetworkNode o2) {
 		try {
-		if(o1.fWeight<o2.fWeight)
+		if(o1.h_cost<o2.h_cost)
 			return -1;
-		if(o1.fWeight>o2.fWeight)
+		if(o1.h_cost>o2.h_cost)
 			return 1;
 		}
 		catch(NullPointerException npe) {

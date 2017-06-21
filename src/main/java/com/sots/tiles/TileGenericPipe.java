@@ -1,13 +1,11 @@
 package com.sots.tiles;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
 
 import com.sots.LogisticsPipes2;
+import com.sots.particle.ParticleUtil;
 import com.sots.routing.Network;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
@@ -22,21 +20,43 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable{
 	
-	protected boolean hasChanged = false;
+	public ItemStackHandler inventory = new ItemStackHandler(16){
+        @Override
+        protected void onContentsChanged(int slot) {
+            // We need to tell the tile entity that something has changed so
+            // that the chest contents is persisted
+        	TileGenericPipe.this.markDirty();
+        }
+	};
+	
+	public static enum ConnectionTypes{
+		NONE, PIPE, BLOCK, FORCENONE
+	}
+	
+	public ConnectionTypes up = ConnectionTypes.NONE, down = ConnectionTypes.NONE, west = ConnectionTypes.NONE, east = ConnectionTypes.NONE, north = ConnectionTypes.NONE, south = ConnectionTypes.NONE;
+	
 	protected boolean hasNetwork = false;
 	
 	protected Network network = null;
-	protected UUID nodeID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+	public UUID nodeID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 	
-	protected Map<EnumFacing, Boolean> connections = new HashMap<EnumFacing, Boolean>();
-	
-	public void setHasChanged(boolean hasChanged) {
-		this.hasChanged = hasChanged;
+	public static ConnectionTypes typeFromInt(int value) {
+		switch(value) {
+		case 0:
+				return ConnectionTypes.NONE;
+		case 1:
+				return ConnectionTypes.PIPE;
+		case 2:
+				return ConnectionTypes.BLOCK;
+		case 3:
+				return ConnectionTypes.FORCENONE;
+		}
+		return ConnectionTypes.NONE;
 	}
 
 	@Override
@@ -44,9 +64,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	@Override
 	public SPacketUpdateTileEntity getUpdatePacket() {
-		NBTTagCompound nbtTag = new NBTTagCompound();
-		this.writeToNBT(nbtTag);
-		return new SPacketUpdateTileEntity(getPos(), 1, nbtTag);
+		return new SPacketUpdateTileEntity(getPos(), 0, getUpdateTag());
 	}
 	
 	@Override
@@ -64,26 +82,10 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
         return compound;
     }
 	
-	public ArrayList<String> checkConnections(IBlockAccess world, BlockPos pos) {
-		ArrayList<String> check = ConnectionHelper.checkForPipes(world, pos);
-		return check;
-		
-	}
-	
 	protected IBlockState getState() {
 		return worldObj.getBlockState(pos);
 	}
 	
-	public void updateBlock(){
-		if(hasChanged){
-			this.worldObj.markBlockRangeForRenderUpdate(this.pos, this.pos);
-			this.worldObj.notifyBlockUpdate(pos, getState(), getState(), 3);
-			this.worldObj.scheduleBlockUpdate(this.pos, this.getBlockType(), 0, 0);
-			
-			markDirty();
-			hasChanged=false;
-		}
-	}
 	
 	@Override
 	public boolean isRouted() {return false;}
@@ -120,30 +122,65 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	public int powerConsumed() {return 0;}
 	
 	@Override
-	public Map<EnumFacing, Boolean> getAdjacentPipes() {
-		
-		for(int i=0; i<6; i++) {
-			EnumFacing direction = EnumFacing.getFront(i);
-			if(ConnectionHelper.isPipe(worldObj, pos, direction)) {
-				if(connections.containsKey(direction)) {
-					connections.replace(direction, true);
-				}
-				else {
-					connections.put(direction, true);
-					}
-				
-			}
-			else {
-				if(connections.containsKey(direction)) {
-					connections.replace(direction, false);
-				}
-				else {
-					connections.put(direction, false);
-				}
-			}
+	public void getAdjacentPipes(IBlockAccess world) {
+		up = getConnection(world,getPos().up(),EnumFacing.UP);
+		down = getConnection(world,getPos().down(),EnumFacing.DOWN);
+		north = getConnection(world,getPos().north(),EnumFacing.NORTH);
+		south = getConnection(world,getPos().south(),EnumFacing.SOUTH);
+		west = getConnection(world,getPos().west(),EnumFacing.WEST);
+		east = getConnection(world,getPos().east(),EnumFacing.EAST);
+	}
+	
+	
+	public ConnectionTypes getConnection(EnumFacing side) {
+		switch(side.getIndex()) {
+		case 0:
+			return down;
+		case 1:
+			return up;
+		case 2:
+			return north;
+		case 3:
+			return south;
+		case 4:
+			return west;
+		case 5:
+			return east;
+			
 		}
-		
-		return connections;
+		return ConnectionTypes.NONE;
+	}
+	
+	public void setConnection(EnumFacing side, ConnectionTypes con) {
+		switch(side.getIndex()) {
+		case 0:
+			down = con;
+		case 1:
+			up = con;
+		case 2:
+			north  = con;
+		case 3:
+			south = con;
+		case 4:
+			west  = con;
+		case 5:
+			east = con;
+		}
+	}
+	
+	public ConnectionTypes getConnection(IBlockAccess world, BlockPos pos, EnumFacing side) {
+		TileEntity tile = world.getTileEntity(pos);
+		if(getConnection(side) == ConnectionTypes.FORCENONE) {
+			return ConnectionTypes.FORCENONE;
+		}
+		if(tile instanceof IPipe) {
+			return ConnectionTypes.PIPE;
+		}
+		else if(tile!=null) {
+			if(world.getTileEntity(pos).hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side.getOpposite()));
+				return ConnectionTypes.BLOCK;
+		}
+		return ConnectionTypes.NONE;
 	}
 	
 	@Override
@@ -155,7 +192,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	@Override
 	public void update() {
-		getAdjacentPipes();
+		getAdjacentPipes(worldObj);
 		if(!worldObj.isRemote) {
 			if(!hasNetwork) {
 				network();
@@ -166,29 +203,26 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	protected void network() {
 		for(int i=0; i<6; i++) {
 			EnumFacing direction = EnumFacing.getFront(i);
-			if(connections.containsKey(direction)) {
-				if(connections.get(direction)) {
-					TileGenericPipe target = ConnectionHelper.getAdjacentPipe(worldObj, pos, direction);
+			
+			if(getConnection(direction) == ConnectionTypes.PIPE) {
+				TileGenericPipe target = ConnectionHelper.getAdjacentPipe(worldObj, pos, direction);
+				//First network contact
+				if(target.hasNetwork() && !hasNetwork) {
+					//LogisticsPipes2.logger.log(Level.INFO, String.format("Attempting to connect Generic Pipe %1$s %2$s to %3$s %4$s", nodeID.toString(), (hasNetwork ? " with network" : " without network"), target.getBlockType().toString(), (target.hasNetwork ? " with network." : " without network.")));
+					nodeID = target.network.subscribeNode(this);//Subscribe to network
+					LogisticsPipes2.logger.log(Level.INFO, "Added TileGenericPipe " + nodeID.toString() + " to Network: " + network.getName());
+					hasNetwork=true;
 					
-					//First network contact
-					if(target.hasNetwork() && !hasNetwork) {
-						LogisticsPipes2.logger.log(Level.INFO, "Attempting to connect GenericPipe " + nodeID.toString() + (hasNetwork ? " with network" : " without network") + " to " + target.getBlockType() + (target.hasNetwork ? " with network." : " without network."));
-						nodeID = target.network.subscribeNode(this);//Subscribe to network
-						LogisticsPipes2.logger.log(Level.INFO, "Added TileGenericPipe " + nodeID.toString() + " to Network: " + network.getName());
-						hasNetwork=true;
-						
-						network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
-						network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
-						continue;
-					}
-					
-					//Notify other Neighbors of our presence
-					if(target.hasNetwork && hasNetwork) {
-						LogisticsPipes2.logger.log(Level.INFO, "Notified GenericPipe " + target.nodeID.toString() + " of presence of: " + nodeID.toString());
-						network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
-						network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
-						continue;
-					}
+					network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
+					network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
+					continue;
+				}
+				//Notify other Neighbors of our presence
+				if(target.hasNetwork && hasNetwork) {
+					LogisticsPipes2.logger.log(Level.INFO, "Notified GenericPipe " + target.nodeID.toString() + " of presence of: " + nodeID.toString());
+					network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
+					network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
+					continue;
 				}
 			}
 		}
@@ -199,6 +233,31 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	public boolean hasInventoryOnSide(int face) {
+		switch(face){
+		case 0:
+			if(down == ConnectionTypes.BLOCK)
+				return true;
+		case 1:
+			if(up == ConnectionTypes.BLOCK)
+				return true;
+		case 2:
+			if(north == ConnectionTypes.BLOCK)
+				return true;
+		case 3:
+			if(south == ConnectionTypes.BLOCK)
+				return true;
+		case 4:
+			if(west == ConnectionTypes.BLOCK)
+				return true;
+		case 5:
+			if(east == ConnectionTypes.BLOCK)
+				return true;
+		default:
+				return false;
+		}
+	}
 
 	@Override
 	public int posX() {return pos.getX();}
@@ -208,5 +267,10 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 
 	@Override
 	public int posZ() {return pos.getZ();}
+	
+	@Override
+	public void spawnParticle(float r, float g, float b) {
+		ParticleUtil.spawnGlint(worldObj, posX()+0.5f, posY()+0.5f, posZ()+0.5f, 0, 0, 0, r, g, b, 2.5f, 200);
+	}
 }
 

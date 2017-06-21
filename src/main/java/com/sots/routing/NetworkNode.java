@@ -9,9 +9,10 @@ import net.minecraft.util.EnumFacing;
 
 public class NetworkNode {
 	private NetworkNode[] neighbors = new NetworkNode[6];
-	private Tuple<NetworkNode, EnumFacing> predecessor = null;
-	public int gWeight = 0;
-	public int fWeight = 0;
+	public Tuple<NetworkNode, EnumFacing> parent = null;
+	public int h_cost = 0;
+	public int p_cost = 0;
+	public int t_cost = 1;
 	private UUID id;
 	private IRoutable pipe;
 	
@@ -43,10 +44,8 @@ public class NetworkNode {
 	public UUID getId() {return id;}
 	
 	public IRoutable getMember() {return pipe;}
-
-	public Tuple<NetworkNode, EnumFacing> getPredecessor() {return predecessor;}
-
-	public void setPredecessor(Tuple<NetworkNode, EnumFacing> tuple) {
-		this.predecessor = tuple;
+	
+	public void h_Cost(NetworkNode target) {
+		h_cost = ((Math.abs(target.pipe.posX() - pipe.posX())+(Math.abs(target.pipe.posY() - pipe.posY())+(Math.abs(target.pipe.posZ() - pipe.posZ())))));
 	}
 }

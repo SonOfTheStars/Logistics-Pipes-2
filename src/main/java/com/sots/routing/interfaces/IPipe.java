@@ -1,11 +1,10 @@
 package com.sots.routing.interfaces;
 
-import java.util.Map;
-
-import net.minecraft.util.EnumFacing;
+import net.minecraft.world.IBlockAccess;
 
 public interface IPipe {
-	public Map<EnumFacing, Boolean> getAdjacentPipes();
+	public void getAdjacentPipes(IBlockAccess world);
 	
 	public boolean hasAdjacent();
+	
 }

@@ -30,10 +30,5 @@ public class TileChassisI extends TileGenericPipe implements IPipe, IRoutable{
 	
 	@Override
 	public int powerConsumed() {return 1;}
-	
-	public void setHasChanged(boolean hasChanged) {
-		this.hasChanged = hasChanged;
-	}
 
-	
 }

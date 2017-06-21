@@ -9,3 +9,9 @@ options.txt
 usercache.json
 usernamecache.json
 *.launch
+src/main/java/com/sots/rendering/Object3d.java
+src/main/java/com/sots/rendering/OBJLoader.java
+src/main/java/com/sots/rendering/Model.java
+src/main/java/com/sots/rendering/LoderTest.java
+src/main/java/com/sots/rendering/Face.java
+bin/

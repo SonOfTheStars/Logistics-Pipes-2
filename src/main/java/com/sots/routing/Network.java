@@ -2,6 +2,7 @@ package com.sots.routing;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,28 +12,35 @@ import java.util.UUID;
 import org.apache.logging.log4j.Level;
 
 import com.sots.LogisticsPipes2;
-import com.sots.routing.interfaces.IDestination;
 import com.sots.routing.interfaces.IRoutable;
+import com.sots.routing.router.Router;
+import com.sots.util.data.Triple;
+import com.sots.util.data.Tuple;
+
+import net.minecraft.util.EnumFacing;
+import net.minecraft.world.World;
 
 public class Network {
-	private volatile List<IDestination> destinations = new ArrayList<IDestination>();
-	@SuppressWarnings("unused")
-	private volatile List<WeightedEdge> wEdges = new ArrayList<WeightedEdge>();
+	private volatile Map<UUID, NetworkNode> destinations = new HashMap<UUID, NetworkNode>();
 	private volatile Map<UUID, NetworkNode> nodes = new HashMap<UUID, NetworkNode>();
 	private NetworkNode root = null;
+	
+	private Router router;
 	
 	private UUID name;
 	
 	public Network(UUID n) {
 		name=n;
+		router=new Router(); 
 	}
 	
-	public void registerDestination(IDestination in) {
-		if(!destinations.contains(in)) {
-			destinations.add(in);
+	public void registerDestination(UUID in) {
+		if(!destinations.containsKey(in)) {
+			destinations.put(in, getNodeByID(in));
+			LogisticsPipes2.logger.log(Level.INFO, "Registered destination [" + in + "] in network [" + name + "]");
 		}
 		else {
-			LogisticsPipes2.logger.log(Level.WARN, "Tried to register " + in.name + " twice in Network " + name);
+			LogisticsPipes2.logger.log(Level.WARN, "Tried to register destination [" + in + "] twice in network [" + name + "]");
 		}
 	}
 	
@@ -62,7 +70,9 @@ public class Network {
 				e.getValue().dissolve();
 		}
 		nodes.clear();
+		destinations.clear();
 		nodes.put(root.getId(), root);
+		router.shutdown();
 	}
 	
 	
@@ -71,33 +81,40 @@ public class Network {
 		return nodes.get(id);
 	}
 	
-	@Deprecated
-	public void discover(NetworkNode node) {
-//		NetworkNode nodeHelper;
-//		TileGenericPipe pipe = (TileGenericPipe)node.getMember();
-//		
-//		for(int i=0; i<6; i++) {
-//			if(ConnectionHelper.isPipe(pipe.getWorld(), pipe.getPos(), EnumFacing.getFront(i))) {
-//				TileGenericPipe adj = (TileGenericPipe)AccessHelper.getTileSafe(pipe.getWorld(), pipe.getPos(), EnumFacing.getFront(i));
-//				if(!adj.hasNetwork()) {
-//					nodeHelper = new NetworkNode(node,ID_Range,adj);
-//					adj.network(this);
-//					ID_Range++;
-//					if(!nodes.contains(nodeHelper))
-//						nodes.add(nodeHelper);
-//					discover(nodeHelper);
-//				}
-//				
-//			}
-//		}
-	}
-	
 	public NetworkNode getRoot() {
 		return root;
 	}
 
 	public String getName() {
 		return name.toString();
+	}
+	
+	public boolean getAllRoutesFrom(UUID nodeId){
+		NetworkNode start = destinations.get(nodeId);
+		Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>> route = null;
+		Set<UUID> keys = destinations.keySet();
+		for(UUID key : keys) {
+			NetworkNode dest = destinations.get(key);
+			if(dest.getId() != start.getId()) {
+				route = router.route(start, dest);
+				router.clean();
+				LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), dest.getId().toString(), (route!= null ? "" : "not") + " been found!"));
+			}
+		}
+		return route != null ? true : false;
+	}
+	
+	public boolean getRouteFromTo(UUID nodeS, UUID nodeT) {
+		Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>> route = null;
+		if(nodeS != nodeT) {
+			NetworkNode start = destinations.get(nodeS);
+			NetworkNode target = destinations.get(nodeT);
+			
+			route = router.route(start, target);
+			router.clean();
+			LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), target.getId().toString(), (route!= null ? "" : "not") + " been found!"));
+		}
+		return route != null ? true : false;
 	}
 	
 }

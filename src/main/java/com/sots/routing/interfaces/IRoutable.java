@@ -51,5 +51,6 @@ public interface IRoutable {
 	public int posY();
 	
 	public int posZ();
-	
+
+	void spawnParticle(float r, float g, float b);
 }
