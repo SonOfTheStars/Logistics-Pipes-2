@@ -1,5 +1,6 @@
 package com.sots.proxies;
 
+import com.sots.particle.ParticleRenderer;
 import com.sots.util.References;
 import com.sots.util.registries.BlockRegistry;
 import com.sots.util.registries.ItemRegistry;
@@ -10,6 +11,10 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class ClientProxy extends CommonProxy{
+	
+	public static ParticleRenderer particleRender = new ParticleRenderer();
+	
+	
 	@Override
 	public void preInit(FMLPreInitializationEvent event){
 		super.preInit(event);
