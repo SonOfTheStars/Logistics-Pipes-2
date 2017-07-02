@@ -1,38 +1,39 @@
 package com.sots.tiles;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
 
 import com.sots.LogisticsPipes2;
+import com.sots.item.ItemWrench;
 import com.sots.particle.ParticleUtil;
+import com.sots.routing.LPRoutedItem;
 import com.sots.routing.Network;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.ConnectionHelper;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 
-public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable{
+public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable, ITileEntityBase{
 	
-	public ItemStackHandler inventory = new ItemStackHandler(16){
-        @Override
-        protected void onContentsChanged(int slot) {
-            // We need to tell the tile entity that something has changed so
-            // that the chest contents is persisted
-        	TileGenericPipe.this.markDirty();
-        }
-	};
+	private volatile Set<LPRoutedItem> contents = new HashSet<LPRoutedItem>();
 	
 	public static enum ConnectionTypes{
 		NONE, PIPE, BLOCK, FORCENONE
@@ -198,6 +199,26 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 				network();
 			}
 		}
+		if(!contents.isEmpty()) {
+			for(LPRoutedItem item : contents) {
+				item.ticks++;
+				if(item.ticks==item.TICK_MAX/2) {
+					item.setHeading(item.getHeadingForNode(nodeID));
+				}
+				if(item.ticks==item.TICK_MAX) {
+					if(getConnection(item.getHeading())!=ConnectionTypes.PIPE) {
+						IPipe pipe = (IPipe) worldObj.getTileEntity(getPos().offset(item.getHeading()));
+						if(pipe!=null) {
+							pipe.catchItem(item);
+							contents.remove(item);
+						}
+					}
+					else {
+						worldObj.spawnEntityInWorld(new EntityItem(worldObj, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, item.getContent()));
+					}
+				}
+			}
+		}
 	}
 	
 	protected void network() {
@@ -272,5 +293,111 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	public void spawnParticle(float r, float g, float b) {
 		ParticleUtil.spawnGlint(worldObj, posX()+0.5f, posY()+0.5f, posZ()+0.5f, 0, 0, 0, r, g, b, 2.5f, 200);
 	}
+	
+	private ConnectionTypes forceConnection(ConnectionTypes con) {
+		if(con== ConnectionTypes.FORCENONE) {
+			return ConnectionTypes.NONE;
+		}
+		if(con != ConnectionTypes.NONE) {
+			return ConnectionTypes.FORCENONE;
+		}
+		return ConnectionTypes.NONE;
+	}
+
+	@Override
+	public boolean activate(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
+			EnumFacing side, float hitX, float hitY, float hitZ) {
+		
+		ItemStack heldItem = player.getHeldItem(hand);
+		if(heldItem.getItem()!=null) {
+			if(heldItem.getItem() instanceof ItemWrench) {
+				if (side == EnumFacing.UP || side == EnumFacing.DOWN){
+					if (Math.abs(hitX-0.5) > Math.abs(hitZ-0.5)){
+						if (hitX < 0.5){
+							this.west = forceConnection(west);
+						}
+						else {
+							this.east = forceConnection(east);
+						}
+					}
+					else {
+						if (hitZ < 0.5){
+							this.north = forceConnection(north);
+						}
+						else {
+							this.south = forceConnection(south);
+						}
+					}
+				}
+				if (side == EnumFacing.EAST || side == EnumFacing.WEST){
+					if (Math.abs(hitY-0.5) > Math.abs(hitZ-0.5)){
+						if (hitY < 0.5){
+							this.down = forceConnection(down);
+						}
+						else {
+							this.up = forceConnection(up);
+						}
+					}
+					else {
+						if (hitZ < 0.5){
+							this.north = forceConnection(north);
+						}
+						else {
+							this.south = forceConnection(south);
+						}
+					}
+				}
+				if (side == EnumFacing.NORTH || side == EnumFacing.SOUTH){
+					if (Math.abs(hitX-0.5) > Math.abs(hitY-0.5)){
+						if (hitX < 0.5){
+							this.west = forceConnection(west);
+						}
+						else {
+							this.east = forceConnection(east);
+						}
+					}
+					else {
+						if (hitY < 0.5){
+							this.down = forceConnection(down);
+						}
+						else {
+							this.up = forceConnection(up);
+						}
+					}
+				}
+				getAdjacentPipes(world);
+				markDirty();
+				return true;
+			}
+		}
+		
+		
+		return false;
+	}
+
+	@Override
+	public void breakBlock(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
+		
+	}
+	
+	public boolean catchItem(LPRoutedItem item) {
+		try {
+			contents.add(item);
+			return true;
+		}
+		catch(Exception e) {
+			return false;
+		}
+	}
+	
+	private boolean passItem(TileGenericPipe pipe, LPRoutedItem item) {
+		if(pipe!=null && item!=null) {
+			return pipe.catchItem(item);
+		}
+		return false;
+	}
+	
+	
+	
 }
 

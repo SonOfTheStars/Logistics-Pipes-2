@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sots.item.IngotTitanium;
+import com.sots.item.ItemWrench;
 import com.sots.item.LPItemBase;
 import com.sots.item.ShardRutile;
 import com.sots.item.modules.ItemModuleBase;
@@ -37,6 +38,7 @@ public class ItemRegistry {
 	public static LPItemBase module_provide;
 	public static LPItemBase module_sink;
 	public static LPItemBase module_sort;
+	public static LPItemBase item_wrench;
 	
 	/**
 	 * Initialize all Items for preInit
@@ -56,6 +58,7 @@ public class ItemRegistry {
 		module_provide = new ModuleProvide();
 		module_sink = new ModuleSink();
 		module_sort = new ModuleSort();
+		item_wrench = new ItemWrench();
 		
 		registry.add(shard_rutile);
 		registry.add(ingot_titanium);
@@ -68,6 +71,7 @@ public class ItemRegistry {
 		registry.add(module_sink);
 		registry.add(module_sort);
 		registry.add(module_order);
+		registry.add(item_wrench);
 		
 		
 		//Register Items

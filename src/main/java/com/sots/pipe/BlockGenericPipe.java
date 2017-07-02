@@ -5,10 +5,19 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.UnmodifiableIterator;
+import com.sots.block.BlockTileBase;
+import com.sots.tiles.TileGenericPipe;
+import com.sots.tiles.TileGenericPipe.ConnectionTypes;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 import net.minecraftforge.common.model.IModelPart;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.Models;
@@ -16,7 +25,7 @@ import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockGenericPipe extends Block{
+public class BlockGenericPipe extends BlockTileBase{
 	
 	public boolean hasChanged=false;
 	
@@ -56,5 +65,29 @@ public class BlockGenericPipe extends Block{
 	
 	@SideOnly(Side.CLIENT)
 	public void initModel() {
+	}
+	
+	@Override
+	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+		
+		List<AxisAlignedBB> boxes = new ArrayList<AxisAlignedBB>();
+		double x1 = 0.275;
+		double y1 = 0.275;
+		double z1 = 0.275;
+		double x2 = 0.725;
+		double y2 = 0.725;
+		double z2 = 0.725;
+		
+		TileGenericPipe pipe = (TileGenericPipe) source.getTileEntity(pos);
+		if(pipe.up != ConnectionTypes.NONE) {
+			y2=1;
+		}
+		
+		return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
+	}
+	
+	@Override
+	public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox,
+			List<AxisAlignedBB> collidingBoxes, Entity entityIn, boolean p_185477_7_) {
 	}
 }

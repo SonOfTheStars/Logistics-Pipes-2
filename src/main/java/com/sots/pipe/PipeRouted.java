@@ -134,22 +134,5 @@ public class PipeRouted extends BlockGenericPipe{
 		if (world.getTileEntity(pos.east()) instanceof TileGenericPipe){
 			((TileGenericPipe)world.getTileEntity(pos.east())).getAdjacentPipes(world);
 		}
-	}
-	
-	@Override
-	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
-			EnumHand hand, EnumFacing heldItem, float side, float hitX, float hitY) {
-		if(playerIn.getHeldItemMainhand()==null) {
-			TileEntity target = worldIn.getTileEntity(pos);
-			if(target instanceof TileRoutedPipe) {
-				if(((TileRoutedPipe) target).hasNetwork()) {
-						((TileRoutedPipe) target).getNetwork().getAllRoutesFrom(((TileRoutedPipe) target).nodeID);
-						return true;
-				}
-			}
-		}
-		return true;
-	}
-		
-	
+	}			
 }

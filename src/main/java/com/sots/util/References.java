@@ -35,6 +35,7 @@ public abstract class References {
 	public static final String NAME_MODULE_ADV_PROVIDER = MODID + ".module_adv_provider";
 	public static final String NAME_MODULE_SUPPLIER = MODID + ".module_supplier";
 	public static final String NAME_MODULE_SINK = MODID + ".module_sink";
+	public static final String NAME_ITEM_WRENCH = MODID + ".item_wrench";
 	
 	
 	
@@ -67,5 +68,6 @@ public abstract class References {
 	public static final String RN_MODULE_ADV_PROVIDER = "module_adv_provider";
 	public static final String RN_MODULE_SUPPLIER = "module_supplier";
 	public static final String RN_MODULE_SINK = "module_sink";
+	public static final String RN_ITEM_WRENCH = "item_wrench";
 	
 }
