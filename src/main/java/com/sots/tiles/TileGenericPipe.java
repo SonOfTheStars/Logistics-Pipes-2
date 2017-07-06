@@ -203,7 +203,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			for(LPRoutedItem item : contents) {
 				item.ticks++;
 				if(item.ticks==item.TICK_MAX/2) {
-					item.setHeading(item.getHeadingForNode(nodeID));
+					item.setHeading(item.getHeadingForNode());
 				}
 				if(item.ticks==item.TICK_MAX) {
 					if(getConnection(item.getHeading())!=ConnectionTypes.PIPE) {
@@ -298,7 +298,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		if(con== ConnectionTypes.FORCENONE) {
 			return ConnectionTypes.NONE;
 		}
-		if(con != ConnectionTypes.NONE) {
+		if(con != ConnectionTypes.FORCENONE) {
 			return ConnectionTypes.FORCENONE;
 		}
 		return ConnectionTypes.NONE;

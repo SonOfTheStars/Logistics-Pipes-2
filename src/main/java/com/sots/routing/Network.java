@@ -1,12 +1,10 @@
 package com.sots.routing;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
@@ -18,7 +16,6 @@ import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
 import net.minecraft.util.EnumFacing;
-import net.minecraft.world.World;
 
 public class Network {
 	private volatile Map<UUID, NetworkNode> destinations = new HashMap<UUID, NetworkNode>();
@@ -91,7 +88,7 @@ public class Network {
 	
 	public boolean getAllRoutesFrom(UUID nodeId){
 		NetworkNode start = destinations.get(nodeId);
-		Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>> route = null;
+		Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> route = null;
 		Set<UUID> keys = destinations.keySet();
 		for(UUID key : keys) {
 			NetworkNode dest = destinations.get(key);
@@ -105,7 +102,7 @@ public class Network {
 	}
 	
 	public boolean getRouteFromTo(UUID nodeS, UUID nodeT) {
-		Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>> route = null;
+		Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> route = null;
 		if(nodeS != nodeT) {
 			NetworkNode start = destinations.get(nodeS);
 			NetworkNode target = destinations.get(nodeT);

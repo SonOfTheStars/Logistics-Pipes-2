@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.Stack;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -24,17 +25,17 @@ public class Router {
 	private PriorityQueue<NetworkNode> open = new PriorityQueue<NetworkNode>(16, comp);
 	private Set<NetworkNode> closed = new HashSet<NetworkNode>();
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
-	private Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>> routingInfo;
+	private Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> routingInfo;
 	
-	public Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>> route(NetworkNode s, NetworkNode t) {
+	public Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> route(NetworkNode s, NetworkNode t) {
 		start = s;
 		
 		target = t;
-		FutureTask<Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>>> routingTask =
-				new FutureTask<Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>>>(
-						new Callable<Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>>>() {
+		FutureTask<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> routingTask =
+				new FutureTask<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(
+						new Callable<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>() {
 							@Override
-							public Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>> call()
+							public Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> call()
 									throws Exception {
 								start.p_cost=0;
 								start.h_Cost(target);
@@ -50,15 +51,15 @@ public class Router {
 										//path found
 										NetworkNode help = current;
 										
-										ArrayList<Tuple<UUID, EnumFacing>> route = new ArrayList<Tuple<UUID, EnumFacing>>();
+										Stack<Tuple<UUID, EnumFacing>> route = new Stack<Tuple<UUID, EnumFacing>>();
 										while(help.parent != null) {
-											route.add(0,new Tuple<UUID, EnumFacing>(help.parent.getKey().getId(), help.parent.getVal()));
+											route.push(new Tuple<UUID, EnumFacing>(help.parent.getKey().getId(), help.parent.getVal()));
 											help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
 											Thread.sleep(60);
 											help = help.parent.getKey();
 										}
 										
-										return  new Triple<NetworkNode, NetworkNode, ArrayList<Tuple<UUID, EnumFacing>>>(start, target, route);
+										return  new Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>(start, target, route);
 									}
 									
 									for(int i = 0; i<6; i++) {
