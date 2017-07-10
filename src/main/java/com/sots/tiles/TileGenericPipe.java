@@ -84,7 +84,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
     }
 	
 	protected IBlockState getState() {
-		return worldObj.getBlockState(pos);
+		return world.getBlockState(pos);
 	}
 	
 	
@@ -193,8 +193,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	@Override
 	public void update() {
-		getAdjacentPipes(worldObj);
-		if(!worldObj.isRemote) {
+		getAdjacentPipes(world);
+		if(!world.isRemote) {
 			if(!hasNetwork) {
 				network();
 			}
@@ -207,14 +207,14 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 				}
 				if(item.ticks==item.TICK_MAX) {
 					if(getConnection(item.getHeading())!=ConnectionTypes.PIPE) {
-						IPipe pipe = (IPipe) worldObj.getTileEntity(getPos().offset(item.getHeading()));
+						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(item.getHeading()));
 						if(pipe!=null) {
 							pipe.catchItem(item);
 							contents.remove(item);
 						}
 					}
 					else {
-						worldObj.spawnEntityInWorld(new EntityItem(worldObj, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, item.getContent()));
+						world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, item.getContent()));
 					}
 				}
 			}
@@ -226,7 +226,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			EnumFacing direction = EnumFacing.getFront(i);
 			
 			if(getConnection(direction) == ConnectionTypes.PIPE) {
-				TileGenericPipe target = ConnectionHelper.getAdjacentPipe(worldObj, pos, direction);
+				TileGenericPipe target = ConnectionHelper.getAdjacentPipe(world, pos, direction);
 				//First network contact
 				if(target.hasNetwork() && !hasNetwork) {
 					//LogisticsPipes2.logger.log(Level.INFO, String.format("Attempting to connect Generic Pipe %1$s %2$s to %3$s %4$s", nodeID.toString(), (hasNetwork ? " with network" : " without network"), target.getBlockType().toString(), (target.hasNetwork ? " with network." : " without network.")));
@@ -291,7 +291,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	@Override
 	public void spawnParticle(float r, float g, float b) {
-		ParticleUtil.spawnGlint(worldObj, posX()+0.5f, posY()+0.5f, posZ()+0.5f, 0, 0, 0, r, g, b, 2.5f, 200);
+		ParticleUtil.spawnGlint(world, posX()+0.5f, posY()+0.5f, posZ()+0.5f, 0, 0, 0, r, g, b, 2.5f, 200);
 	}
 	
 	private ConnectionTypes forceConnection(ConnectionTypes con) {

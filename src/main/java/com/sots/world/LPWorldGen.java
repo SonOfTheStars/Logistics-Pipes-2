@@ -96,8 +96,8 @@ public class LPWorldGen implements IWorldGenerator{
 		if((!event.getData().getCompoundTag("LPTwo").hasKey("LPRetroGen") && Config.retroGen))
 		{
 			if(Config.retroGenFlagLog)
-				LogisticsPipes2.logger.info("Chunk "+event.getChunk().getChunkCoordIntPair()+" has been flagged for Ore RetroGeneration by LP2.");
-			retrogenChunks.put(dimension, event.getChunk().getChunkCoordIntPair());
+				LogisticsPipes2.logger.info("Chunk "+event.getChunk().getPos()+" has been flagged for Ore RetroGeneration by LP2.");
+			retrogenChunks.put(dimension, event.getChunk().getPos());
 		}
 	}
 	

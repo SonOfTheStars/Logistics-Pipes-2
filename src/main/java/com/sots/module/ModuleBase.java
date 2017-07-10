@@ -8,8 +8,8 @@ public class ModuleBase implements IModule {
 	
 	protected final UUID MODULE_ID;
 	
-	public ModuleBase(){
-		MODULE_ID = UUID.randomUUID();
+	public ModuleBase(UUID ID){
+		MODULE_ID = ID;
 	}
 
 	@Override

@@ -9,10 +9,10 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ModuleSink extends LPItemBase{
-	public ModuleSink() {
-		setRegistryName(References.RN_MODULE_SINK);
-		setUnlocalizedName(References.NAME_MODULE_SINK);
+public class ItemModuleSort extends LPItemBase{
+	public ItemModuleSort() {
+		setRegistryName(References.RN_MODULE_SORT);
+		setUnlocalizedName(References.NAME_MODULE_SORT);
 		setCreativeTab(CreativeTabs.REDSTONE);
 	}
 

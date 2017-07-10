@@ -9,9 +9,9 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ModuleOrder extends LPItemBase{
+public class ItemModuleOrder extends LPItemBase{
 	
-	public ModuleOrder() {
+	public ItemModuleOrder() {
 		setRegistryName(References.RN_MODULE_ORDER);
 		setUnlocalizedName(References.NAME_MODULE_ORDER);
 		setCreativeTab(CreativeTabs.REDSTONE);

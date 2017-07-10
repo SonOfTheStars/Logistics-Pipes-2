@@ -42,7 +42,7 @@ public class EventManager {
 		tickCounter++;
 		if(LogisticsPipes2.proxy instanceof ClientProxy) {
 			GlStateManager.pushMatrix();
-			ClientProxy.particleRender.renderParticles(Minecraft.getMinecraft().thePlayer, event.getPartialTicks());
+			ClientProxy.particleRender.renderParticles(Minecraft.getMinecraft().player, event.getPartialTicks());
 			GlStateManager.popMatrix();
 		}
 	}

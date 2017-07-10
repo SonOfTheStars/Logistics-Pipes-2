@@ -99,7 +99,7 @@ public class PipeBasic extends BlockGenericPipe{
 	public boolean isOpaqueCube(IBlockState state) {return false;}
 	
 	@Override
-	public boolean isVisuallyOpaque(IBlockState p_176214_1_) {return false;}
+	public boolean isFullyOpaque(IBlockState state) {return false;}
 	
 	@Override
 	public int getMetaFromState(IBlockState state) {return 0;}

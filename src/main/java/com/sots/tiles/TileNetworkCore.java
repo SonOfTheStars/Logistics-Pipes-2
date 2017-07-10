@@ -23,7 +23,7 @@ public class TileNetworkCore extends TileGenericPipe {
 	
 	@Override
 	public void update() {
-		if(!worldObj.isRemote) {
+		if(!world.isRemote) {
 			if(!ownsNetwork) {
 				makeNetwork();
 			}
