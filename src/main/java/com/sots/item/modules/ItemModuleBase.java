@@ -13,7 +13,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemModuleBase extends LPItemBase{
+public class ItemModuleBase extends LPItemBase implements IItemModule{
 	
 	public ItemModuleBase() {
 		setRegistryName(References.RN_FPGA);
@@ -26,6 +26,7 @@ public class ItemModuleBase extends LPItemBase{
 		ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(getRegistryName(), "inventory"));
 	}
 	
+	@Override
 	public IModule getModLogic(){
 		return new ModuleBase(UUID.randomUUID());
 	}

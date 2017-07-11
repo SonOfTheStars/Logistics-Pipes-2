@@ -13,7 +13,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemModuleSink extends LPItemBase{
+public class ItemModuleSink extends LPItemBase implements IItemModule{
 	public ItemModuleSink() {
 		setRegistryName(References.RN_MODULE_SINK);
 		setUnlocalizedName(References.NAME_MODULE_SINK);

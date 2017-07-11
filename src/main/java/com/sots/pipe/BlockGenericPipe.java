@@ -86,8 +86,4 @@ public class BlockGenericPipe extends BlockTileBase{
 		return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
 	}
 	
-	@Override
-	public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox,
-			List<AxisAlignedBB> collidingBoxes, Entity entityIn, boolean p_185477_7_) {
-	}
 }

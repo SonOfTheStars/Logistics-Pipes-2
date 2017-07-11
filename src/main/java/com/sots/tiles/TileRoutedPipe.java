@@ -1,18 +1,32 @@
 package com.sots.tiles;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
+import com.sots.item.ItemWrench;
+import com.sots.item.modules.IItemModule;
+import com.sots.module.IModule;
 import com.sots.routing.Network;
 import com.sots.routing.interfaces.IDestination;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.Connections;
 
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 
 public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe, IDestination{
+	
+	private static final int MAX_MODS = 1;
+	private volatile Set<IModule> mods = new HashSet<IModule>();
 	
 	public ArrayList<String> checkConnections(IBlockAccess world, BlockPos pos) {
 		ArrayList<String> hidden = new ArrayList<String>();
@@ -79,6 +93,86 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		}
 	}
 	
-	
+	@Override
+	public boolean activate(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
+			EnumFacing side, float hitX, float hitY, float hitZ) {
+		
+		ItemStack heldItem = player.getHeldItem(hand);
+		if(heldItem.getItem()!=null) {
+			if(heldItem.getItem() instanceof ItemWrench) {
+				if (side == EnumFacing.UP || side == EnumFacing.DOWN){
+					if (Math.abs(hitX-0.5) > Math.abs(hitZ-0.5)){
+						if (hitX < 0.5){
+							this.west = forceConnection(west);
+						}
+						else {
+							this.east = forceConnection(east);
+						}
+					}
+					else {
+						if (hitZ < 0.5){
+							this.north = forceConnection(north);
+						}
+						else {
+							this.south = forceConnection(south);
+						}
+					}
+				}
+				if (side == EnumFacing.EAST || side == EnumFacing.WEST){
+					if (Math.abs(hitY-0.5) > Math.abs(hitZ-0.5)){
+						if (hitY < 0.5){
+							this.down = forceConnection(down);
+						}
+						else {
+							this.up = forceConnection(up);
+						}
+					}
+					else {
+						if (hitZ < 0.5){
+							this.north = forceConnection(north);
+						}
+						else {
+							this.south = forceConnection(south);
+						}
+					}
+				}
+				if (side == EnumFacing.NORTH || side == EnumFacing.SOUTH){
+					if (Math.abs(hitX-0.5) > Math.abs(hitY-0.5)){
+						if (hitX < 0.5){
+							this.west = forceConnection(west);
+						}
+						else {
+							this.east = forceConnection(east);
+						}
+					}
+					else {
+						if (hitY < 0.5){
+							this.down = forceConnection(down);
+						}
+						else {
+							this.up = forceConnection(up);
+						}
+					}
+				}
+				getAdjacentPipes(world);
+				markDirty();
+				return true;
+			}
+		}
+		
+		if(heldItem.getItem() instanceof IItemModule){
+			if(mods.size()<MAX_MODS){
+				IModule mod = ((IItemModule) heldItem.getItem()).getModLogic();
+				if(mod.canInsert()){
+					mods.add(mod);
+					heldItem.shrink(1);
+					markDirty();
+				}
+				return true;
+			}
+		}
+		
+		return false;
+	}
 	
 }

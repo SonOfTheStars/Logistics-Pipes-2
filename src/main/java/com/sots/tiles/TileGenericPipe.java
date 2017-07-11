@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Level;
 
 import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
+import com.sots.item.modules.IItemModule;
+import com.sots.module.IModule;
 import com.sots.particle.ParticleUtil;
 import com.sots.routing.LPRoutedItem;
 import com.sots.routing.Network;
@@ -294,7 +296,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		ParticleUtil.spawnGlint(world, posX()+0.5f, posY()+0.5f, posZ()+0.5f, 0, 0, 0, r, g, b, 2.5f, 200);
 	}
 	
-	private ConnectionTypes forceConnection(ConnectionTypes con) {
+	protected ConnectionTypes forceConnection(ConnectionTypes con) {
 		if(con== ConnectionTypes.FORCENONE) {
 			return ConnectionTypes.NONE;
 		}
@@ -369,6 +371,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 				markDirty();
 				return true;
 			}
+			
 		}
 		
 		
