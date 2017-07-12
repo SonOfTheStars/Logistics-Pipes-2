@@ -18,6 +18,7 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -173,19 +174,19 @@ public class PipeBasic extends BlockGenericPipe{
 		if(source.getTileEntity(pos) instanceof TileGenericPipe){
 			TileGenericPipe pipe = (TileGenericPipe) source.getTileEntity(pos);
 			if(pipe.down != ConnectionTypes.NONE) {
-				y1=1;
+				y1=0;
 			}
 			if(pipe.up != ConnectionTypes.NONE) {
 				y2=1;
 			}
 			if(pipe.north != ConnectionTypes.NONE) {
-				z1=1;
+				z1=0;
 			}
 			if(pipe.south != ConnectionTypes.NONE) {
 				z2=1;
 			}
 			if(pipe.west != ConnectionTypes.NONE) {
-				x1=1;
+				x1=0;
 			}
 			if(pipe.east != ConnectionTypes.NONE) {
 				x2=1;
@@ -193,4 +194,39 @@ public class PipeBasic extends BlockGenericPipe{
 		}
 		return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
 	}
+	
+	/*@Override
+	public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox,
+			List<AxisAlignedBB> collidingBoxes, Entity entityIn, boolean p_185477_7_) {
+		
+		double x1 = 0.275;
+		double y1 = 0.275;
+		double z1 = 0.275;
+		double x2 = 0.725;
+		double y2 = 0.725;
+		double z2 = 0.725;
+		
+		if(worldIn.getTileEntity(pos) instanceof TileGenericPipe){
+			TileGenericPipe pipe = (TileGenericPipe) worldIn.getTileEntity(pos);
+			if(pipe.down != ConnectionTypes.NONE) {
+				collidingBoxes.add(new AxisAlignedBB(x1, 0, z1, x2, y2, z2));
+			}
+			if(pipe.up != ConnectionTypes.NONE) {
+				collidingBoxes.add(new AxisAlignedBB(x1, y2, z1, x2, 1, z2));
+			}
+			if(pipe.north != ConnectionTypes.NONE) {
+				collidingBoxes.add(new AxisAlignedBB(x1, y1, 0, x2, y2, z2));
+			}
+			if(pipe.south != ConnectionTypes.NONE) {
+				collidingBoxes.add(new AxisAlignedBB(x1, y1, z2, x2, y2, 1));
+			}
+			if(pipe.west != ConnectionTypes.NONE) {
+				collidingBoxes.add(new AxisAlignedBB(0, y1, z1, x2, y2, z2));
+			}
+			if(pipe.east != ConnectionTypes.NONE) {
+				collidingBoxes.add(new AxisAlignedBB(x2, y1, z1, 1, y2, z2));
+			}
+		}
+		
+	}*/
 }

@@ -314,8 +314,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		if(heldItem.getItem()!=null) {
 			if(heldItem.getItem() instanceof ItemWrench) {
 				if (side == EnumFacing.UP || side == EnumFacing.DOWN){
-					if (Math.abs(hitX-0.5) > Math.abs(hitZ-0.5)){
-						if (hitX < 0.5){
+					if (Math.abs(hitX-0.75) > Math.abs(hitZ-0.75)){
+						if (hitX < 0.75){
 							this.west = forceConnection(west);
 						}
 						else {
@@ -323,7 +323,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 						}
 					}
 					else {
-						if (hitZ < 0.5){
+						if (hitZ < 0.75){
 							this.north = forceConnection(north);
 						}
 						else {
@@ -332,8 +332,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					}
 				}
 				if (side == EnumFacing.EAST || side == EnumFacing.WEST){
-					if (Math.abs(hitY-0.5) > Math.abs(hitZ-0.5)){
-						if (hitY < 0.5){
+					if (Math.abs(hitY-0.75) > Math.abs(hitZ-0.75)){
+						if (hitY < 0.75){
 							this.down = forceConnection(down);
 						}
 						else {
@@ -341,7 +341,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 						}
 					}
 					else {
-						if (hitZ < 0.5){
+						if (hitZ < 0.75){
 							this.north = forceConnection(north);
 						}
 						else {
@@ -350,8 +350,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					}
 				}
 				if (side == EnumFacing.NORTH || side == EnumFacing.SOUTH){
-					if (Math.abs(hitX-0.5) > Math.abs(hitY-0.5)){
-						if (hitX < 0.5){
+					if (Math.abs(hitX-0.75) > Math.abs(hitY-0.75)){
+						if (hitX < 0.75){
 							this.west = forceConnection(west);
 						}
 						else {
@@ -359,7 +359,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 						}
 					}
 					else {
-						if (hitY < 0.5){
+						if (hitY < 0.75){
 							this.down = forceConnection(down);
 						}
 						else {
