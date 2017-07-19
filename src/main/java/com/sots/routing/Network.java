@@ -20,6 +20,9 @@ import net.minecraft.util.EnumFacing;
 public class Network {
 	private volatile Map<UUID, NetworkNode> destinations = new HashMap<UUID, NetworkNode>();
 	private volatile Map<UUID, NetworkNode> nodes = new HashMap<UUID, NetworkNode>();
+
+	private volatile Map<UUID, WeightedNetworkNode> junctions = new HashMap<UUID, WeightedNetworkNode>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
+
 	private NetworkNode root = null;
 	
 	private Router router;
@@ -46,9 +49,12 @@ public class Network {
 		NetworkNode node = new NetworkNode(id, Pipe);
 		nodes.put(id, node);
 		Pipe.subscribe(this);
+
+		junctions = NetworkSimplifier.rescanNetwork(nodes, destinations);
+
 		return id;
 	}
-	
+
 	public UUID setRoot(IRoutable pipe) {
 		if(root==null) {
 			UUID id = UUID.randomUUID();
