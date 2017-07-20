@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Random;
 
 import com.sots.particle.ParticleUtil;
+import com.sots.tiles.TileBasicPipe;
 import com.sots.tiles.TileGenericPipe;
 import com.sots.tiles.TileRoutedPipe;
 import com.sots.tiles.TileGenericPipe.ConnectionTypes;
+import com.sots.util.AccessHelper;
 import com.sots.util.References;
 
 import net.minecraft.block.Block;
@@ -137,5 +139,18 @@ public class PipeRouted extends BlockGenericPipe{
 		if (world.getTileEntity(pos.east()) instanceof TileGenericPipe){
 			((TileGenericPipe)world.getTileEntity(pos.east())).getAdjacentPipes(world);
 		}
+	}
+	
+	@Override
+	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
+			EnumHand hand, EnumFacing heldItem, float side, float hitX, float hitY) {
+		super.onBlockActivated(worldIn, pos, state, playerIn, hand, heldItem, side, hitX, hitY);
+
+		return true;
+	}
+	
+	@Override
+	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+		return super.getBoundingBox(state, source, pos);
 	}
 }
