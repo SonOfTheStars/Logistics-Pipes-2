@@ -1,21 +1,20 @@
 package com.sots.routing.router;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.UUID;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.sots.LogisticsPipes2;
 import com.sots.routing.NetworkNode;
 import com.sots.routing.WeightedNetworkNode;
-import com.sots.util.data.Tuple;
 import com.sots.util.data.Triple;
+import com.sots.util.data.Tuple;
 
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.EnumFacing;
@@ -55,16 +54,15 @@ public class DijkstraRouter extends Router {
 						@Override
 						public Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> call() 
 								throws Exception {
-							WeightedNetworkNode startW;
 							start.p_cost=0;
 							start.parent=null;
 							unvisited.add(start);
 							while(!unvisited.isEmpty()) {
 								WeightedNetworkNode current = unvisited.poll();
 								current.getMember().spawnParticle(0f, 1.000f, 0f);
-								//Thread.sleep(600);
+								//Thread.sleep(60);
 
-								if (current.getId() == target.getId()) {
+								if (current.equals(target)) {
 									//path found
 									NetworkNode help = current;
 
@@ -72,7 +70,7 @@ public class DijkstraRouter extends Router {
 									while(help.parent != null) {
 										pushToRouteUntillParent(help, route);
 
-										//help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
+										help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
 										help = help.parent.getKey();
 									}
 									return new Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>(start, target, route);
@@ -99,7 +97,7 @@ public class DijkstraRouter extends Router {
 								}
 
 								visited.add(current);
-								//Thread.sleep(500);
+								//Thread.sleep(60);
 							}
 							return null;
 						}

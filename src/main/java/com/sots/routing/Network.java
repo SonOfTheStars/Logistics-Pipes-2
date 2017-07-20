@@ -33,9 +33,9 @@ public class Network {
 	
 	public Network(UUID n) {
 		name=n;
-		//router=new Router(); 
+		router=new Router(); 
 		//router=new DijkstraRouter(junctions); 
-		router=new CachedDijkstraRouter(junctions); 
+		//router=new CachedDijkstraRouter(junctions); 
 	}
 	
 	public void registerDestination(UUID in) {
