@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.item.modules.IItemModule;
 import com.sots.module.IModule;
@@ -96,6 +97,12 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	@Override
 	public boolean activate(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
 			EnumFacing side, float hitX, float hitY, float hitZ) {
+
+		if (hasNetwork) {
+			network.getAllRoutesFrom(nodeID);
+		}
+
+
 		
 		ItemStack heldItem = player.getHeldItem(hand);
 		if(heldItem.getItem()!=null) {
