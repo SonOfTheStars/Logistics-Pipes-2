@@ -2,6 +2,7 @@ package com.sots.routing;
 
 import java.util.UUID;
 
+import com.sots.LogisticsPipes2;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.data.Tuple;
 
@@ -79,4 +80,27 @@ public class NetworkNode {
 	public void h_Cost(NetworkNode target) {
 		h_cost = ((Math.abs(target.pipe.posX() - pipe.posX())+(Math.abs(target.pipe.posY() - pipe.posY())+(Math.abs(target.pipe.posZ() - pipe.posZ())))));
 	}
+
+	public boolean equals(Object o) {
+		if (o == null) {
+			return false;
+		}
+
+		if (! (o instanceof NetworkNode)) {
+			return false;
+		}
+		NetworkNode other = (NetworkNode) o;
+
+		if (!(id.equals(other.getId()))) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public int hashCode() {
+		return id.hashCode();
+	}
+
+
 }

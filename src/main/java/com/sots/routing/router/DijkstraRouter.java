@@ -8,6 +8,7 @@ import java.util.Queue;
 import java.util.Stack;
 import java.util.UUID;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.sots.LogisticsPipes2;
@@ -26,7 +27,7 @@ public class DijkstraRouter extends Router {
 	private Queue<WeightedNetworkNode> visited = new LinkedBlockingQueue<WeightedNetworkNode>();
 	private Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> routingInfo;
 
-	private volatile Map<UUID, WeightedNetworkNode> junctions;
+	protected volatile Map<UUID, WeightedNetworkNode> junctions;
 
 	public DijkstraRouter(Map<UUID, WeightedNetworkNode> junctions) {
 		this.junctions = junctions; //I am not sure if these two Maps will be kept updated with each other
@@ -48,20 +49,6 @@ public class DijkstraRouter extends Router {
 			return null;
 		}
 
-		//if (s instanceof WeightedNetworkNode) {
-			//start = (WeightedNetworkNode) s;
-		//} else {
-			//LogisticsPipes2.logger.info("You tried routing between two nodes, which were not destinations or junctions.");
-			//return null;
-		//}
-
-		//if (t instanceof WeightedNetworkNode) {
-			//target = (WeightedNetworkNode) t;
-		//} else {
-			//LogisticsPipes2.logger.info("You tried routing between two nodes, which were not destinations or junctions.");
-			//return null;
-		//}
-
 		FutureTask<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> routingTask =
 			new FutureTask<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(
 					new Callable<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>() {
@@ -77,24 +64,18 @@ public class DijkstraRouter extends Router {
 								current.getMember().spawnParticle(0f, 1.000f, 0f);
 								//Thread.sleep(600);
 
-								try { //DEBUG
 								if (current.getId() == target.getId()) {
 									//path found
-									LogisticsPipes2.logger.info("Path found"); //DEBUG
 									NetworkNode help = current;
 
 									Stack<Tuple<UUID, EnumFacing>> route = new Stack<Tuple<UUID, EnumFacing>>();
 									while(help.parent != null) {
 										pushToRouteUntillParent(help, route);
 
-										help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
-										//Thread.sleep(600);
+										//help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
 										help = help.parent.getKey();
 									}
 									return new Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>(start, target, route);
-								}
-								} catch (Exception e) {
-									LogisticsPipes2.logger.info(e); //DEBUG
 								}
 
 
@@ -140,26 +121,12 @@ public class DijkstraRouter extends Router {
 		EnumFacing direction = current.parent.getVal();
 		int parentDirection = direction.getOpposite().getIndex();
 
-		LogisticsPipes2.logger.info("Test"); //DEBUG
 		NetworkNode help = current;
 		while(help.getId() != parent.getId()) {
-
-			if (help == help.getNeighborAt(parentDirection)) {
-				LogisticsPipes2.logger.info("HOW DID THIS HAPPEN?!?"); //DEBUG
-				LogisticsPipes2.logger.info(parentDirection); //DEBUG
-			}
-
 			help = help.getNeighborAt(parentDirection);
-
-			if (help == null) {
-				LogisticsPipes2.logger.info("This should NOT happen"); //DEBUG
-			}
-
 			route.push(new Tuple<UUID, EnumFacing>(help.getId(), direction));
-			help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
-			//Thread.sleep(600);
+			//help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
 		}
-		LogisticsPipes2.logger.info("Test2"); //DEBUG
 	}
 
 	public void clean() {

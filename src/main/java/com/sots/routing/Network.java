@@ -13,6 +13,7 @@ import com.sots.LogisticsPipes2;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.routing.router.Router;
 import com.sots.routing.router.DijkstraRouter;
+import com.sots.routing.router.CachedDijkstraRouter;
 import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
@@ -33,7 +34,8 @@ public class Network {
 	public Network(UUID n) {
 		name=n;
 		//router=new Router(); 
-		router=new DijkstraRouter(junctions); 
+		//router=new DijkstraRouter(junctions); 
+		router=new CachedDijkstraRouter(junctions); 
 	}
 	
 	public void registerDestination(UUID in) {
