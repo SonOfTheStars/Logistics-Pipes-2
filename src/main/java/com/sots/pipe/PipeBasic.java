@@ -1,12 +1,17 @@
 package com.sots.pipe;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import com.sots.particle.ParticleUtil;
 import com.sots.tiles.TileBasicPipe;
 import com.sots.tiles.TileGenericPipe;
+import com.sots.tiles.TileRoutedPipe;
+import com.sots.tiles.TileGenericPipe.ConnectionTypes;
 import com.sots.util.References;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
@@ -15,9 +20,12 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -152,5 +160,37 @@ public class PipeBasic extends BlockGenericPipe{
 		return false;
 	}
 	
-	
+	@Override
+	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+		
+		double x1 = 0.275;
+		double y1 = 0.275;
+		double z1 = 0.275;
+		double x2 = 0.725;
+		double y2 = 0.725;
+		double z2 = 0.725;
+		
+		if(source.getTileEntity(pos) instanceof TileGenericPipe){
+			TileGenericPipe pipe = (TileGenericPipe) source.getTileEntity(pos);
+			if(pipe.down != ConnectionTypes.NONE) {
+				y1=1;
+			}
+			if(pipe.up != ConnectionTypes.NONE) {
+				y2=1;
+			}
+			if(pipe.north != ConnectionTypes.NONE) {
+				z1=1;
+			}
+			if(pipe.south != ConnectionTypes.NONE) {
+				z2=1;
+			}
+			if(pipe.west != ConnectionTypes.NONE) {
+				x1=1;
+			}
+			if(pipe.east != ConnectionTypes.NONE) {
+				x2=1;
+			}
+		}
+		return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
+	}
 }

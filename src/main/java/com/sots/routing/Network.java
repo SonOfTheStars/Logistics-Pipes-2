@@ -34,7 +34,6 @@ public class Network {
 	public void registerDestination(UUID in) {
 		if(!destinations.containsKey(in)) {
 			destinations.put(in, getNodeByID(in));
-			getNodeByID(in).setAsDestination(true);
 			LogisticsPipes2.logger.log(Level.INFO, "Registered destination [" + in + "] in network [" + name + "]");
 		}
 		else {

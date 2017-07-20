@@ -138,4 +138,22 @@ public class PipeRouted extends BlockGenericPipe{
 			((TileGenericPipe)world.getTileEntity(pos.east())).getAdjacentPipes(world);
 		}
 	}
+	
+	@Override
+	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+		
+		double x1 = 0.275;
+		double y1 = 0.275;
+		double z1 = 0.275;
+		double x2 = 0.725;
+		double y2 = 0.725;
+		double z2 = 0.725;
+		
+		TileGenericPipe pipe = (TileGenericPipe) source.getTileEntity(pos);
+		if(pipe.up != ConnectionTypes.NONE) {
+			y2=1;
+		}
+		
+		return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
+	}
 }
