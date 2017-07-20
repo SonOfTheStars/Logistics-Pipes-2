@@ -16,6 +16,8 @@ import com.sots.util.Connections;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemSign;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -94,11 +96,14 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	}
 	
 	@Override
-	public boolean activate(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
-			EnumFacing side, float hitX, float hitY, float hitZ) {
-		
+	public boolean activate(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
 		ItemStack heldItem = player.getHeldItem(hand);
 		if(heldItem.getItem()!=null) {
+			if(heldItem.getItem() instanceof ItemSign) {
+				if(hasNetwork) {
+					network.getAllRoutesFrom(nodeID);
+				}
+			}
 			if(heldItem.getItem() instanceof ItemWrench) {
 				if (side == EnumFacing.UP || side == EnumFacing.DOWN){
 					if (Math.abs(hitX-0.5) > Math.abs(hitZ-0.5)){

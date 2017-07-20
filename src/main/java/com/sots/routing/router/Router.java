@@ -1,6 +1,5 @@
 package com.sots.routing.router;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -63,23 +62,69 @@ public class Router {
 									}
 									
 									for(int i = 0; i<6; i++) {
-										NetworkNode _node =current.getNeighborAt(i);
-										if(_node == null || closed.contains(_node)) {
-											continue;
+										if(current.connections()==2 && !current.isDestination()) {
+											if(current.getNeighborAt(i) != null)
+												tryLookahead(current, EnumFacing.getFront(i));
 										}
-										_node.h_Cost(target);
-										
-										_node.parent = new Tuple<NetworkNode, EnumFacing>(current, EnumFacing.getFront(i));
-										_node.p_cost=current.p_cost + _node.t_cost;
-										if(!open.contains(_node) && !closed.contains(_node)) {
-											open.offer(_node);
-											_node.getMember().spawnParticle(0.502f, 0.000f, 0.502f);
-										}
+										else {
+											NetworkNode _node =current.getNeighborAt(i);
+											if(_node == null || closed.contains(_node)) {
+												continue;
+											}
+											_node.h_Cost(target);
 											
+											_node.parent = new Tuple<NetworkNode, EnumFacing>(current, EnumFacing.getFront(i));
+											_node.p_cost=current.p_cost + _node.t_cost;
+											if(!open.contains(_node) && !closed.contains(_node)) {
+												open.offer(_node);
+												_node.getMember().spawnParticle(0.502f, 0.000f, 0.502f);
+											}
+										}
 									}
 									Thread.sleep(50);
 								}
 								return null;
+							}
+							
+							private void tryLookahead(NetworkNode current, EnumFacing direction) {
+								NetworkNode _node = current.getNeighborAt(direction.getIndex());
+								current.getMember().spawnParticle(1.000f, 1.000f, 1.000f);
+								
+								if(current.connections()!=2 || current.isDestination()) {
+									if(_node != null) {
+										if(!open.contains(_node) && !closed.contains(_node)) {
+											_node.h_Cost(target);
+											_node.parent = new Tuple<NetworkNode, EnumFacing>(current, direction);
+											_node.p_cost = current.p_cost + _node.t_cost;
+											open.offer(_node);
+											_node.getMember().spawnParticle(0.502f, 0.000f, 0.502f);
+										}
+									}
+									else {
+										if(!open.contains(current) && !closed.contains(current)) {
+											open.offer(current);
+											current.getMember().spawnParticle(0.502f, 0.000f, 0.502f);
+										}
+									}
+									
+									return; //Stop recursion if the this node is an intersection, dead-end or destination.
+								}
+								if(current.connections()==2 && !current.isDestination()){
+									if(_node != null) {
+										_node.h_Cost(target);
+										_node.parent = new Tuple<NetworkNode, EnumFacing>(current, direction);
+										_node.p_cost = current.p_cost + _node.t_cost;
+										
+										if(open.contains(_node)) {
+											open.remove(_node);
+										}
+										if(!closed.contains(_node)) {
+											closed.add(_node);
+											_node.getMember().spawnParticle(0.000f, 0.000f, 1.000f);
+											tryLookahead(_node, direction); //recurse to the next node and repeat the check
+										}
+									}
+								}
 							}
 				});
 		executor.execute(routingTask);

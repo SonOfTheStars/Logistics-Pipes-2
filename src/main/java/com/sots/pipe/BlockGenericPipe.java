@@ -80,19 +80,19 @@ public class BlockGenericPipe extends BlockTileBase{
 		if(source.getTileEntity(pos) instanceof TileGenericPipe){
 			TileGenericPipe pipe = (TileGenericPipe) source.getTileEntity(pos);
 			if(pipe.down != ConnectionTypes.NONE) {
-				y1=1;
+				y1=0;
 			}
 			if(pipe.up != ConnectionTypes.NONE) {
 				y2=1;
 			}
 			if(pipe.north != ConnectionTypes.NONE) {
-				z1=1;
+				z1=0;
 			}
 			if(pipe.south != ConnectionTypes.NONE) {
 				z2=1;
 			}
 			if(pipe.west != ConnectionTypes.NONE) {
-				x1=1;
+				x1=0;
 			}
 			if(pipe.east != ConnectionTypes.NONE) {
 				x2=1;
