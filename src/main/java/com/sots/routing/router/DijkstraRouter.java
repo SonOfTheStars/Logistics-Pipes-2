@@ -75,7 +75,7 @@ public class DijkstraRouter extends Router {
 							while(!unvisited.isEmpty()) {
 								WeightedNetworkNode current = unvisited.poll();
 								current.getMember().spawnParticle(0f, 1.000f, 0f);
-								Thread.sleep(60);
+								//Thread.sleep(600);
 
 								try { //DEBUG
 								if (current.getId() == target.getId()) {
@@ -88,7 +88,7 @@ public class DijkstraRouter extends Router {
 										pushToRouteUntillParent(help, route);
 
 										help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
-										Thread.sleep(60);
+										//Thread.sleep(600);
 										help = help.parent.getKey();
 									}
 									return new Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>(start, target, route);
@@ -118,7 +118,7 @@ public class DijkstraRouter extends Router {
 								}
 
 								visited.add(current);
-								Thread.sleep(50);
+								//Thread.sleep(500);
 							}
 							return null;
 						}
@@ -143,7 +143,13 @@ public class DijkstraRouter extends Router {
 		LogisticsPipes2.logger.info("Test"); //DEBUG
 		NetworkNode help = current;
 		while(help.getId() != parent.getId()) {
-			help = current.getNeighborAt(parentDirection);
+
+			if (help == help.getNeighborAt(parentDirection)) {
+				LogisticsPipes2.logger.info("HOW DID THIS HAPPEN?!?"); //DEBUG
+				LogisticsPipes2.logger.info(parentDirection); //DEBUG
+			}
+
+			help = help.getNeighborAt(parentDirection);
 
 			if (help == null) {
 				LogisticsPipes2.logger.info("This should NOT happen"); //DEBUG
@@ -151,10 +157,9 @@ public class DijkstraRouter extends Router {
 
 			route.push(new Tuple<UUID, EnumFacing>(help.getId(), direction));
 			help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
-			Thread.sleep(60);
+			//Thread.sleep(600);
 		}
 		LogisticsPipes2.logger.info("Test2"); //DEBUG
-
 	}
 
 	public void clean() {

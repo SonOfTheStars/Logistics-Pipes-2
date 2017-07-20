@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.HashMap;
 
+import com.sots.LogisticsPipes2;
 import com.sots.util.data.Tuple;
 
 public class NetworkSimplifier {
