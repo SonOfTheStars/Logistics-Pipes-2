@@ -12,6 +12,8 @@ import org.apache.logging.log4j.Level;
 import com.sots.LogisticsPipes2;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.routing.router.Router;
+import com.sots.routing.router.DijkstraRouter;
+import com.sots.routing.router.CachedDijkstraRouter;
 import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
@@ -20,6 +22,9 @@ import net.minecraft.util.EnumFacing;
 public class Network {
 	private volatile Map<UUID, NetworkNode> destinations = new HashMap<UUID, NetworkNode>();
 	private volatile Map<UUID, NetworkNode> nodes = new HashMap<UUID, NetworkNode>();
+
+	private volatile Map<UUID, WeightedNetworkNode> junctions = new HashMap<UUID, WeightedNetworkNode>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
+
 	private NetworkNode root = null;
 	
 	private Router router;
@@ -28,12 +33,15 @@ public class Network {
 	
 	public Network(UUID n) {
 		name=n;
-		router=new Router(); 
+		//router=new Router(); 
+		//router=new DijkstraRouter(junctions); 
+		router=new CachedDijkstraRouter(junctions); 
 	}
 	
 	public void registerDestination(UUID in) {
 		if(!destinations.containsKey(in)) {
 			destinations.put(in, getNodeByID(in));
+			NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
 			getNodeByID(in).setAsDestination(true);
 			LogisticsPipes2.logger.log(Level.INFO, "Registered destination [" + in + "] in network [" + name + "]");
 		}
@@ -47,9 +55,12 @@ public class Network {
 		NetworkNode node = new NetworkNode(id, Pipe);
 		nodes.put(id, node);
 		Pipe.subscribe(this);
+
+		NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
+
 		return id;
 	}
-	
+
 	public UUID setRoot(IRoutable pipe) {
 		if(root==null) {
 			UUID id = UUID.randomUUID();
@@ -69,6 +80,7 @@ public class Network {
 		}
 		nodes.clear();
 		destinations.clear();
+		junctions.clear();
 		nodes.put(root.getId(), root);
 		router.shutdown();
 	}

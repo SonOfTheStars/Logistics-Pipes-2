@@ -160,7 +160,7 @@ public class PipeBasic extends BlockGenericPipe{
 		
 		return false;
 	}
-	
+  
 	@Override
 	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
 		return super.getBoundingBox(state, source, pos);
