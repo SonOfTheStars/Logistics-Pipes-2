@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Level;
 import com.sots.LogisticsPipes2;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.routing.router.Router;
+import com.sots.routing.router.DijkstraRouter;
 import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
@@ -31,12 +32,14 @@ public class Network {
 	
 	public Network(UUID n) {
 		name=n;
-		router=new Router(); 
+		//router=new Router(); 
+		router=new DijkstraRouter(junctions); 
 	}
 	
 	public void registerDestination(UUID in) {
 		if(!destinations.containsKey(in)) {
 			destinations.put(in, getNodeByID(in));
+			NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
 			LogisticsPipes2.logger.log(Level.INFO, "Registered destination [" + in + "] in network [" + name + "]");
 		}
 		else {
@@ -50,7 +53,7 @@ public class Network {
 		nodes.put(id, node);
 		Pipe.subscribe(this);
 
-		junctions = NetworkSimplifier.rescanNetwork(nodes, destinations);
+		NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
 
 		return id;
 	}
@@ -74,6 +77,7 @@ public class Network {
 		}
 		nodes.clear();
 		destinations.clear();
+		junctions.clear();
 		nodes.put(root.getId(), root);
 		router.shutdown();
 	}

@@ -7,12 +7,12 @@ import java.util.HashMap;
 import com.sots.util.data.Tuple;
 
 public class NetworkSimplifier {
-	public static Map<UUID, WeightedNetworkNode> rescanNetwork(Map<UUID, NetworkNode> nodes, Map<UUID, NetworkNode> destinations) {
+
+	public static void rescanNetwork(Map<UUID, NetworkNode> nodes, Map<UUID, NetworkNode> destinations, Map<UUID, WeightedNetworkNode> junctions) {
 		NetworkNode first = nodes.entrySet().iterator().next().getValue();
 
-		Map<UUID, WeightedNetworkNode> results = new HashMap<UUID, WeightedNetworkNode>();
-		createWeightedNode(first, results, destinations);
-		return results;
+		junctions.clear();
+		createWeightedNode(first, junctions, destinations);
 	}
 
 	private static WeightedNetworkNode createWeightedNode(NetworkNode node, Map<UUID, WeightedNetworkNode> results, Map<UUID, NetworkNode> destinations) {
@@ -20,6 +20,11 @@ public class NetworkSimplifier {
 			return results.get(node.getId());
 
 		WeightedNetworkNode current = new WeightedNetworkNode(node.getId(), node.getMember());
+		for (int i = 0; i < 6; i++)	{
+			current.addNeighbor(node.getNeighborAt(i), i);
+		}
+
+		current.getMember().spawnParticle(1.0f, 1.0f, 0.0f);
 		results.put(current.getId(), current);
 		for (int i = 0; i < 6; i++) {
 			Tuple<NetworkNode, Integer> neighbor = getNextNeighborAt(node, i, 0, destinations);
@@ -41,11 +46,11 @@ public class NetworkSimplifier {
 		int numNeighbors = 0;
 
 		for (int i = 0; i < 6; i++)	{
-			if (neighbor.getNeighborAt(i) != null) 
+			if (neighbor.getNeighborAt(i) != null && i != direction) 
 				numNeighbors++;
 		}
 
-		if (numNeighbors >= 3 || destinations.containsKey(neighbor.getId()))
+		if (numNeighbors >= 2 || destinations.containsKey(neighbor.getId()))
 			return new Tuple<NetworkNode, Integer>(neighbor, distance+neighbor.t_cost);
 
 		return getNextNeighborAt(neighbor, direction, distance+neighbor.t_cost, destinations);

@@ -13,6 +13,6 @@ public class WeightedNetworkNode extends NetworkNode {
 	}
 
 
-	public Tuple<WeightedNetworkNode, Integer>[] weightedNeighbors = (Tuple<WeightedNetworkNode, Integer>[]) new Object[6]; //Apparently one cannot create arrays of generic types directly
+	public Tuple<WeightedNetworkNode, Integer>[] weightedNeighbors = (Tuple<WeightedNetworkNode, Integer>[]) new Tuple[6]; //Apparently one cannot create arrays of generic types directly
 }
 
