@@ -70,7 +70,6 @@ public class BlockGenericPipe extends BlockTileBase{
 	@Override
 	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
 		
-		List<AxisAlignedBB> boxes = new ArrayList<AxisAlignedBB>();
 		double x1 = 0.275;
 		double y1 = 0.275;
 		double z1 = 0.275;
@@ -78,11 +77,27 @@ public class BlockGenericPipe extends BlockTileBase{
 		double y2 = 0.725;
 		double z2 = 0.725;
 		
-		TileGenericPipe pipe = (TileGenericPipe) source.getTileEntity(pos);
-		if(pipe.up != ConnectionTypes.NONE) {
-			y2=1;
+		if(source.getTileEntity(pos) instanceof TileGenericPipe){
+			TileGenericPipe pipe = (TileGenericPipe) source.getTileEntity(pos);
+			if(pipe.down != ConnectionTypes.NONE) {
+				y1=1;
+			}
+			if(pipe.up != ConnectionTypes.NONE) {
+				y2=1;
+			}
+			if(pipe.north != ConnectionTypes.NONE) {
+				z1=1;
+			}
+			if(pipe.south != ConnectionTypes.NONE) {
+				z2=1;
+			}
+			if(pipe.west != ConnectionTypes.NONE) {
+				x1=1;
+			}
+			if(pipe.east != ConnectionTypes.NONE) {
+				x2=1;
+			}
 		}
-		
 		return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
 	}
 	
