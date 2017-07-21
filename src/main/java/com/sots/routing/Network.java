@@ -49,6 +49,21 @@ public class Network {
 			LogisticsPipes2.logger.log(Level.WARN, "Tried to register destination [" + in + "] twice in network [" + name + "]");
 		}
 	}
+
+	public void unregisterDestination(UUID out) {
+		if (destinations.containsKey(out)) {
+			destinations.remove(out);
+			NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
+			getNodeByID(out).setAsDestination(false);
+			LogisticsPipes2.logger.log(Level.INFO, "Unregistered destination [" + out + "] in network [" + name + "]");
+		}
+		else {
+			LogisticsPipes2.logger.log(Level.WARN, "Tried to unregister destination [" + out + "] twice in network [" + name + "]");
+		}
+
+
+	}
+
 	
 	public UUID subscribeNode(IRoutable Pipe) {
 		UUID id = UUID.randomUUID();
