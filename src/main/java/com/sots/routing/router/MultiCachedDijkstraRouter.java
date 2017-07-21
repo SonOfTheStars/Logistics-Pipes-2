@@ -135,6 +135,20 @@ public class MultiCachedDijkstraRouter extends Router {
 							return cache.get(new Tuple<NetworkNode, NetworkNode>(start, target));
 						}
 
+						private void pushToRouteUntillParent(NetworkNode current, Stack<Tuple<UUID, EnumFacing>> route) throws InterruptedException {
+							NetworkNode parent = current.parent.getKey();
+							EnumFacing direction = current.parent.getVal();
+							int parentDirection = direction.getOpposite().getIndex();
+
+							NetworkNode help = current;
+							while(help.getId() != parent.getId()) {
+								help = help.getNeighborAt(parentDirection);
+								route.push(new Tuple<UUID, EnumFacing>(help.getId(), direction));
+								help.getMember().spawnParticle(1.0f, 0.0f, 0.0f);
+								Thread.sleep(120);
+							}
+						}
+
 					});
 		executor.execute(routingTask);
 		try {
@@ -145,20 +159,6 @@ public class MultiCachedDijkstraRouter extends Router {
 			CrashReport.makeCrashReport(e, "A logistics Pipes router was interrupted!");
 		}
 		return routingInfo;
-	}
-
-	private void pushToRouteUntillParent(NetworkNode current, Stack<Tuple<UUID, EnumFacing>> route) throws InterruptedException {
-		NetworkNode parent = current.parent.getKey();
-		EnumFacing direction = current.parent.getVal();
-		int parentDirection = direction.getOpposite().getIndex();
-
-		NetworkNode help = current;
-		while(help.getId() != parent.getId()) {
-			help = help.getNeighborAt(parentDirection);
-			route.push(new Tuple<UUID, EnumFacing>(help.getId(), direction));
-			help.getMember().spawnParticle(1.0f, 0.0f, 0.0f);
-			Thread.sleep(120);
-		}
 	}
 
 	public void clean() {
