@@ -2,7 +2,10 @@ package com.sots.module;
 
 import java.util.UUID;
 
+import com.sots.item.modules.ItemModuleSink;
 import com.sots.tiles.TileGenericPipe;
+
+import net.minecraft.item.ItemStack;
 
 public interface IModule {
 	public static enum ModuleType{
@@ -31,17 +34,24 @@ public interface IModule {
 	 */
 	public ModuleType modType();
 	
-	public static IModule getFromType(int t) {
+	public static IModule getFromType(String t) {
 		IModule mod = null;
 		switch(t) {
-		case 0: 
-			mod= new ModuleSink(UUID.randomUUID());
-		case 3:
-			mod = new ModuleExtract(UUID.randomUUID());
-		default:
-			mod = new ModuleBase(UUID.randomUUID());
+			case "SINK":{
+				mod= new ModuleSink(UUID.randomUUID());
+				break;
+			}
+			case "EXTRACT":{
+				mod = new ModuleExtract(UUID.randomUUID());
+				break;
+			}
+			default:{
+				mod = null;
+				break;
+			}
 		}
 		
 		return mod;
 	}
+	
 }

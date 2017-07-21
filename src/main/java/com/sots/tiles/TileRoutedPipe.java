@@ -16,11 +16,13 @@ import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.Connections;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemSign;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -29,31 +31,34 @@ import net.minecraft.world.World;
 
 public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe, IDestination{
 	
-	private static final int MAX_MODS = 1;
-	private volatile Set<IModule> mods = new HashSet<IModule>();
+	private final int MAX_MODS = 1;
+	private Set<IModule> mods = new HashSet<IModule>();
 	
 	@Override
-    public void readFromNBT(NBTTagCompound compound) {
+	public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
-		String stringPos = String.format("%d:%d:%d",posX(),posY(),posZ());
 		for(int i = 0; i<MAX_MODS; i++ ){
-			mods.add(IModule.getFromType(compound.getInteger(stringPos +"_module_" + i)));
+			IModule mod = IModule.getFromType(compound.getString("module_" + i));
+			if(mod!=null)
+				mods.add(mod);
 		}
-		}
+	}
 	
 	@Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-		super.writeToNBT(compound);
-		if(!mods.isEmpty()) {
+	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+		compound = super.writeToNBT(compound);
+		if(!mods.isEmpty() && mods!=null) {
 			int modcount = 0;
 	        for(IModule mod : mods) {
-	        	compound.setInteger("module_" + modcount, mod.modType().ordinal());
-	        	modcount+=1;
+	        	if(mod!=null) {
+	        		compound.setString("module_" + modcount, mod.modType().toString());
+		        	modcount+=1;
+	        	}
 	        }
 		}
 		
-        return compound;
-    }
+	    return compound;
+	}
 	
 	public ArrayList<String> checkConnections(IBlockAccess world, BlockPos pos) {
 		ArrayList<String> hidden = new ArrayList<String>();
@@ -228,6 +233,16 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 			}
 			if (!hasInv)
 				network.unregisterDestination(this.nodeID);
+		}
+	}
+	
+	@Override
+	public void breakBlock(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
+		super.breakBlock(world, pos, state, player);
+		if(!mods.isEmpty() && mods!=null) {
+			for(IModule mod : mods) {
+				world.spawnEntity(new EntityItem(world, posX()+0.5, posY()+1.5, posZ()+0.5, IModule.getItemFromType(mod.modType().toString())));
+			}
 		}
 	}
 
