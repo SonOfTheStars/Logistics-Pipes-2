@@ -35,9 +35,10 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	@Override
     public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
-			for(int i = 0; i<MAX_MODS; i++ ){
-				mods.add(IModule.getFromType(compound.getInteger("module_" + i)));
-			}
+		String stringPos = String.format("%d:%d:%d",posX(),posY(),posZ());
+		for(int i = 0; i<MAX_MODS; i++ ){
+			mods.add(IModule.getFromType(compound.getInteger(stringPos +"_module_" + i)));
+		}
 		}
 	
 	@Override
