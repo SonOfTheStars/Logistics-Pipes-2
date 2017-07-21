@@ -20,6 +20,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemSign;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -30,6 +31,29 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	
 	private static final int MAX_MODS = 1;
 	private volatile Set<IModule> mods = new HashSet<IModule>();
+	
+	@Override
+    public void readFromNBT(NBTTagCompound compound) {
+		super.readFromNBT(compound);
+		String stringPos = String.format("%d:%d:%d",posX(),posY(),posZ());
+		for(int i = 0; i<MAX_MODS; i++ ){
+			mods.add(IModule.getFromType(compound.getInteger(stringPos +"_module_" + i)));
+		}
+		}
+	
+	@Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+		super.writeToNBT(compound);
+		if(!mods.isEmpty()) {
+			int modcount = 0;
+	        for(IModule mod : mods) {
+	        	compound.setInteger("module_" + modcount, mod.modType().ordinal());
+	        	modcount+=1;
+	        }
+		}
+		
+        return compound;
+    }
 	
 	public ArrayList<String> checkConnections(IBlockAccess world, BlockPos pos) {
 		ArrayList<String> hidden = new ArrayList<String>();
@@ -167,11 +191,16 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		}
 		
 		if(heldItem.getItem() instanceof IItemModule){
-			if(mods.size()<MAX_MODS){
+			boolean remote = world.isRemote;
+			int count = mods.size(); //debug
+			if(count < MAX_MODS){
 				IModule mod = ((IItemModule) heldItem.getItem()).getModLogic();
 				if(mod.canInsert()){
 					mods.add(mod);
 					heldItem.shrink(1);
+					if(heldItem.isEmpty()) {
+						heldItem = null;
+					}
 					markDirty();
 				}
 				return true;
