@@ -191,6 +191,14 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 					break;
 				}
 			}
+		} else if (this.hasNetwork && (network.getNodeByID(this.nodeID).isDestination())) {
+			boolean hasInv = false;
+			for (int i = 0; i < 6; i++) {
+				if (hasInventoryOnSide(i))
+					hasInv = true;
+			}
+			if (!hasInv)
+				network.unregisterDestination(this.nodeID);
 		}
 	}
 
