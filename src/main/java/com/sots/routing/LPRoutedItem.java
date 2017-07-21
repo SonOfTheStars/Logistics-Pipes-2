@@ -1,6 +1,5 @@
 package com.sots.routing;
 
-import java.util.List;
 import java.util.Stack;
 import java.util.UUID;
 
@@ -12,7 +11,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 
 public class LPRoutedItem{
-	public final int TICK_MAX = 60;
+	public final int TICK_MAX = 128;
 	public int ticks;
 	private EnumFacing heading;
 	private TileGenericPipe holding;
