@@ -1,5 +1,7 @@
 package com.sots.module;
 
+import java.util.UUID;
+
 import com.sots.tiles.TileGenericPipe;
 
 public interface IModule {
@@ -28,4 +30,18 @@ public interface IModule {
 	 * @return The Modules execution Type
 	 */
 	public ModuleType modType();
+	
+	public static IModule getFromType(int t) {
+		IModule mod = null;
+		switch(t) {
+		case 0: 
+			mod= new ModuleSink(UUID.randomUUID());
+		case 3:
+			mod = new ModuleExtract(UUID.randomUUID());
+		default:
+			mod = new ModuleBase(UUID.randomUUID());
+		}
+		
+		return mod;
+	}
 }

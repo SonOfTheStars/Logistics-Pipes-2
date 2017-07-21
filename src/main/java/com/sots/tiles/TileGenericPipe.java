@@ -214,7 +214,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 						}
 					}
 					else {
-						world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, item.getContent()));
+						world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, item.getContent()));
 					}
 				}
 			}
