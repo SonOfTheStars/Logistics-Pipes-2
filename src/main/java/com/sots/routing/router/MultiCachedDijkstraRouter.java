@@ -21,20 +21,24 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.crash.CrashReport;
 
 public class MultiCachedDijkstraRouter extends Router {
-	WeightedNetworkNode start, target;
-	private ExecutorService executor = Executors.newSingleThreadExecutor();
+	private static final int NUM_THREADS = 4;
+	//WeightedNetworkNode start, target;
+	//private ExecutorService executor = Executors.newSingleThreadExecutor();
+	private ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
 	private Queue<WeightedNetworkNode> unvisited = new LinkedBlockingQueue<WeightedNetworkNode>();
 	private Queue<WeightedNetworkNode> visited = new LinkedBlockingQueue<WeightedNetworkNode>();
 	private Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> routingInfo;
 
 	protected volatile Map<UUID, WeightedNetworkNode> junctions;
 	protected volatile Map<UUID, NetworkNode> destinations;
+	protected volatile Map<UUID, NetworkNode> nodes;
 
 	private Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>();
 
-	public MultiCachedDijkstraRouter(Map<UUID, WeightedNetworkNode> junctions, Map<UUID, NetworkNode> destinations) {
+	public MultiCachedDijkstraRouter(Map<UUID, WeightedNetworkNode> junctions, Map<UUID, NetworkNode> destinations, Map<UUID, NetworkNode> nodes) {
 		this.junctions = junctions; //I am not sure if these two Maps will be kept updated with each other
 		this.destinations = destinations;
+		this.nodes = nodes;
 	}
 
 	@Override
@@ -58,6 +62,12 @@ public class MultiCachedDijkstraRouter extends Router {
 	}
 
 	public Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> doActualRouting(NetworkNode s, NetworkNode t) {
+		WeightedNetworkNode start, target;
+
+		Map<UUID, WeightedNetworkNode> junctions = new HashMap<UUID, WeightedNetworkNode>(this.junctions);
+		Map<UUID, NetworkNode> destinations = new HashMap<UUID, NetworkNode>(this.destinations);
+		Map<UUID, NetworkNode> nodes = new HashMap<UUID, NetworkNode>(this.nodes);
+
 		if (junctions.containsKey(s.getId())) {
 			start = junctions.get(s.getId());
 		} else {
@@ -129,7 +139,7 @@ public class MultiCachedDijkstraRouter extends Router {
 		executor.execute(routingTask);
 		try {
 			routingInfo = routingTask.get();
-			executor.shutdownNow();
+			//executor.shutdownNow();
 		}
 		catch (Exception e) {
 			CrashReport.makeCrashReport(e, "A logistics Pipes router was interrupted!");
@@ -154,12 +164,14 @@ public class MultiCachedDijkstraRouter extends Router {
 	public void clean() {
 		unvisited.clear();
 		visited.clear();
-		executor = Executors.newSingleThreadExecutor();
+		//executor = Executors.newSingleThreadExecutor();
+		executor = Executors.newFixedThreadPool(NUM_THREADS);
 	}
 
 	public void shutdown() {
 		executor.shutdownNow();
-		executor = Executors.newSingleThreadExecutor();
+		//executor = Executors.newSingleThreadExecutor();
+		executor = Executors.newFixedThreadPool(NUM_THREADS);
 		cache.clear();
 	}
 }

@@ -37,7 +37,7 @@ public class Network {
 		//router=new Router(); 
 		//router=new DijkstraRouter(junctions); 
 		//router=new CachedDijkstraRouter(junctions); 
-		router=new MultiCachedDijkstraRouter(junctions, destinations);
+		router=new MultiCachedDijkstraRouter(junctions, destinations, nodes);
 	}
 	
 	public void registerDestination(UUID in) {
