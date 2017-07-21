@@ -14,6 +14,7 @@ import com.sots.routing.interfaces.IRoutable;
 import com.sots.routing.router.Router;
 import com.sots.routing.router.DijkstraRouter;
 import com.sots.routing.router.CachedDijkstraRouter;
+import com.sots.routing.router.MultiCachedDijkstraRouter;
 import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
@@ -33,9 +34,10 @@ public class Network {
 	
 	public Network(UUID n) {
 		name=n;
-		router=new Router(); 
+		//router=new Router(); 
 		//router=new DijkstraRouter(junctions); 
 		//router=new CachedDijkstraRouter(junctions); 
+		router=new MultiCachedDijkstraRouter(junctions, destinations);
 	}
 	
 	public void registerDestination(UUID in) {
@@ -115,6 +117,7 @@ public class Network {
 	}
 	
 	public boolean getAllRoutesFrom(UUID nodeId){
+		long startTime = System.currentTimeMillis();
 		NetworkNode start = destinations.get(nodeId);
 		Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> route = null;
 		Set<UUID> keys = destinations.keySet();
@@ -126,6 +129,8 @@ public class Network {
 				LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), dest.getId().toString(), (route!= null ? "" : "not") + " been found!"));
 			}
 		}
+		long endTime = System.currentTimeMillis();
+		LogisticsPipes2.logger.info(String.format("Routing from Pipe [ %s ] to all other pipes took %d milliseconds", start.getId().toString(), endTime-startTime));
 		return route != null ? true : false;
 	}
 	
