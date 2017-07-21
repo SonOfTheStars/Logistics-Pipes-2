@@ -178,7 +178,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			return ConnectionTypes.PIPE;
 		}
 		else if(tile!=null) {
-			if(world.getTileEntity(pos).hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side.getOpposite()));
+			if(world.getTileEntity(pos).hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side.getOpposite()))
 				return ConnectionTypes.BLOCK;
 		}
 		return ConnectionTypes.NONE;
