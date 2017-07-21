@@ -15,3 +15,4 @@ src/main/java/com/sots/rendering/Model.java
 src/main/java/com/sots/rendering/LoderTest.java
 src/main/java/com/sots/rendering/Face.java
 bin/
+.syntastic_javac_config
