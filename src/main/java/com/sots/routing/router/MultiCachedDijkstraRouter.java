@@ -20,7 +20,7 @@ import com.sots.util.data.Triple;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.crash.CrashReport;
 
-public class MultiCachedDijkstraRouter extends Router {
+public class MultiCachedDijkstraRouter{
 	private static final int NUM_THREADS = 4;
 	//WeightedNetworkNode start, target;
 	//private ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -41,27 +41,28 @@ public class MultiCachedDijkstraRouter extends Router {
 		this.nodes = nodes;
 	}
 
-	@Override
-	public Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> route(NetworkNode s, NetworkNode t) {
+	/**
+	 * The first part of the output is a boolean, which is false if the route has not yet been calculated, and is true when the route has been calculated
+	 * The second part of the output is a triple consisting of the start node, the target node and the route from the start node to the target node
+	 */
+	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> route(NetworkNode s, NetworkNode t) {
 		//Triple<Map<UUID, WeightedNetworkNode>, NetworkNode, NetworkNode> input = new Triple<Map<UUID, WeightedNetworkNode>, NetworkNode, NetworkNode>(super.junctions, s, t);
 		Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>(s, t);
 		try { //DEBUG
 		if (cache.containsKey(input)) {
 			LogisticsPipes2.logger.info("Got a route from cache"); //DEBUG
-			return cache.get(input);
+			return new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(true, cache.get(input));
 		}
 		} catch (Exception e) {
 			LogisticsPipes2.logger.info(e); //DEBUG
 		}
 
 
-		Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> result = doActualRouting(s, t);
-		LogisticsPipes2.logger.info("Caching a route to cache"); //DEBUG
-		cache.put(input, result);
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> result = doActualRouting(s, t);
 		return result;
 	}
 
-	public Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> doActualRouting(NetworkNode s, NetworkNode t) {
+	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> doActualRouting(NetworkNode s, NetworkNode t) {
 		WeightedNetworkNode start, target;
 
 		Map<UUID, WeightedNetworkNode> junctions = new HashMap<UUID, WeightedNetworkNode>(this.junctions);
@@ -82,11 +83,13 @@ public class MultiCachedDijkstraRouter extends Router {
 			return null;
 		}
 
-		FutureTask<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> routingTask =
-			new FutureTask<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(
-					new Callable<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>() {
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> result = new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(false, null);
+
+		FutureTask<Void> routingTask =
+			new FutureTask<Void>(
+					new Callable<Void>() {
 						@Override
-						public Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> call() 
+						public Void call() 
 								throws Exception {
 							start.p_cost=0;
 							start.parent=null;
@@ -132,7 +135,10 @@ public class MultiCachedDijkstraRouter extends Router {
 								Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> result = new Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>((NetworkNode) start, n, route);
 								cache.put(input, result);
 							}
-							return cache.get(new Tuple<NetworkNode, NetworkNode>(start, target));
+							result.setVal(cache.get(new Tuple<NetworkNode, NetworkNode>(start, target)));
+							result.setKey(true);
+							return null;
+							//return cache.get(new Tuple<NetworkNode, NetworkNode>(start, target));
 						}
 
 						private void pushToRouteUntillParent(NetworkNode current, Stack<Tuple<UUID, EnumFacing>> route) throws InterruptedException {
@@ -151,14 +157,14 @@ public class MultiCachedDijkstraRouter extends Router {
 
 					});
 		executor.execute(routingTask);
-		try {
-			routingInfo = routingTask.get();
-			//executor.shutdownNow();
-		}
-		catch (Exception e) {
-			CrashReport.makeCrashReport(e, "A logistics Pipes router was interrupted!");
-		}
-		return routingInfo;
+		//try {
+			//routingInfo = routingTask.get();
+			////executor.shutdownNow();
+		//}
+		//catch (Exception e) {
+			//CrashReport.makeCrashReport(e, "A logistics Pipes router was interrupted!");
+		//}
+		return result;
 	}
 
 	public void clean() {

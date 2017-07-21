@@ -21,6 +21,14 @@ public class Tuple<K, V> {
 		return val;
 	}
 
+	public void setKey(K key) {
+		this.key = key;
+	}
+
+	public void setVal(V val) {
+		this.val = val;
+	}
+
 	public boolean equals(Object o) {
 		if (o == null) {
 			return false;

@@ -28,7 +28,8 @@ public class Network {
 
 	private NetworkNode root = null;
 	
-	private Router router;
+	//private Router router;
+	private MultiCachedDijkstraRouter router;
 	
 	private UUID name;
 	
@@ -119,7 +120,7 @@ public class Network {
 	public boolean getAllRoutesFrom(UUID nodeId){
 		long startTime = System.currentTimeMillis();
 		NetworkNode start = destinations.get(nodeId);
-		Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> route = null;
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> route = null;
 		Set<UUID> keys = destinations.keySet();
 		for(UUID key : keys) {
 			NetworkNode dest = destinations.get(key);
@@ -135,7 +136,7 @@ public class Network {
 	}
 	
 	public boolean getRouteFromTo(UUID nodeS, UUID nodeT) {
-		Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> route = null;
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> route = null;
 		if(nodeS != nodeT) {
 			NetworkNode start = destinations.get(nodeS);
 			NetworkNode target = destinations.get(nodeT);
