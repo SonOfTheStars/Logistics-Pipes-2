@@ -30,6 +30,7 @@ public class BlockTileBase extends LPBlockBase implements ITileEntityProvider{
 	
 	@Override
 	public void onBlockHarvested(World world, BlockPos pos, IBlockState state, EntityPlayer player){
+		super.onBlockHarvested(world, pos, state, player);
 		((ITileEntityBase)world.getTileEntity(pos)).breakBlock(world,pos,state,player);
 	}
 

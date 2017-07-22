@@ -78,7 +78,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	@Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        super.writeToNBT(compound);
+        compound = super.writeToNBT(compound);
         
         return compound;
     }
@@ -186,6 +186,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	@Override
 	public void invalidate() {
+		super.invalidate();
 		if(network!=null)
 			network.purgeNetwork();
 	}

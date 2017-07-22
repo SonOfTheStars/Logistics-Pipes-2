@@ -4,4 +4,5 @@ import com.sots.module.IModule;
 
 public interface IItemModule {
 	public IModule getModLogic();
+	
 }
