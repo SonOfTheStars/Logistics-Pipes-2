@@ -17,6 +17,7 @@ import com.sots.routing.interfaces.IDestination;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.Connections;
+import com.sots.util.Misc;
 import com.sots.util.data.Tuple;
 import com.sots.util.data.Triple;
 import com.sots.routing.LPRoutedItem;
@@ -35,34 +36,23 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.items.ItemStackHandler;
 
 public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe, IDestination{
 	
 	private final int MAX_MODS = 1;
-	private Set<IModule> mods = new HashSet<IModule>();
+	private ItemStackHandler modules = new ItemStackHandler(MAX_MODS);
 	
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
-		for(int i = 0; i<MAX_MODS; i++ ){
-			IModule mod = IModule.getFromType(compound.getString("module_" + i));
-			if(mod!=null)
-				mods.add(mod);
-		}
+		modules.deserializeNBT(compound.getCompoundTag("modules"));
 	}
 	
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound = super.writeToNBT(compound);
-		if(!mods.isEmpty() && mods!=null) {
-			int modcount = 0;
-	        for(IModule mod : mods) {
-	        	if(mod!=null) {
-	        		compound.setString("module_" + modcount, mod.modType().toString());
-		        	modcount+=1;
-	        	}
-	        }
-		}
+		compound.setTag("modules", modules.serializeNBT());
 		
 	    return compound;
 	}
@@ -209,13 +199,14 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		}
 		
 		if(heldItem.getItem() instanceof IItemModule){
-			boolean remote = world.isRemote;
-			int count = mods.size(); //debug
+			int count = 0;
+			if(modules.getStackInSlot(0)!=null) {
+				count = modules.getStackInSlot(0).getCount();
+			}
 			if(count < MAX_MODS){
 				IModule mod = ((IItemModule) heldItem.getItem()).getModLogic();
 				if(mod.canInsert()){
-					mods.add(mod);
-					heldItem.shrink(1);
+					modules.insertItem(0, heldItem.splitStack(1), false);
 					if(heldItem.isEmpty()) {
 						heldItem = null;
 					}
@@ -252,10 +243,8 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
 		super.breakBlock(world, pos, state, player);
-		if(!mods.isEmpty() && mods!=null) {
-			for(IModule mod : mods) {
-				//world.spawnEntity(new EntityItem(world, posX()+0.5, posY()+1.5, posZ()+0.5, IModule.getItemFromType(mod.modType().toString())));
-			}
+		if(modules.getStackInSlot(0)!=null) {
+			Misc.spawnInventoryInWorld(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, modules);
 		}
 	}
 
