@@ -3,6 +3,7 @@ package com.sots.tiles;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Iterator;
 
 import org.apache.logging.log4j.Level;
 
@@ -201,20 +202,25 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			}
 		}
 		if(!contents.isEmpty()) {
-			for(LPRoutedItem item : contents) {
+			//for(LPRoutedItem item : contents) {
+			for(Iterator<LPRoutedItem> i = contents.iterator(); i.hasNext();) {
+				LPRoutedItem item = i.next();
 				item.ticks++;
 				if(item.ticks==item.TICK_MAX/2) {
 					item.setHeading(item.getHeadingForNode());
 				}
 				if(item.ticks==item.TICK_MAX) {
-					if(getConnection(item.getHeading())!=ConnectionTypes.PIPE) {
+					//if(getConnection(item.getHeading())!=ConnectionTypes.PIPE) {
+					if(getConnection(item.getHeading())==ConnectionTypes.PIPE) {
+						//LogisticsPipes2.logger.info("Should pass on an item");
 						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(item.getHeading()));
 						if(pipe!=null) {
 							pipe.catchItem(item);
-							contents.remove(item);
+							i.remove();
 						}
 					}
 					else {
+						//LogisticsPipes2.logger.info(item.getHeading());
 						world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, item.getContent()));
 					}
 				}
@@ -385,6 +391,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	public boolean catchItem(LPRoutedItem item) {
 		try {
 			contents.add(item);
+			item.ticks = 0;
+			//LogisticsPipes2.logger.info("Caugth an item");
 			return true;
 		}
 		catch(Exception e) {

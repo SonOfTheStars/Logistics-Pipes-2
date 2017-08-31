@@ -5,13 +5,15 @@ import java.util.UUID;
 
 import com.sots.tiles.TileGenericPipe;
 import com.sots.util.data.Tuple;
+import com.sots.util.data.Triple;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
+import net.minecraft.util.math.Vec3i;
 
 public class LPRoutedItem{
-	public final int TICK_MAX = 128;
+	public final int TICK_MAX = 10;
 	public int ticks;
 	private EnumFacing heading;
 	private TileGenericPipe holding;
@@ -22,7 +24,7 @@ public class LPRoutedItem{
 		setHolding(holder);
 		route = routingInfo;
 		ticks = 0;
-		stack = content;
+		this.stack = content;
 	}
 	
 	public EnumFacing getHeading() {
@@ -42,10 +44,31 @@ public class LPRoutedItem{
 	}
 	
 	public EnumFacing getHeadingForNode(){
+		if (route.empty()) {
+			return EnumFacing.UP;
+		}
 		return route.pop().getVal();
 	}
 	
 	public ItemStack getContent() {
 		return stack;
 	}
+
+	public Triple<Double, Double, Double> getPosition() {
+		double x = holding.posX() + 0.5;
+		double y = holding.posY() + 0.5;
+		double z = holding.posZ() + 0.5;
+
+		if (ticks < TICK_MAX/2) { // Approaching middle of pipe
+			x -= (((TICK_MAX/2)-ticks)/(TICK_MAX/2)) * heading.getDirectionVec().getX();
+			y -= (((TICK_MAX/2)-ticks)/(TICK_MAX/2)) * heading.getDirectionVec().getY();
+			z -= (((TICK_MAX/2)-ticks)/(TICK_MAX/2)) * heading.getDirectionVec().getZ();
+		} else { // Leaving middle of pipe
+			x += ((ticks-(TICK_MAX/2))/(TICK_MAX/2)) * heading.getDirectionVec().getX();
+			y += ((ticks-(TICK_MAX/2))/(TICK_MAX/2)) * heading.getDirectionVec().getY();
+			z += ((ticks-(TICK_MAX/2))/(TICK_MAX/2)) * heading.getDirectionVec().getZ();
+		}
+		return new Triple<Double, Double, Double>(x, y, z);
+	}
+
 }

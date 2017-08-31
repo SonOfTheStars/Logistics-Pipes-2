@@ -7,16 +7,18 @@ import java.util.HashMap;
 import com.sots.LogisticsPipes2;
 import com.sots.util.data.Tuple;
 
+import net.minecraft.util.EnumFacing;
+
 public class NetworkSimplifier {
 
-	public static void rescanNetwork(Map<UUID, NetworkNode> nodes, Map<UUID, NetworkNode> destinations, Map<UUID, WeightedNetworkNode> junctions) {
+	public static void rescanNetwork(Map<UUID, NetworkNode> nodes, Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations, Map<UUID, WeightedNetworkNode> junctions) {
 		NetworkNode first = nodes.entrySet().iterator().next().getValue();
 
 		junctions.clear();
 		createWeightedNode(first, junctions, destinations);
 	}
 
-	private static WeightedNetworkNode createWeightedNode(NetworkNode node, Map<UUID, WeightedNetworkNode> results, Map<UUID, NetworkNode> destinations) {
+	private static WeightedNetworkNode createWeightedNode(NetworkNode node, Map<UUID, WeightedNetworkNode> results, Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations) {
 		if (results.containsKey(node.getId()))
 			return results.get(node.getId());
 
@@ -38,7 +40,7 @@ public class NetworkSimplifier {
 		return current;
 	}
 
-	private static Tuple<NetworkNode, Integer> getNextNeighborAt(NetworkNode node, int direction, int distance, Map<UUID, NetworkNode> destinations) {
+	private static Tuple<NetworkNode, Integer> getNextNeighborAt(NetworkNode node, int direction, int distance, Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations) {
 		NetworkNode neighbor = node.getNeighborAt(direction);
 
 		if (neighbor == null)

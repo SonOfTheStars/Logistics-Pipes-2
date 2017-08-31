@@ -1,6 +1,8 @@
 package com.sots.routing.router;
 
 import java.util.Stack;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
@@ -30,12 +32,14 @@ public class MultiCachedDijkstraRouter{
 	private Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> routingInfo;
 
 	protected volatile Map<UUID, WeightedNetworkNode> junctions;
-	protected volatile Map<UUID, NetworkNode> destinations;
+	protected volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations;
 	protected volatile Map<UUID, NetworkNode> nodes;
 
 	private Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>();
 
-	public MultiCachedDijkstraRouter(Map<UUID, WeightedNetworkNode> junctions, Map<UUID, NetworkNode> destinations, Map<UUID, NetworkNode> nodes) {
+	protected volatile Set<UUID> sources = new HashSet<UUID>();
+
+	public MultiCachedDijkstraRouter(Map<UUID, WeightedNetworkNode> junctions, Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations, Map<UUID, NetworkNode> nodes) {
 		this.junctions = junctions; //I am not sure if these two Maps will be kept updated with each other
 		this.destinations = destinations;
 		this.nodes = nodes;
@@ -46,17 +50,13 @@ public class MultiCachedDijkstraRouter{
 	 * The second part of the output is a triple consisting of the start node, the target node and the route from the start node to the target node
 	 */
 	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> route(NetworkNode s, NetworkNode t) {
-		//Triple<Map<UUID, WeightedNetworkNode>, NetworkNode, NetworkNode> input = new Triple<Map<UUID, WeightedNetworkNode>, NetworkNode, NetworkNode>(super.junctions, s, t);
 		Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>(s, t);
-		try { //DEBUG
+
+		while (sources.contains(s.getId())) {}
+
 		if (cache.containsKey(input)) {
-			LogisticsPipes2.logger.info("Got a route from cache"); //DEBUG
 			return new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(true, cache.get(input));
 		}
-		} catch (Exception e) {
-			LogisticsPipes2.logger.info(e); //DEBUG
-		}
-
 
 		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> result = doActualRouting(s, t);
 		return result;
@@ -66,7 +66,7 @@ public class MultiCachedDijkstraRouter{
 		WeightedNetworkNode start, target;
 
 		Map<UUID, WeightedNetworkNode> junctions = new HashMap<UUID, WeightedNetworkNode>(this.junctions);
-		Map<UUID, NetworkNode> destinations = new HashMap<UUID, NetworkNode>(this.destinations);
+		Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations = new HashMap<UUID, Tuple<NetworkNode, EnumFacing>>(this.destinations);
 		Map<UUID, NetworkNode> nodes = new HashMap<UUID, NetworkNode>(this.nodes);
 
 		if (junctions.containsKey(s.getId())) {
@@ -83,6 +83,8 @@ public class MultiCachedDijkstraRouter{
 			return null;
 		}
 
+		sources.add(start.getId());
+
 		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> result = new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(false, null);
 
 		FutureTask<Void> routingTask =
@@ -97,7 +99,7 @@ public class MultiCachedDijkstraRouter{
 							while(!unvisited.isEmpty()) {
 								WeightedNetworkNode current = unvisited.poll();
 								current.getMember().spawnParticle(0f, 1.000f, 0f);
-								Thread.sleep(120);
+								//Thread.sleep(120);
 
 								for (int i = 0; i < 6; i++) {
 									Tuple<WeightedNetworkNode, Integer> neighborT = current.weightedNeighbors[i];
@@ -119,41 +121,34 @@ public class MultiCachedDijkstraRouter{
 								}
 
 								visited.add(current);
-								Thread.sleep(120);
+								//Thread.sleep(120);
 							}
-							for (NetworkNode n : destinations.values()) {
-								NetworkNode help = n;
+							for (Tuple<NetworkNode, EnumFacing> n : destinations.values()) {
+								//NetworkNode help = n;
+								WeightedNetworkNode help = junctions.get(n.getKey().getId());
 
 								Stack<Tuple<UUID, EnumFacing>> route = new Stack<Tuple<UUID, EnumFacing>>();
+								route.push(new Tuple<UUID, EnumFacing>(null, n.getVal()));
 								while(help.parent != null) {
 									pushToRouteUntillParent(help, route);
 
 									help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
-									help = help.parent.getKey();
+									//help = help.parent.getKey();
+									help = junctions.get(help.parent.getKey().getId());
 								}
-								Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>((NetworkNode) start, n);
-								Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> result = new Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>((NetworkNode) start, n, route);
-								cache.put(input, result);
+								Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>((NetworkNode) start, n.getKey());
+								Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> tmp_result = new Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>((NetworkNode) start, n.getKey(), route);
+								cache.put(input, tmp_result);
+								//LogisticsPipes2.logger.info("Route found of length " + route.size());
 							}
 							result.setVal(cache.get(new Tuple<NetworkNode, NetworkNode>(start, target)));
 							result.setKey(true);
+							LogisticsPipes2.logger.info("Done routing for now " + start + "-" + target);
+							sources.remove(start.getId());
 							return null;
 							//return cache.get(new Tuple<NetworkNode, NetworkNode>(start, target));
 						}
 
-						private void pushToRouteUntillParent(NetworkNode current, Stack<Tuple<UUID, EnumFacing>> route) throws InterruptedException {
-							NetworkNode parent = current.parent.getKey();
-							EnumFacing direction = current.parent.getVal();
-							int parentDirection = direction.getOpposite().getIndex();
-
-							NetworkNode help = current;
-							while(help.getId() != parent.getId()) {
-								help = help.getNeighborAt(parentDirection);
-								route.push(new Tuple<UUID, EnumFacing>(help.getId(), direction));
-								help.getMember().spawnParticle(1.0f, 0.0f, 0.0f);
-								Thread.sleep(120);
-							}
-						}
 
 					});
 		executor.execute(routingTask);
@@ -164,7 +159,24 @@ public class MultiCachedDijkstraRouter{
 		//catch (Exception e) {
 			//CrashReport.makeCrashReport(e, "A logistics Pipes router was interrupted!");
 		//}
+
+
 		return result;
+	}
+
+	private void pushToRouteUntillParent(NetworkNode current, Stack<Tuple<UUID, EnumFacing>> route) {
+		NetworkNode parent = current.parent.getKey();
+		EnumFacing direction = current.parent.getVal();
+		int parentDirection = direction.getOpposite().getIndex();
+
+		NetworkNode help = current;
+		while(help.getId() != parent.getId()) {
+			help = help.getNeighborAt(parentDirection);
+			route.push(new Tuple<UUID, EnumFacing>(help.getId(), direction));
+			help.getMember().spawnParticle(1.0f, 0.0f, 0.0f);
+			//Thread.sleep(120);
+			//LogisticsPipes2.logger.info(route.size());
+		}
 	}
 
 	public void clean() {

@@ -4,21 +4,28 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.List;
+import java.util.Stack;
 
 import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.item.modules.IItemModule;
 import com.sots.module.IModule;
 import com.sots.routing.Network;
+import com.sots.routing.NetworkNode;
 import com.sots.routing.interfaces.IDestination;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.Connections;
+import com.sots.util.data.Tuple;
+import com.sots.util.data.Triple;
+import com.sots.routing.LPRoutedItem;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemSign;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -117,7 +124,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		if(this.hasNetwork) {
 			for(int i = 0; i<6; i++) {
 				if(hasInventoryOnSide(i)) {
-					network.registerDestination(this.nodeID);
+					network.registerDestination(this.nodeID, EnumFacing.getFront(i));
 					break;
 				}
 					
@@ -131,7 +138,13 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		if(heldItem.getItem()!=null) {
 			if(heldItem.getItem() instanceof ItemSign) {
 				if(hasNetwork) {
-					network.getAllRoutesFrom(nodeID);
+					List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>> routes = network.getAllRoutesFrom(nodeID);
+					for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> route : routes) {
+						//LogisticsPipes2.logger.info("Waiting for routing to be done");
+						while (route.getKey() == false) {}
+						//LogisticsPipes2.logger.info("Spawning first item");
+						catchItem(new LPRoutedItem(world, (double) posX(), (double) posY(), (double) posZ(), new ItemStack(Items.APPLE), EnumFacing.UP, this, route.getVal().getThird(), new ItemStack(Items.APPLE)));
+					}
 				}
 			}
 			if(heldItem.getItem() instanceof ItemWrench) {
@@ -221,7 +234,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		if (this.hasNetwork && !(network.getNodeByID(this.nodeID).isDestination())) {
 			for (int i = 0; i < 6; i++) {
 				if (hasInventoryOnSide(i)) {
-					network.registerDestination(this.nodeID);
+					network.registerDestination(this.nodeID, EnumFacing.getFront(i));
 					break;
 				}
 			}
@@ -241,7 +254,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		super.breakBlock(world, pos, state, player);
 		if(!mods.isEmpty() && mods!=null) {
 			for(IModule mod : mods) {
-				world.spawnEntity(new EntityItem(world, posX()+0.5, posY()+1.5, posZ()+0.5, IModule.getItemFromType(mod.modType().toString())));
+				//world.spawnEntity(new EntityItem(world, posX()+0.5, posY()+1.5, posZ()+0.5, IModule.getItemFromType(mod.modType().toString())));
 			}
 		}
 	}

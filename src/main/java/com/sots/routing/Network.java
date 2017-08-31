@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.apache.logging.log4j.Level;
 
@@ -21,7 +23,7 @@ import com.sots.util.data.Tuple;
 import net.minecraft.util.EnumFacing;
 
 public class Network {
-	private volatile Map<UUID, NetworkNode> destinations = new HashMap<UUID, NetworkNode>();
+	private volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations = new HashMap<UUID, Tuple<NetworkNode, EnumFacing>>();
 	private volatile Map<UUID, NetworkNode> nodes = new HashMap<UUID, NetworkNode>();
 
 	private volatile Map<UUID, WeightedNetworkNode> junctions = new HashMap<UUID, WeightedNetworkNode>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
@@ -41,9 +43,9 @@ public class Network {
 		router=new MultiCachedDijkstraRouter(junctions, destinations, nodes);
 	}
 	
-	public void registerDestination(UUID in) {
+	public void registerDestination(UUID in, EnumFacing dir) {
 		if(!destinations.containsKey(in)) {
-			destinations.put(in, getNodeByID(in));
+			destinations.put(in, new Tuple<NetworkNode, EnumFacing>(getNodeByID(in), dir));
 			NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
 			getNodeByID(in).setAsDestination(true);
 			LogisticsPipes2.logger.log(Level.INFO, "Registered destination [" + in + "] in network [" + name + "]");
@@ -117,29 +119,26 @@ public class Network {
 		return name.toString();
 	}
 	
-	public boolean getAllRoutesFrom(UUID nodeId){
-		long startTime = System.currentTimeMillis();
-		NetworkNode start = destinations.get(nodeId);
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> route = null;
+	public List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>> getAllRoutesFrom(UUID nodeId){
+		NetworkNode start = destinations.get(nodeId).getKey();
+		List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>> routes = new ArrayList<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>>();;
 		Set<UUID> keys = destinations.keySet();
 		for(UUID key : keys) {
-			NetworkNode dest = destinations.get(key);
+			NetworkNode dest = destinations.get(key).getKey();
 			if(dest.getId() != start.getId()) {
-				route = router.route(start, dest);
+				routes.add(router.route(start, dest));
 				router.clean();
-				LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), dest.getId().toString(), (route!= null ? "" : "not") + " been found!"));
+				//LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), dest.getId().toString(), (route!= null ? "" : "not") + " been found!"));
 			}
 		}
-		long endTime = System.currentTimeMillis();
-		LogisticsPipes2.logger.info(String.format("Routing from Pipe [ %s ] to all other pipes took %d milliseconds", start.getId().toString(), endTime-startTime));
-		return route != null ? true : false;
+		return routes;
 	}
 	
 	public boolean getRouteFromTo(UUID nodeS, UUID nodeT) {
 		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> route = null;
 		if(nodeS != nodeT) {
-			NetworkNode start = destinations.get(nodeS);
-			NetworkNode target = destinations.get(nodeT);
+			NetworkNode start = destinations.get(nodeS).getKey();
+			NetworkNode target = destinations.get(nodeT).getKey();
 			
 			route = router.route(start, target);
 			router.clean();
