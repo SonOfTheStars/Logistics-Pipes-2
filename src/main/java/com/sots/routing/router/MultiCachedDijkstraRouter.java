@@ -35,7 +35,7 @@ public class MultiCachedDijkstraRouter{
 	protected volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations;
 	protected volatile Map<UUID, NetworkNode> nodes;
 
-	private Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>();
+	private volatile Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>();
 
 	protected volatile Set<UUID> sources = new HashSet<UUID>();
 

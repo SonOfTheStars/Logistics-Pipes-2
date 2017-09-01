@@ -31,6 +31,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 
 public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable, ITileEntityBase{
 	
@@ -210,17 +211,26 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					item.setHeading(item.getHeadingForNode());
 				}
 				if(item.ticks==item.TICK_MAX) {
-					//if(getConnection(item.getHeading())!=ConnectionTypes.PIPE) {
 					if(getConnection(item.getHeading())==ConnectionTypes.PIPE) {
-						//LogisticsPipes2.logger.info("Should pass on an item");
 						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(item.getHeading()));
 						if(pipe!=null) {
 							pipe.catchItem(item);
 							i.remove();
 						}
 					}
+					else if (getConnection(item.getHeading())==ConnectionTypes.BLOCK) {
+						TileEntity te = world.getTileEntity(getPos().offset(item.getHeading()));
+						if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, item.getHeading().getOpposite())) {
+							IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, item.getHeading().getOpposite());
+							ItemStack itemStack = item.getContent();
+							for (int j = 0; j < itemHandler.getSlots(); j++) {
+								itemStack = itemHandler.insertItem(j, itemStack, false);
+							}
+							world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, itemStack));
+						}
+					}
 					else {
-						//LogisticsPipes2.logger.info(item.getHeading());
+						LogisticsPipes2.logger.info(item.getHeading()); //DEBUG
 						world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, item.getContent()));
 					}
 				}
@@ -267,24 +277,31 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		case 0:
 			if(down == ConnectionTypes.BLOCK)
 				return true;
+			break;
 		case 1:
 			if(up == ConnectionTypes.BLOCK)
 				return true;
+			break;
 		case 2:
 			if(north == ConnectionTypes.BLOCK)
 				return true;
+			break;
 		case 3:
 			if(south == ConnectionTypes.BLOCK)
 				return true;
+			break;
 		case 4:
 			if(west == ConnectionTypes.BLOCK)
 				return true;
+			break;
 		case 5:
 			if(east == ConnectionTypes.BLOCK)
 				return true;
+			break;
 		default:
 				return false;
 		}
+		return false;
 	}
 
 	@Override
@@ -392,6 +409,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		try {
 			contents.add(item);
 			item.ticks = 0;
+			spawnParticle(1f, 1f, 1f);
 			//LogisticsPipes2.logger.info("Caugth an item");
 			return true;
 		}

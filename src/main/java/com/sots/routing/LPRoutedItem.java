@@ -1,7 +1,6 @@
 package com.sots.routing;
 
 import java.util.Deque;
-import java.util.Stack;
 import java.util.UUID;
 
 import com.sots.tiles.TileGenericPipe;
@@ -20,10 +19,10 @@ public class LPRoutedItem{
 	private TileGenericPipe holding;
 	private Deque<Tuple<UUID, EnumFacing>> route;
 	private ItemStack stack;
-	public LPRoutedItem(World worldIn, double x, double y, double z, ItemStack stack, EnumFacing initVector, TileGenericPipe holder, Deque<Tuple<UUID,EnumFacing>> deque, ItemStack content) {
+	public LPRoutedItem(World worldIn, double x, double y, double z, ItemStack stack, EnumFacing initVector, TileGenericPipe holder, Deque<Tuple<UUID, EnumFacing>> routingInfo, ItemStack content) {
 		setHeading(initVector);
 		setHolding(holder);
-		route = deque;
+		route = routingInfo;
 		ticks = 0;
 		this.stack = content;
 	}
@@ -45,7 +44,7 @@ public class LPRoutedItem{
 	}
 	
 	public EnumFacing getHeadingForNode(){
-		if (route.isEmpty()) {
+		if (route.peek() == null) {
 			return EnumFacing.UP;
 		}
 		return route.pop().getVal();
