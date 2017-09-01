@@ -133,7 +133,9 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 						//LogisticsPipes2.logger.info("Waiting for routing to be done");
 						while (route.getKey() == false) {}
 						//LogisticsPipes2.logger.info("Spawning first item");
-						catchItem(new LPRoutedItem(world, (double) posX(), (double) posY(), (double) posZ(), new ItemStack(Items.APPLE), EnumFacing.UP, this, route.getVal().getThird(), new ItemStack(Items.APPLE)));
+						Stack<Tuple<UUID, EnumFacing>> routeCopy = new Stack<Tuple<UUID, EnumFacing>>();
+						routeCopy.addAll(route.getVal().getThird());
+						catchItem(new LPRoutedItem(world, (double) posX(), (double) posY(), (double) posZ(), new ItemStack(Items.APPLE), EnumFacing.UP, this, routeCopy, new ItemStack(Items.APPLE)));
 					}
 				}
 			}

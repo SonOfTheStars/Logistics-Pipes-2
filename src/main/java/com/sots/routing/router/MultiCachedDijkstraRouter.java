@@ -35,7 +35,7 @@ public class MultiCachedDijkstraRouter{
 	protected volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations;
 	protected volatile Map<UUID, NetworkNode> nodes;
 
-	private Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>();
+	private volatile Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>();
 
 	protected volatile Set<UUID> sources = new HashSet<UUID>();
 
@@ -55,6 +55,12 @@ public class MultiCachedDijkstraRouter{
 		while (sources.contains(s.getId())) {}
 
 		if (cache.containsKey(input)) {
+			//if (cache.get(input).getThird().isEmpty()) {
+				//LogisticsPipes2.logger.info(cache.get(input).getFirst());
+				//LogisticsPipes2.logger.info(cache.get(input).getSecnd());
+				//LogisticsPipes2.logger.info("ROUTE IS EMPTY");
+			//}
+
 			return new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(true, cache.get(input));
 		}
 
