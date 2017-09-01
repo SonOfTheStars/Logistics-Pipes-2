@@ -5,7 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.List;
-import java.util.Stack;
+import java.util.Deque;
+import java.util.ArrayDeque;
 
 import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
@@ -128,12 +129,12 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		if(heldItem.getItem()!=null) {
 			if(heldItem.getItem() instanceof ItemSign) {
 				if(hasNetwork) {
-					List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>> routes = network.getAllRoutesFrom(nodeID);
-					for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> route : routes) {
+					List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>> routes = network.getAllRoutesFrom(nodeID);
+					for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route : routes) {
 						//LogisticsPipes2.logger.info("Waiting for routing to be done");
 						while (route.getKey() == false) {}
 						//LogisticsPipes2.logger.info("Spawning first item");
-						Stack<Tuple<UUID, EnumFacing>> routeCopy = new Stack<Tuple<UUID, EnumFacing>>();
+						Deque<Tuple<UUID, EnumFacing>> routeCopy = new ArrayDeque<Tuple<UUID, EnumFacing>>();
 						routeCopy.addAll(route.getVal().getThird());
 						catchItem(new LPRoutedItem(world, (double) posX(), (double) posY(), (double) posZ(), new ItemStack(Items.APPLE), EnumFacing.UP, this, routeCopy, new ItemStack(Items.APPLE)));
 					}

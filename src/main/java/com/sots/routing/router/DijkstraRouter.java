@@ -1,8 +1,8 @@
 package com.sots.routing.router;
 
+import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Stack;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -24,7 +24,7 @@ public class DijkstraRouter extends Router {
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private Queue<WeightedNetworkNode> unvisited = new LinkedBlockingQueue<WeightedNetworkNode>();
 	private Queue<WeightedNetworkNode> visited = new LinkedBlockingQueue<WeightedNetworkNode>();
-	private Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> routingInfo;
+	private Triple<NetworkNode, NetworkNode, ArrayDeque<Tuple<UUID, EnumFacing>>> routingInfo;
 
 	protected volatile Map<UUID, WeightedNetworkNode> junctions;
 
@@ -33,7 +33,7 @@ public class DijkstraRouter extends Router {
 	}
 
 
-	public Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> route(NetworkNode s, NetworkNode t) {
+	public Triple<NetworkNode, NetworkNode, ArrayDeque<Tuple<UUID, EnumFacing>>> route(NetworkNode s, NetworkNode t) {
 		if (junctions.containsKey(s.getId())) {
 			start = junctions.get(s.getId());
 		} else {
@@ -48,11 +48,11 @@ public class DijkstraRouter extends Router {
 			return null;
 		}
 
-		FutureTask<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> routingTask =
-			new FutureTask<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(
-					new Callable<Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>() {
+		FutureTask<Triple<NetworkNode, NetworkNode, ArrayDeque<Tuple<UUID, EnumFacing>>>> routingTask =
+			new FutureTask<Triple<NetworkNode, NetworkNode, ArrayDeque<Tuple<UUID, EnumFacing>>>>(
+					new Callable<Triple<NetworkNode, NetworkNode, ArrayDeque<Tuple<UUID, EnumFacing>>>>() {
 						@Override
-						public Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> call() 
+						public Triple<NetworkNode, NetworkNode, ArrayDeque<Tuple<UUID, EnumFacing>>> call() 
 								throws Exception {
 							start.p_cost=0;
 							start.parent=null;
@@ -66,14 +66,14 @@ public class DijkstraRouter extends Router {
 									//path found
 									NetworkNode help = current;
 
-									Stack<Tuple<UUID, EnumFacing>> route = new Stack<Tuple<UUID, EnumFacing>>();
+									ArrayDeque<Tuple<UUID, EnumFacing>> route = new ArrayDeque<Tuple<UUID, EnumFacing>>();
 									while(help.parent != null) {
 										pushToRouteUntillParent(help, route);
 
 										help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
 										help = help.parent.getKey();
 									}
-									return new Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>(start, target, route);
+									return new Triple<NetworkNode, NetworkNode, ArrayDeque<Tuple<UUID, EnumFacing>>>(start, target, route);
 								}
 
 
@@ -114,7 +114,7 @@ public class DijkstraRouter extends Router {
 		return routingInfo;
 	}
 
-	private void pushToRouteUntillParent(NetworkNode current, Stack<Tuple<UUID, EnumFacing>> route) throws InterruptedException {
+	private void pushToRouteUntillParent(NetworkNode current, ArrayDeque<Tuple<UUID, EnumFacing>> route) throws InterruptedException {
 		NetworkNode parent = current.parent.getKey();
 		EnumFacing direction = current.parent.getVal();
 		int parentDirection = direction.getOpposite().getIndex();

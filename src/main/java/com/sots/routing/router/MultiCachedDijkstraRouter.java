@@ -1,12 +1,13 @@
 package com.sots.routing.router;
 
-import java.util.Stack;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.UUID;
-import java.util.Map;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,11 +17,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import com.sots.LogisticsPipes2;
 import com.sots.routing.NetworkNode;
 import com.sots.routing.WeightedNetworkNode;
-import com.sots.util.data.Tuple;
 import com.sots.util.data.Triple;
+import com.sots.util.data.Tuple;
 
 import net.minecraft.util.EnumFacing;
-import net.minecraft.crash.CrashReport;
 
 public class MultiCachedDijkstraRouter{
 	private static final int NUM_THREADS = 4;
@@ -29,13 +29,13 @@ public class MultiCachedDijkstraRouter{
 	private ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
 	private Queue<WeightedNetworkNode> unvisited = new LinkedBlockingQueue<WeightedNetworkNode>();
 	private Queue<WeightedNetworkNode> visited = new LinkedBlockingQueue<WeightedNetworkNode>();
-	private Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> routingInfo;
+	private Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>> routingInfo;
 
 	protected volatile Map<UUID, WeightedNetworkNode> junctions;
 	protected volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations;
 	protected volatile Map<UUID, NetworkNode> nodes;
 
-	private volatile Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>();
+	private volatile Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>();
 
 	protected volatile Set<UUID> sources = new HashSet<UUID>();
 
@@ -49,26 +49,20 @@ public class MultiCachedDijkstraRouter{
 	 * The first part of the output is a boolean, which is false if the route has not yet been calculated, and is true when the route has been calculated
 	 * The second part of the output is a triple consisting of the start node, the target node and the route from the start node to the target node
 	 */
-	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> route(NetworkNode s, NetworkNode t) {
+	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route(NetworkNode s, NetworkNode t) {
 		Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>(s, t);
 
 		while (sources.contains(s.getId())) {}
 
 		if (cache.containsKey(input)) {
-			//if (cache.get(input).getThird().isEmpty()) {
-				//LogisticsPipes2.logger.info(cache.get(input).getFirst());
-				//LogisticsPipes2.logger.info(cache.get(input).getSecnd());
-				//LogisticsPipes2.logger.info("ROUTE IS EMPTY");
-			//}
-
-			return new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(true, cache.get(input));
+			return new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>(true, cache.get(input));
 		}
 
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> result = doActualRouting(s, t);
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> result = doActualRouting(s, t);
 		return result;
 	}
 
-	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> doActualRouting(NetworkNode s, NetworkNode t) {
+	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> doActualRouting(NetworkNode s, NetworkNode t) {
 		WeightedNetworkNode start, target;
 
 		Map<UUID, WeightedNetworkNode> junctions = new HashMap<UUID, WeightedNetworkNode>(this.junctions);
@@ -91,7 +85,7 @@ public class MultiCachedDijkstraRouter{
 
 		sources.add(start.getId());
 
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> result = new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>(false, null);
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> result = new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>(false, null);
 
 		FutureTask<Void> routingTask =
 			new FutureTask<Void>(
@@ -133,7 +127,7 @@ public class MultiCachedDijkstraRouter{
 								//NetworkNode help = n;
 								WeightedNetworkNode help = junctions.get(n.getKey().getId());
 
-								Stack<Tuple<UUID, EnumFacing>> route = new Stack<Tuple<UUID, EnumFacing>>();
+								Deque<Tuple<UUID, EnumFacing>> route = new ArrayDeque<Tuple<UUID, EnumFacing>>();
 								route.push(new Tuple<UUID, EnumFacing>(null, n.getVal()));
 								while(help.parent != null) {
 									pushToRouteUntillParent(help, route);
@@ -143,7 +137,7 @@ public class MultiCachedDijkstraRouter{
 									help = junctions.get(help.parent.getKey().getId());
 								}
 								Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>((NetworkNode) start, n.getKey());
-								Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>> tmp_result = new Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>((NetworkNode) start, n.getKey(), route);
+								Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>> tmp_result = new Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>((NetworkNode) start, n.getKey(), route);
 								cache.put(input, tmp_result);
 								//LogisticsPipes2.logger.info("Route found of length " + route.size());
 							}
@@ -170,7 +164,7 @@ public class MultiCachedDijkstraRouter{
 		return result;
 	}
 
-	private void pushToRouteUntillParent(NetworkNode current, Stack<Tuple<UUID, EnumFacing>> route) {
+	private void pushToRouteUntillParent(NetworkNode current, Deque<Tuple<UUID, EnumFacing>> route) {
 		NetworkNode parent = current.parent.getKey();
 		EnumFacing direction = current.parent.getVal();
 		int parentDirection = direction.getOpposite().getIndex();
