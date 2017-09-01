@@ -37,7 +37,7 @@ public class BlockRegistry {
 			//Register Item of Block
 			GameRegistry.register(new ItemBlock(block), block.getRegistryName());
 			//Register Ores
-			if(!StringUtil.isNullOrWhitespace(block.getOreName()) && !StringUtil.isNullOrWhitespace(block.getOreName()))
+			if(!StringUtil.isNullOrWhitespace(block.getOreName()) && !StringUtil.isNullOrEmpty(block.getOreName()))
 				OreDictionary.registerOre(block.getOreName(), block);
 			
 			if(block instanceof BlockOreRutile) {

@@ -5,6 +5,7 @@ import com.sots.util.References;
 import com.sots.util.registries.BlockRegistry;
 import com.sots.util.registries.ItemRegistry;
 import com.sots.util.registries.PipeRegistry;
+import com.sots.util.registries.TileRegistry;
 
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -29,6 +30,6 @@ public class ClientProxy extends CommonProxy{
 	public void init(FMLInitializationEvent event){
 		super.init(event);
 		
-		
+		TileRegistry.bindRenders();
 	}
 }

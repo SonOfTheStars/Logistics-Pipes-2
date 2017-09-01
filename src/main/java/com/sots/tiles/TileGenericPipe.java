@@ -407,7 +407,9 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		return false;
 	}
 	
-	
+	public Set<LPRoutedItem> getContents(){
+		return contents;
+	}
 	
 }
 

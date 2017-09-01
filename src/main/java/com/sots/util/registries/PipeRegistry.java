@@ -34,6 +34,8 @@ public class PipeRegistry {
 			
 			GameRegistry.register(new ItemBlock(pipe), pipe.getRegistryName());
 		}
+		
+		
 	}
 	
 	public static void initModels() {
