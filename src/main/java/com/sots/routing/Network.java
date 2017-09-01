@@ -1,21 +1,18 @@
 package com.sots.routing;
 
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 import java.util.UUID;
-import java.util.List;
-import java.util.ArrayList;
 
 import org.apache.logging.log4j.Level;
 
 import com.sots.LogisticsPipes2;
 import com.sots.routing.interfaces.IRoutable;
-import com.sots.routing.router.Router;
-import com.sots.routing.router.DijkstraRouter;
-import com.sots.routing.router.CachedDijkstraRouter;
 import com.sots.routing.router.MultiCachedDijkstraRouter;
 import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
@@ -30,16 +27,12 @@ public class Network {
 
 	private NetworkNode root = null;
 	
-	//private Router router;
 	private MultiCachedDijkstraRouter router;
 	
 	private UUID name;
 	
 	public Network(UUID n) {
-		name=n;
-		//router=new Router(); 
-		//router=new DijkstraRouter(junctions); 
-		//router=new CachedDijkstraRouter(junctions); 
+		name=n; 
 		router=new MultiCachedDijkstraRouter(junctions, destinations, nodes);
 	}
 	
@@ -119,9 +112,9 @@ public class Network {
 		return name.toString();
 	}
 	
-	public List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>> getAllRoutesFrom(UUID nodeId){
+	public List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>> getAllRoutesFrom(UUID nodeId){
 		NetworkNode start = destinations.get(nodeId).getKey();
-		List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>> routes = new ArrayList<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>>>();;
+		List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>> routes = new ArrayList<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>>();;
 		Set<UUID> keys = destinations.keySet();
 		for(UUID key : keys) {
 			NetworkNode dest = destinations.get(key).getKey();
@@ -135,7 +128,7 @@ public class Network {
 	}
 	
 	public boolean getRouteFromTo(UUID nodeS, UUID nodeT) {
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Stack<Tuple<UUID, EnumFacing>>>> route = null;
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route = null;
 		if(nodeS != nodeT) {
 			NetworkNode start = destinations.get(nodeS).getKey();
 			NetworkNode target = destinations.get(nodeT).getKey();
