@@ -1,37 +1,30 @@
 package com.sots.tiles;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.List;
-import java.util.Deque;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.UUID;
 
-import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.item.modules.IItemModule;
 import com.sots.module.IModule;
-import com.sots.routing.Network;
+import com.sots.routing.LPRoutedItem;
 import com.sots.routing.NetworkNode;
 import com.sots.routing.interfaces.IDestination;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.Connections;
 import com.sots.util.Misc;
-import com.sots.util.data.Tuple;
 import com.sots.util.data.Triple;
-import com.sots.routing.LPRoutedItem;
+import com.sots.util.data.Tuple;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemSign;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;

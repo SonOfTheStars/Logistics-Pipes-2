@@ -1,15 +1,11 @@
 package com.sots.pipe;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import com.sots.particle.ParticleUtil;
-import com.sots.tiles.TileBasicPipe;
 import com.sots.tiles.TileGenericPipe;
 import com.sots.tiles.TileRoutedPipe;
-import com.sots.tiles.TileGenericPipe.ConnectionTypes;
-import com.sots.util.AccessHelper;
 import com.sots.util.References;
 
 import net.minecraft.block.Block;
