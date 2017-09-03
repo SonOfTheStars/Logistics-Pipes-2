@@ -129,7 +129,15 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 						//LogisticsPipes2.logger.info("Spawning first item");
 						Deque<Tuple<UUID, EnumFacing>> routeCopy = new ArrayDeque<Tuple<UUID, EnumFacing>>();
 						routeCopy.addAll(route.getVal().getThird());
-						catchItem(new LPRoutedItem(world, (double) posX(), (double) posY(), (double) posZ(), new ItemStack(Items.APPLE), EnumFacing.UP, this, routeCopy, new ItemStack(Items.APPLE)));
+						for (int i = 0; i < 6; i++) {
+							if (hasItemInInventoryOnSide(EnumFacing.getFront(i), new ItemStack(Items.APPLE))) {
+								ItemStack stack = takeFromInventoryOnSide(EnumFacing.getFront(i), new ItemStack(Items.APPLE));
+								catchItem(new LPRoutedItem(world, (double) posX(), (double) posY(), (double) posZ(), stack, EnumFacing.getFront(i), this, routeCopy, stack));
+								break;
+							}
+						}
+
+						//catchItem(new LPRoutedItem(world, (double) posX(), (double) posY(), (double) posZ(), new ItemStack(Items.APPLE), EnumFacing.UP, this, routeCopy, new ItemStack(Items.APPLE)));
 					}
 				}
 			}

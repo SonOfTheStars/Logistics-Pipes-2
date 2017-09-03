@@ -304,6 +304,50 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		return false;
 	}
 
+	public ItemStack takeFromInventoryOnSide(EnumFacing face, ItemStack item) {
+		if (!hasInventoryOnSide(face.getIndex())) {
+			return null;
+		}
+		TileEntity te = world.getTileEntity(getPos().offset(face));
+		if (!te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite())) {
+			return null;
+		}
+		IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite());
+		ItemStack result = ItemStack.EMPTY;
+		for (int i = 0; i < itemHandler.getSlots(); i++) {
+			if (itemHandler.getStackInSlot(i).isItemEqual(item)) {
+				ItemStack tmp = itemHandler.extractItem(i, item.getCount() - result.getCount(), false);
+				result = new ItemStack(item.getItem(), tmp.getCount() + result.getCount());
+			}
+			if (result.getCount() >= item.getCount()) {
+				break;
+			}
+		}
+		return result;
+	}
+	
+	public boolean hasItemInInventoryOnSide(EnumFacing face, ItemStack item) {
+		if (!hasInventoryOnSide(face.getIndex())) {
+			return false;
+		}
+		TileEntity te = world.getTileEntity(getPos().offset(face));
+		if (!te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite())) {
+			return false;
+		}
+		IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite());
+		ItemStack result = ItemStack.EMPTY;
+		for (int i = 0; i < itemHandler.getSlots(); i++) {
+			if (itemHandler.getStackInSlot(i).isItemEqual(item)) {
+				result = new ItemStack(item.getItem(), itemHandler.getStackInSlot(i).getCount() + result.getCount());
+			}
+			if (result.getCount() >= item.getCount()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+
 	@Override
 	public int posX() {return pos.getX();}
 
