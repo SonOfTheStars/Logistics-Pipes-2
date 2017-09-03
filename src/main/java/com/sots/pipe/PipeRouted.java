@@ -100,7 +100,9 @@ public class PipeRouted extends BlockGenericPipe{
 	public boolean isOpaqueCube(IBlockState state) {return false;}
 	
 	@Override
-	public boolean isFullyOpaque(IBlockState state) {return false;}
+	public boolean isTopSolid(IBlockState state) {
+		return false;
+	}
 	
 	@Override
 	public int getMetaFromState(IBlockState state) {return 0;}

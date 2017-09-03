@@ -47,11 +47,6 @@ public class ParticleGlint extends Particle implements ILP2Particle{
 	}
 	
 	@Override
-	public boolean isTransparent() {
-		return true;
-	}
-	
-	@Override
 	public int getFXLayer() {
 		return 1;
 	}
