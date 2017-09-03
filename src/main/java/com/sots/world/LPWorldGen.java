@@ -125,8 +125,8 @@ public class LPWorldGen implements IWorldGenerator{
 				long xSeed = (fmlRandom.nextLong()>>3);
 				long zSeed = (fmlRandom.nextLong()>>3);
 				
-				fmlRandom.setSeed(xSeed * loc.chunkXPos + zSeed * loc.chunkZPos ^ worldSeed);
-				this.generateOres(fmlRandom, loc.chunkXPos, loc.chunkZPos, event.world, false);
+				fmlRandom.setSeed(xSeed * loc.x + zSeed * loc.z ^ worldSeed);
+				this.generateOres(fmlRandom, loc.x, loc.z, event.world, false);
 				chunks.remove(0);
 			}
 		}

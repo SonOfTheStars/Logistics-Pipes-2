@@ -1,29 +1,21 @@
 package com.sots.pipe;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import com.sots.particle.ParticleUtil;
 import com.sots.tiles.TileBasicPipe;
 import com.sots.tiles.TileGenericPipe;
-import com.sots.tiles.TileRoutedPipe;
-import com.sots.tiles.TileGenericPipe.ConnectionTypes;
 import com.sots.util.References;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -104,7 +96,9 @@ public class PipeBasic extends BlockGenericPipe{
 	public boolean isOpaqueCube(IBlockState state) {return false;}
 	
 	@Override
-	public boolean isFullyOpaque(IBlockState state) {return false;}
+	public boolean isTopSolid(IBlockState state) {
+		return false;
+	}
 	
 	@Override
 	public int getMetaFromState(IBlockState state) {return 0;}

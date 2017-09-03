@@ -1,9 +1,9 @@
 package com.sots.tiles;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Iterator;
 
 import org.apache.logging.log4j.Level;
 
