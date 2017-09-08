@@ -13,11 +13,11 @@ public class ParticleUtil {
 	public static int counter = 0;
 	
 	public static void spawnGlint(World world, float x, float y, float z, float vx, float vy, float vz, float r, float g, float b, float scale, int lifetime) {
-		if(LogisticsPipes2.proxy instanceof ClientProxy) {
+
 			counter += rand.nextInt(3);
 			if(counter % (Minecraft.getMinecraft().gameSettings.particleSetting == 0 ? 1: 2*Minecraft.getMinecraft().gameSettings.particleSetting) == 0) {
-				ClientProxy.particleRender.addParticle(new ParticleGlint(world, x, y, z, vx, vy, vz, r, g, b, scale, lifetime));
+				LogisticsPipes2.proxy.getParticleRenderer().addParticle(new ParticleGlint(world, x, y, z, vx, vy, vz, r, g, b, scale, lifetime));
 			}
-		}
+
 	}
 }

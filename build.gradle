@@ -4,7 +4,7 @@ buildscript {
         maven { url = "http://files.minecraftforge.net/maven" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -21,7 +21,7 @@ compileJava {
 }
 
 minecraft {
-    version = "1.11.2-13.20.0.2315"
+    version = "1.12.1-14.22.0.2474"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.
@@ -29,42 +29,26 @@ minecraft {
     // stable_#            stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not allways work.
     // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20170612"
+    mappings = "snapshot_20170908"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
-dependencies {
-    // you may put jars on which you depend on in ./libs
-    // or you may define them like so..
-    //compile "some.group:artifact:version:classifier"
-    //compile "some.group:artifact:version"
-      
-    // real examples
-    //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
-    //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
-
-    // the 'provided' configuration is for optional dependencies that exist at compile-time but might not at runtime.
-    //provided 'com.mod-buildcraft:buildcraft:6.0.8:dev'
-
-    // the deobf configurations:  'deobfCompile' and 'deobfProvided' are the same as the normal compile and provided,
-    // except that these dependencies get remapped to your current MCP mappings
-    //deobfCompile 'com.mod-buildcraft:buildcraft:6.0.8:dev'
-    //deobfProvided 'com.mod-buildcraft:buildcraft:6.0.8:dev'
-
-    // for more info...
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
-    deobfCompile "mezz.jei:jei_1.11.2:4.2.2.220"
-    compile files('libs/')
-
-}
-
-repositories {
-    maven {
-        name 'DVS1 Maven FS'
-        url 'http://dvs1.progwml6.com/files/maven'
-    }
-}
+//dependencies {
+//    deobfCompile "mezz.jei:jei_1.12.1-4.7.8.93"
+//    compile files('libs/')
+//
+//}
+//
+//repositories {
+//    maven {
+//        name 'DVS1 Maven FS'
+//        url 'http://dvs1.progwml6.com/files/maven'
+//    }
+//    maven {
+//        name "ModMaven"
+//        url "https://modmaven.k-4u.nl"
+//    }
+//}
 
 processResources
 {

@@ -119,13 +119,13 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	@Override
 	public boolean activate(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
 		ItemStack heldItem = player.getHeldItem(hand);
-		if(heldItem.getItem()!=null) {
+		if(!heldItem.isEmpty()) {
 			if(heldItem.getItem() instanceof ItemSign) {
 				if(hasNetwork) {
 					List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>> routes = network.getAllRoutesFrom(nodeID);
 					for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route : routes) {
 						//LogisticsPipes2.logger.info("Waiting for routing to be done");
-						while (route.getKey() == false) {}
+						while (!route.getKey()) {}
 						//LogisticsPipes2.logger.info("Spawning first item");
 						Deque<Tuple<UUID, EnumFacing>> routeCopy = new ArrayDeque<Tuple<UUID, EnumFacing>>();
 						routeCopy.addAll(route.getVal().getThird());
@@ -204,7 +204,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		
 		if(heldItem.getItem() instanceof IItemModule){
 			int count = 0;
-			if(modules.getStackInSlot(0)!=null) {
+			if(!modules.getStackInSlot(0).isEmpty()) {
 				count = modules.getStackInSlot(0).getCount();
 			}
 			if(count < MAX_MODS){
@@ -247,7 +247,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
 		super.breakBlock(world, pos, state, player);
-		if(modules.getStackInSlot(0)!=null) {
+		if(!modules.getStackInSlot(0).isEmpty()) {
 			Misc.spawnInventoryInWorld(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, modules);
 		}
 	}

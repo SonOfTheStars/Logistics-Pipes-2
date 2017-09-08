@@ -9,6 +9,7 @@ import com.sots.pipe.PipeBasic;
 import com.sots.pipe.PipeRouted;
 
 import net.minecraft.item.ItemBlock;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class PipeRegistry {
@@ -30,12 +31,10 @@ public class PipeRegistry {
 		registry.add(pipe_routed);
 		
 		for(BlockGenericPipe pipe : registry) {
-			GameRegistry.register(pipe);
-			
-			GameRegistry.register(new ItemBlock(pipe), pipe.getRegistryName());
+			ForgeRegistries.BLOCKS.register(pipe);
+
+			ForgeRegistries.ITEMS.register(new ItemBlock(pipe).setRegistryName(pipe.getRegistryName()));
 		}
-		
-		
 	}
 	
 	public static void initModels() {

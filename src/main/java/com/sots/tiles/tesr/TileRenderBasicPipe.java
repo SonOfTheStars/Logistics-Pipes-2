@@ -6,6 +6,7 @@ import com.sots.routing.LPRoutedItem;
 import com.sots.tiles.TileGenericPipe;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -14,8 +15,7 @@ import net.minecraft.item.ItemStack;
 
 public class TileRenderBasicPipe extends TileEntitySpecialRenderer<TileGenericPipe>{
 	@Override
-	public void renderTileEntityAt(TileGenericPipe te, double x, double y, double z, float partialTicks,
-			int destroyStage) {
+	public void render(TileGenericPipe te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		if(!te.getWorld().isBlockLoaded(te.getPos(), false))
 			return;
 		Set<LPRoutedItem> displays = te.getContents();

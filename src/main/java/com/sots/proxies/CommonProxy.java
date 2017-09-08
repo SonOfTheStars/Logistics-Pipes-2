@@ -2,6 +2,7 @@ package com.sots.proxies;
 
 import java.io.File;
 
+import com.sots.particle.ParticleRenderer;
 import com.sots.util.Config;
 import com.sots.util.registries.BlockRegistry;
 import com.sots.util.registries.ItemRegistry;
@@ -43,5 +44,9 @@ public class CommonProxy {
 		if(config != null && config.hasChanged()){
 			config.save();
 		}
+	}
+
+	public ParticleRenderer getParticleRenderer(){
+		return null;
 	}
 }

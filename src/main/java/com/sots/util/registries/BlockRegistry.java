@@ -12,6 +12,7 @@ import com.sots.world.LPWorldGen;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemBlock;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -33,9 +34,9 @@ public class BlockRegistry {
 		for(LPBlockBase block : registry) {
 
 			//Register Block
-			GameRegistry.register(block);
+			ForgeRegistries.BLOCKS.register(block);
 			//Register Item of Block
-			GameRegistry.register(new ItemBlock(block), block.getRegistryName());
+			ForgeRegistries.ITEMS.register(new ItemBlock(block).setRegistryName(block.getRegistryName()));
 			//Register Ores
 			if(!StringUtil.isNullOrWhitespace(block.getOreName()) && !StringUtil.isNullOrEmpty(block.getOreName()))
 				OreDictionary.registerOre(block.getOreName(), block);

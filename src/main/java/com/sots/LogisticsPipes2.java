@@ -20,15 +20,14 @@ public class LogisticsPipes2 {
 	@SidedProxy(clientSide = "com.sots.proxies.ClientProxy", serverSide = "com.sots.proxies.ServerProxy")
 	public static CommonProxy proxy;
 	
-	@Mod.Instance
-	public static LogisticsPipes2 instance = new LogisticsPipes2();
+	@Mod.Instance(value = References.MODID)
+	public static LogisticsPipes2 instance;
 	
 	public static Logger logger;
 	
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event){
 		logger = event.getModLog();
-		MinecraftForge.EVENT_BUS.register(new EventManager());
 		proxy.preInit(event);
 	}
 	
