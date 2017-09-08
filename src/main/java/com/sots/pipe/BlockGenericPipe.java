@@ -2,8 +2,9 @@ package com.sots.pipe;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import com.google.common.base.Optional;
+
 import com.google.common.collect.UnmodifiableIterator;
 import com.sots.block.BlockTileBase;
 import com.sots.tiles.TileGenericPipe;
@@ -49,7 +50,7 @@ public class BlockGenericPipe extends BlockTileBase{
                     }
                 }
             }
-            return Optional.absent();
+            return Optional.empty();
         }
 		
 	};

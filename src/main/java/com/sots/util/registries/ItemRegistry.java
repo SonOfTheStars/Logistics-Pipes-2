@@ -19,6 +19,7 @@ import com.sots.item.parts.PartProviderProc;
 import com.sots.item.parts.PartSinkProc;
 import com.sots.util.StringUtil;
 
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
@@ -77,7 +78,7 @@ public class ItemRegistry {
 		//Register Items
 		for(LPItemBase item : registry) {
 			//Register Item
-			GameRegistry.register(item);
+			ForgeRegistries.ITEMS.register(item);
 			//Register Ordedict Names
 			if(!StringUtil.isNullOrWhitespace(item.getOreName()) && !StringUtil.isNullOrEmpty(item.getOreName()))
 				OreDictionary.registerOre(item.getOreName(), item);

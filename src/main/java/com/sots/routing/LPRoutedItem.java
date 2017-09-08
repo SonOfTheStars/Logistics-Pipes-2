@@ -12,12 +12,15 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraft.util.math.Vec3i;
 
+import javax.annotation.Nonnull;
+
 public class LPRoutedItem{
 	public final int TICK_MAX = 10;
 	public int ticks;
 	private EnumFacing heading;
 	private TileGenericPipe holding;
 	private Deque<Tuple<UUID, EnumFacing>> route;
+	@Nonnull
 	private ItemStack stack;
 	public LPRoutedItem(World worldIn, double x, double y, double z, ItemStack stack, EnumFacing initVector, TileGenericPipe holder, Deque<Tuple<UUID, EnumFacing>> routingInfo, ItemStack content) {
 		setHeading(initVector);
@@ -49,7 +52,8 @@ public class LPRoutedItem{
 		}
 		return route.pop().getVal();
 	}
-	
+
+	@Nonnull
 	public ItemStack getContent() {
 		return stack;
 	}
@@ -68,7 +72,7 @@ public class LPRoutedItem{
 			y += ((ticks-(TICK_MAX/2))/(TICK_MAX/2)) * heading.getDirectionVec().getY();
 			z += ((ticks-(TICK_MAX/2))/(TICK_MAX/2)) * heading.getDirectionVec().getZ();
 		}
-		return new Triple<Double, Double, Double>(x, y, z);
+		return new Triple<>(x, y, z);
 	}
 
 }

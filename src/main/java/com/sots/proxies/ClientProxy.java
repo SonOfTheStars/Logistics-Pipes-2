@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class ClientProxy extends CommonProxy{
 	
-	public static ParticleRenderer particleRender = new ParticleRenderer();
+	public ParticleRenderer particleRender = new ParticleRenderer();
 	
 	
 	@Override
@@ -29,7 +29,10 @@ public class ClientProxy extends CommonProxy{
 	@Override
 	public void init(FMLInitializationEvent event){
 		super.init(event);
-		
-		TileRegistry.bindRenders();
+	}
+
+	@Override
+	public ParticleRenderer getParticleRenderer() {
+		return particleRender;
 	}
 }
