@@ -1,11 +1,21 @@
 package com.sots;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.sots.network.LPPacketHandler;
+import com.sots.network.message.MessagePipeContentUpdate;
 import com.sots.proxies.ClientProxy;
 
+import mezz.jei.network.PacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -18,7 +28,17 @@ public class EventManager {
 	public static float tickCounter = 0;
 	public static int ticks = 0;
 	
+	public static Map<BlockPos, TileEntity> toUpdate = new HashMap<BlockPos, TileEntity>();
 	static EntityPlayer clientPlayer = null;
+	
+	public static void markTEForUpdate(BlockPos pos, TileEntity tile){
+		if (!toUpdate.containsKey(pos)){
+			toUpdate.put(pos, tile);
+		}
+		else {
+			toUpdate.replace(pos, tile);
+		}
+	}
 	
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
@@ -44,6 +64,26 @@ public class EventManager {
 			GlStateManager.pushMatrix();
 			ClientProxy.particleRender.renderParticles(Minecraft.getMinecraft().player, event.getPartialTicks());
 			GlStateManager.popMatrix();
+		}
+	}
+	
+	@SubscribeEvent
+	public void onWorldTick(TickEvent.WorldTickEvent event){
+		if (!event.world.isRemote && event.phase == TickEvent.Phase.END){
+			NBTTagList list = new NBTTagList();
+			TileEntity[] updateArray = toUpdate.values().toArray(new TileEntity[toUpdate.size()]);
+			for (int i = 0; i < updateArray.length; i ++){
+				TileEntity t = updateArray[i];
+				if (!event.world.isRemote){
+					list.appendTag(t.getUpdateTag());
+				}
+			}
+			if (!list.hasNoTags()){
+				NBTTagCompound tag = new NBTTagCompound();
+				tag.setTag("data", list);
+				LPPacketHandler.INSTANCE.sendToAll(new MessagePipeContentUpdate(tag));
+			}
+			toUpdate.clear();
 		}
 	}
 }

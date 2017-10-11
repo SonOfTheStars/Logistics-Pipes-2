@@ -13,6 +13,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
 public class TileRenderBasicPipe extends TileEntitySpecialRenderer<TileGenericPipe>{
+	float angle=0f;
 	@Override
 	public void renderTileEntityAt(TileGenericPipe te, double x, double y, double z, float partialTicks,
 			int destroyStage) {

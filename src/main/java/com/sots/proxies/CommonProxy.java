@@ -2,6 +2,7 @@ package com.sots.proxies;
 
 import java.io.File;
 
+import com.sots.network.LPPacketHandler;
 import com.sots.util.Config;
 import com.sots.util.registries.BlockRegistry;
 import com.sots.util.registries.ItemRegistry;
@@ -33,6 +34,8 @@ public class CommonProxy {
 		ItemRegistry.init();
 		
 		TileRegistry.init();
+		
+		LPPacketHandler.registerMessages();
 	}
 	
 	public void init(FMLInitializationEvent event){

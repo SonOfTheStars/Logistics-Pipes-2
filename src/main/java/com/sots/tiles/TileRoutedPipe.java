@@ -132,7 +132,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 						for (int i = 0; i < 6; i++) {
 							if (hasItemInInventoryOnSide(EnumFacing.getFront(i), new ItemStack(Items.APPLE))) {
 								ItemStack stack = takeFromInventoryOnSide(EnumFacing.getFront(i), new ItemStack(Items.APPLE));
-								catchItem(new LPRoutedItem(world, (double) posX(), (double) posY(), (double) posZ(), stack, EnumFacing.getFront(i), this, routeCopy, stack));
+								catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, EnumFacing.getFront(i), this, routeCopy));
 								break;
 							}
 						}

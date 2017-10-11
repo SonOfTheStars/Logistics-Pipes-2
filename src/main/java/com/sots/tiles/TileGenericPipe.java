@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
 
+import com.sots.EventManager;
 import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.particle.ParticleUtil;
@@ -21,6 +22,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -63,7 +65,11 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	}
 
 	@Override
-	public NBTTagCompound getUpdateTag() {return writeToNBT(new NBTTagCompound());}
+	public NBTTagCompound getUpdateTag() {
+		
+		
+		return writeToNBT(new NBTTagCompound());
+	}
 	
 	@Override
 	public SPacketUpdateTileEntity getUpdatePacket() {
@@ -76,11 +82,21 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
     }
 	
 	@Override
-    public void readFromNBT(NBTTagCompound compound) {super.readFromNBT(compound);}
+    public void readFromNBT(NBTTagCompound compound) {
+		super.readFromNBT(compound);
+		
+	}
 	
 	@Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound = super.writeToNBT(compound);
+        NBTTagList list = new NBTTagList();
+        for(LPRoutedItem lpri : contents) {
+        	list.appendTag(lpri.writeToNBT());
+        }
+        if(!list.hasNoTags()) {
+        	compound.setTag("contents", list);
+        }
         
         return compound;
     }
@@ -211,6 +227,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					item.setHeading(item.getHeadingForNode());
 				}
 				if(item.ticks==item.TICK_MAX) {
+					boolean debug = world.isRemote;
 					if(getConnection(item.getHeading())==ConnectionTypes.PIPE) {
 						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(item.getHeading()));
 						if(pipe!=null) {
@@ -235,6 +252,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					}
 				}
 			}
+			markForUpdate();
 		}
 	}
 	
@@ -471,6 +489,11 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	public Set<LPRoutedItem> getContents(){
 		return contents;
+	}
+
+	@Override
+	public void markForUpdate() {
+		EventManager.markTEForUpdate(this.getPos(), this);
 	}
 	
 }
