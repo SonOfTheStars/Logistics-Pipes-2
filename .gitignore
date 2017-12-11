@@ -17,3 +17,6 @@ src/main/java/com/sots/rendering/Face.java
 bin/
 .syntastic_javac_config
 src/main/java/net/*
+*.iml
+*.ipr
+*.iws

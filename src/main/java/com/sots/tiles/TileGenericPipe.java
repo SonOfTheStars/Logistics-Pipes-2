@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
+import net.minecraft.nbt.NBTBase;
 import org.apache.logging.log4j.Level;
 
 import com.sots.EventManager;
@@ -84,7 +85,13 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	@Override
     public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
-		
+		if(compound.hasKey("contents")) {
+			NBTTagList list = (NBTTagList) compound.getTag("contents");
+			contents.clear();
+			for(Iterator<NBTBase> i = list.iterator(); i.hasNext();) {
+				contents.add(LPRoutedItem.readFromNBT((NBTTagCompound) i.next(), this));
+			}
+		}
 	}
 	
 	@Override
@@ -232,7 +239,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(item.getHeading()));
 						if(pipe!=null) {
 							pipe.catchItem(item);
-							i.remove();
+//							i.remove();
 						}
 					}
 					else if (getConnection(item.getHeading())==ConnectionTypes.BLOCK) {
@@ -243,13 +250,15 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 							for (int j = 0; j < itemHandler.getSlots(); j++) {
 								itemStack = itemHandler.insertItem(j, itemStack, false);
 							}
-							world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, itemStack));
+							if(!itemStack.isEmpty())
+								world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, itemStack));
 						}
 					}
 					else {
 						LogisticsPipes2.logger.info(item.getHeading()); //DEBUG
 						world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, item.getContent()));
 					}
+					i.remove();
 				}
 			}
 			markForUpdate();
@@ -471,7 +480,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		try {
 			contents.add(item);
 			item.ticks = 0;
-			spawnParticle(1f, 1f, 1f);
+			//spawnParticle(1f, 1f, 1f);
 			//LogisticsPipes2.logger.info("Caugth an item");
 			return true;
 		}
