@@ -237,7 +237,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(item.getHeading()));
 						if (!pipe.isRoutable()) {
 							//network.clearCache();
-							Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route = network.getRouteFromTo(this.nodeID, item.getDestination());
+							Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>> route = network.getRouteFromTo(this.nodeID, item.getDestination());
 							if (route == null) { 
 								// This should only be the case when the current location and the destination are the same, which should only happen when sending an item to and from one of the "fake" destinations around a blocking pipe
 								i.remove();
@@ -246,7 +246,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 
 							while (route.getKey() == false) {}
 
-							if (Network.routeContainsNode(route.getVal().getThird(), this.nodeID)) {
+							if (Network.routeContainsNode(route.getVal(), this.nodeID)) {
 								LogisticsPipes2.logger.info("Clearing the cache");
 								network.clearCache();
 								route = network.getRouteFromTo(this.nodeID, item.getDestination());
@@ -256,9 +256,10 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 
 
 							Deque<Tuple<UUID, EnumFacing>> routeCopy = new ArrayDeque<Tuple<UUID, EnumFacing>>();
-							routeCopy.addAll(route.getVal().getThird());
-							toBeAdded.add(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), item.getContent(), item.getHeading().getOpposite(), this, routeCopy, route.getVal().getSecnd().getId()));
-							i.remove();
+							routeCopy.addAll(route.getVal());
+							route.getVal().removeLast(); // Needed in order to get the destination. Should not effect the route added to the item, as it has already been copied.
+							toBeAdded.add(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), item.getContent(), item.getHeading().getOpposite(), this, routeCopy, route.getVal().getLast().getKey()));
+							//i.remove();
 						} else if(pipe!=null) {
 							pipe.catchItem(item);
 //							i.remove();
@@ -279,7 +280,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					else {
 						LogisticsPipes2.logger.info(item.getHeading()); //DEBUG
 						world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, item.getContent()));
-						i.remove();
+						//i.remove();
 					}
 					i.remove();
 				}

@@ -2,6 +2,7 @@ package com.sots.routing;
 
 import java.util.*;
 
+import com.sots.LogisticsPipes2;
 import com.sots.tiles.TileGenericPipe;
 import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
@@ -18,12 +19,12 @@ public class LPRoutedItem{
 	public int ticks;
 	private EnumFacing heading;
 	private TileGenericPipe holding;
-	private Deque<EnumFacing> route;
+	private Deque<Tuple<UUID, EnumFacing>> route;
 	private ItemStack stack;
 	private Triple<Double, Double, Double> position;
 	private final UUID ID;
 	private UUID destination;
-	public LPRoutedItem(double x, double y, double z, ItemStack content, EnumFacing initVector, TileGenericPipe holder, Deque<EnumFacing> routingInfo) {
+	public LPRoutedItem(double x, double y, double z, ItemStack content, EnumFacing initVector, TileGenericPipe holder, Deque<Tuple<UUID, EnumFacing>> routingInfo, UUID destination) {
 		setHeading(initVector);
 		setHolding(holder);
 		route = routingInfo;
@@ -61,7 +62,7 @@ public class LPRoutedItem{
 		if (route.peek() == null) {
 			return EnumFacing.UP;
 		}
-		return route.pop();
+		return route.pop().getVal();
 	}
 
 	public ItemStack getContent() {
@@ -101,13 +102,16 @@ public class LPRoutedItem{
 		tag.setTag("inventory", stack.serializeNBT());
 		tag.setInteger("ticks", this.ticks);
 		NBTTagList routeList = new NBTTagList();
-		for(EnumFacing node : route) {
+		for(Tuple<UUID, EnumFacing> node : route) {
 			NBTTagCompound nodeTag = new NBTTagCompound();
-			//nodeTag.setUniqueId("UID", node.getKey());
-			nodeTag.setInteger("heading", node.ordinal());
+			if (node.getKey() != null) {
+				nodeTag.setUniqueId("UID", node.getKey());
+			}
+			nodeTag.setInteger("heading", node.getVal().ordinal());
 			routeList.appendTag(nodeTag);
 		}
 		tag.setTag("route", routeList);
+		tag.setUniqueId("destination", this.destination);
 		return tag;
 	}
 
@@ -118,21 +122,28 @@ public class LPRoutedItem{
 		UUID id = compound.getUniqueId("UID");
 		ItemStack content = new ItemStack(compound.getCompoundTag("inventory"));
 		int ticks = compound.getInteger("ticks");
-		Deque<EnumFacing> routingInfo = new ArrayDeque<>();
+		Deque<Tuple<UUID, EnumFacing>> routingInfo = new ArrayDeque<>();
 		NBTTagList routeList = (NBTTagList) compound.getTag("route");
 		for(Iterator<NBTBase> i = routeList.iterator(); i.hasNext();) {
 			NBTTagCompound node = (NBTTagCompound) i.next();
-			EnumFacing nodeTuple = EnumFacing.values()[node.getInteger("heading")];
-			routingInfo.add(nodeTuple);
+			if (node.hasKey("UID")) {
+				Tuple<UUID, EnumFacing> nodeTuple = new Tuple<UUID, EnumFacing>(node.getUniqueId("UID"), EnumFacing.values()[node.getInteger("heading")]);
+				routingInfo.add(nodeTuple);
+			} else {
+				Tuple<UUID, EnumFacing> nodeTuple = new Tuple<UUID, EnumFacing>(null, EnumFacing.values()[node.getInteger("heading")]);
+				routingInfo.add(nodeTuple);
+			}
 		}
 		LPRoutedItem item = new LPRoutedItem(x, y, z, content, ticks, id);
 		item.setHeading(EnumFacing.VALUES[compound.getInteger("heading")]);
 		item.setHolding(holder);
 		item.route = routingInfo;
+		item.destination = compound.getUniqueId("destination");
 		return item;
 	}
 
 	public UUID getDestination() {
+		LogisticsPipes2.logger.info(destination);
 		return destination;
 	}
 

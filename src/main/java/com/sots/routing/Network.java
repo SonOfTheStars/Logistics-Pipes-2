@@ -122,9 +122,9 @@ public class Network {
 		return name.toString();
 	}
 	
-	public List<Tuple<Boolean, Deque<EnumFacing>>> getAllRoutesFrom(UUID nodeId){
+	public List<Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>>> getAllRoutesFrom(UUID nodeId){
 		NetworkNode start = destinations.get(nodeId).getKey();
-		List<Tuple<Boolean, Deque<EnumFacing>>> routes = new ArrayList<Tuple<Boolean, Deque<EnumFacing>>>();;
+		List<Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>>> routes = new ArrayList<Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>>>();;
 		Set<UUID> keys = destinations.keySet();
 		for(UUID key : keys) {
 			NetworkNode dest = destinations.get(key).getKey();
@@ -137,11 +137,14 @@ public class Network {
 		return routes;
 	}
 	
-	public Tuple<Boolean, Deque<EnumFacing>> getRouteFromTo(UUID nodeS, UUID nodeT) {
-		Tuple<Boolean, Deque<EnumFacing>> route = null;
+	public Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>> getRouteFromTo(UUID nodeS, UUID nodeT) {
+		Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>> route = null;
 		if(nodeS != nodeT) {
 			//NetworkNode start = nodes.get(nodeS);
 			//NetworkNode target = nodes.get(nodeT);
+			if (!destinations.containsKey(nodeS) || !destinations.containsKey(nodeT)) {
+				return null;
+			}
 			NetworkNode start = destinations.get(nodeS).getKey();
 			NetworkNode target = destinations.get(nodeT).getKey();
 			
@@ -154,6 +157,7 @@ public class Network {
 
 	public void clearCache() {
 		router.clearCache();
+		//router.shutdown();
 	}
 
 	public static boolean routeContainsNode(Deque<Tuple<UUID, EnumFacing>> route, UUID nodeID) {
