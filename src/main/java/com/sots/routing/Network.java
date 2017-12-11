@@ -62,7 +62,17 @@ public class Network {
 
 	}
 
-	
+	public EnumFacing getDirectionForDestination(UUID node) {
+		if (destinations.containsKey(node)) {
+			return destinations.get(node).getVal();
+		}
+		return null;
+	}
+
+	public Set<UUID> getAllDestinations() {
+		return destinations.keySet();
+	}
+
 	public UUID subscribeNode(IRoutable Pipe) {
 		UUID id = UUID.randomUUID();
 		NetworkNode node = new NetworkNode(id, Pipe);
@@ -127,7 +137,7 @@ public class Network {
 		return routes;
 	}
 	
-	public boolean getRouteFromTo(UUID nodeS, UUID nodeT) {
+	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> getRouteFromTo(UUID nodeS, UUID nodeT) {
 		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route = null;
 		if(nodeS != nodeT) {
 			NetworkNode start = destinations.get(nodeS).getKey();
@@ -135,9 +145,8 @@ public class Network {
 			
 			route = router.route(start, target);
 			router.clean();
-			LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), target.getId().toString(), (route!= null ? "" : "not") + " been found!"));
+			//LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), target.getId().toString(), (route!= null ? "" : "not") + " been found!"));
 		}
-		return route != null ? true : false;
+		return route;
 	}
-	
 }
