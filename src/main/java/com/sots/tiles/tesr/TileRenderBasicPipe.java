@@ -63,7 +63,8 @@ public class TileRenderBasicPipe extends TileEntitySpecialRenderer<TileGenericPi
 	}
 
 	public void calculateTranslation(LPRoutedItem item, float partialTicks) {
-		double itemTicks = item.ticks;
+		//double itemTicks = item.ticks;
+		float itemTicks = item.ticks + partialTicks;
 		double newX = (item.getHeading().getDirectionVec().getX() * (itemTicks / item.TICK_MAX - 0.5));
 		double newY = (item.getHeading().getDirectionVec().getY() * (itemTicks / item.TICK_MAX - 0.5));
 		double newZ = (item.getHeading().getDirectionVec().getZ() * (itemTicks / item.TICK_MAX - 0.5));
