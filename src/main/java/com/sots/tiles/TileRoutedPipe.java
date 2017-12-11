@@ -3,6 +3,7 @@ package com.sots.tiles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +38,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	
 	private final int MAX_MODS = 1;
 	private ItemStackHandler modules = new ItemStackHandler(MAX_MODS);
+	private List<Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>> waitingToRoute = new ArrayList<Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>>();
 	
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
@@ -122,24 +124,11 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		ItemStack heldItem = player.getHeldItem(hand);
 		if(heldItem.getItem()!=null) {
 			if(heldItem.getItem() instanceof ItemSign) {
-				if(hasNetwork) {
-					List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>> routes = network.getAllRoutesFrom(nodeID);
-					for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route : routes) {
-						//LogisticsPipes2.logger.info("Waiting for routing to be done");
-						while (route.getKey() == false) {}
-						//LogisticsPipes2.logger.info("Spawning first item");
-						Deque<Tuple<UUID, EnumFacing>> routeCopy = new ArrayDeque<Tuple<UUID, EnumFacing>>();
-						routeCopy.addAll(route.getVal().getThird());
-						for (int i = 0; i < 6; i++) {
-							if (hasItemInInventoryOnSide(EnumFacing.getFront(i), new ItemStack(Items.APPLE))) {
-								ItemStack stack = takeFromInventoryOnSide(EnumFacing.getFront(i), new ItemStack(Items.APPLE));
-								catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, EnumFacing.getFront(i), this, routeCopy, route.getVal().getSecnd().getId()));
-								break;
-							}
-						}
-
-						//catchItem(new LPRoutedItem(world, (double) posX(), (double) posY(), (double) posZ(), new ItemStack(Items.APPLE), EnumFacing.UP, this, routeCopy, new ItemStack(Items.APPLE)));
+				if (hasNetwork) {
+					for (UUID nodeT : network.getAllDestinations()) {
+						routeItemTo(nodeT, new ItemStack(Items.APPLE));
 					}
+
 				}
 			}
 			if(heldItem.getItem() instanceof ItemWrench) {
@@ -251,6 +240,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 			if (!hasInv)
 				network.unregisterDestination(this.nodeID);
 		}
+		checkIfRoutesAreReady();
 	}
 	
 	@Override
@@ -258,6 +248,34 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		super.breakBlock(world, pos, state, player);
 		if(modules.getStackInSlot(0)!=null) {
 			Misc.spawnInventoryInWorld(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, modules);
+		}
+	}
+
+	public void routeItemTo(UUID nodeT, ItemStack item) {
+		Tuple<Boolean, Deque<EnumFacing>> route = network.getRouteFromTo(nodeID, nodeT);
+		if (route == null) {
+			return;
+		}
+		waitingToRoute.add(new Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>(route, item));
+	}
+
+	private void checkIfRoutesAreReady() {
+		if (!waitingToRoute.isEmpty()) {
+			for (Iterator<Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
+				Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack> route = i.next();
+				if (route.getKey().getKey() == false) {
+					continue;
+				}
+				ItemStack item = route.getVal();
+				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
+				routeCopy.addAll(route.getKey().getVal());
+				EnumFacing side = network.getDirectionForDestination(nodeID);
+				if (hasItemInInventoryOnSide(side, item)) {
+					ItemStack stack = takeFromInventoryOnSide(side, item);
+					catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy));
+				}
+				i.remove();
+			}
 		}
 	}
 

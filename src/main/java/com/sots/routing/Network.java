@@ -62,7 +62,17 @@ public class Network {
 
 	}
 
-	
+	public EnumFacing getDirectionForDestination(UUID node) {
+		if (destinations.containsKey(node)) {
+			return destinations.get(node).getVal();
+		}
+		return null;
+	}
+
+	public Set<UUID> getAllDestinations() {
+		return destinations.keySet();
+	}
+
 	public UUID subscribeNode(IRoutable Pipe) {
 		UUID id = UUID.randomUUID();
 		NetworkNode node = new NetworkNode(id, Pipe);
@@ -112,9 +122,9 @@ public class Network {
 		return name.toString();
 	}
 	
-	public List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>> getAllRoutesFrom(UUID nodeId){
+	public List<Tuple<Boolean, Deque<EnumFacing>>> getAllRoutesFrom(UUID nodeId){
 		NetworkNode start = destinations.get(nodeId).getKey();
-		List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>> routes = new ArrayList<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>>();;
+		List<Tuple<Boolean, Deque<EnumFacing>>> routes = new ArrayList<Tuple<Boolean, Deque<EnumFacing>>>();;
 		Set<UUID> keys = destinations.keySet();
 		for(UUID key : keys) {
 			NetworkNode dest = destinations.get(key).getKey();
@@ -127,8 +137,8 @@ public class Network {
 		return routes;
 	}
 	
-	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> getRouteFromTo(UUID nodeS, UUID nodeT) {
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route = null;
+	public Tuple<Boolean, Deque<EnumFacing>> getRouteFromTo(UUID nodeS, UUID nodeT) {
+		Tuple<Boolean, Deque<EnumFacing>> route = null;
 		if(nodeS != nodeT) {
 			//NetworkNode start = nodes.get(nodeS);
 			//NetworkNode target = nodes.get(nodeT);
@@ -137,7 +147,7 @@ public class Network {
 			
 			route = router.route(start, target);
 			router.clean();
-			LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), target.getId().toString(), (route!= null ? "" : "not") + " been found!"));
+			//LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), target.getId().toString(), (route!= null ? "" : "not") + " been found!"));
 		}
 		return route;
 	}
