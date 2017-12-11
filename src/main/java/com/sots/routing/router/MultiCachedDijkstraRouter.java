@@ -35,7 +35,8 @@ public class MultiCachedDijkstraRouter{
 	protected volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations;
 	protected volatile Map<UUID, NetworkNode> nodes;
 
-	private volatile Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>();
+	//private volatile Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>();
+	private volatile Map<Tuple<NetworkNode, NetworkNode>, Deque<Tuple<UUID, EnumFacing>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Deque<Tuple<UUID, EnumFacing>>>();
 
 	protected volatile Set<UUID> sources = new HashSet<UUID>();
 
@@ -49,20 +50,20 @@ public class MultiCachedDijkstraRouter{
 	 * The first part of the output is a boolean, which is false if the route has not yet been calculated, and is true when the route has been calculated
 	 * The second part of the output is a triple consisting of the start node, the target node and the route from the start node to the target node
 	 */
-	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route(NetworkNode s, NetworkNode t) {
+	public Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>> route(NetworkNode s, NetworkNode t) {
 		Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>(s, t);
 
 		while (sources.contains(s.getId())) {}
 
 		if (cache.containsKey(input)) {
-			return new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>(true, cache.get(input));
+			return new Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>>(true, cache.get(input));
 		}
 
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> result = doActualRouting(s, t);
+		Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>> result = doActualRouting(s, t);
 		return result;
 	}
 
-	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> doActualRouting(NetworkNode s, NetworkNode t) {
+	public Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>> doActualRouting(NetworkNode s, NetworkNode t) {
 		WeightedNetworkNode start, target;
 
 		Map<UUID, WeightedNetworkNode> junctions = new HashMap<UUID, WeightedNetworkNode>(this.junctions);
@@ -85,7 +86,7 @@ public class MultiCachedDijkstraRouter{
 
 		sources.add(start.getId());
 
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> result = new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>(false, null);
+		Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>> result = new Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>>(false, null);
 
 		FutureTask<Void> routingTask =
 			new FutureTask<Void>(
@@ -137,7 +138,7 @@ public class MultiCachedDijkstraRouter{
 									help = junctions.get(help.parent.getKey().getId());
 								}
 								Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>((NetworkNode) start, n.getKey());
-								Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>> tmp_result = new Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>((NetworkNode) start, n.getKey(), route);
+								Deque<Tuple<UUID, EnumFacing>> tmp_result = route;
 								cache.put(input, tmp_result);
 								//LogisticsPipes2.logger.info("Route found of length " + route.size());
 							}
