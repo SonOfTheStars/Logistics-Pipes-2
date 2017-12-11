@@ -18,11 +18,11 @@ public class LPRoutedItem{
 	public int ticks;
 	private EnumFacing heading;
 	private TileGenericPipe holding;
-	private Deque<Tuple<UUID, EnumFacing>> route;
+	private Deque<EnumFacing> route;
 	private ItemStack stack;
 	private Triple<Double, Double, Double> position;
 	private final UUID ID;
-	public LPRoutedItem(double x, double y, double z, ItemStack content, EnumFacing initVector, TileGenericPipe holder, Deque<Tuple<UUID, EnumFacing>> routingInfo) {
+	public LPRoutedItem(double x, double y, double z, ItemStack content, EnumFacing initVector, TileGenericPipe holder, Deque<EnumFacing> routingInfo) {
 		setHeading(initVector);
 		setHolding(holder);
 		route = routingInfo;
@@ -59,7 +59,7 @@ public class LPRoutedItem{
 		if (route.peek() == null) {
 			return EnumFacing.UP;
 		}
-		return route.pop().getVal();
+		return route.pop();
 	}
 
 	public ItemStack getContent() {
@@ -99,10 +99,10 @@ public class LPRoutedItem{
 		tag.setTag("inventory", stack.serializeNBT());
 		tag.setInteger("ticks", this.ticks);
 		NBTTagList routeList = new NBTTagList();
-		for(Tuple<UUID, EnumFacing> node : route) {
+		for(EnumFacing node : route) {
 			NBTTagCompound nodeTag = new NBTTagCompound();
 			//nodeTag.setUniqueId("UID", node.getKey());
-			nodeTag.setInteger("heading", node.getVal().ordinal());
+			nodeTag.setInteger("heading", node.ordinal());
 			routeList.appendTag(nodeTag);
 		}
 		tag.setTag("route", routeList);
@@ -116,11 +116,11 @@ public class LPRoutedItem{
 		UUID id = compound.getUniqueId("UID");
 		ItemStack content = new ItemStack(compound.getCompoundTag("inventory"));
 		int ticks = compound.getInteger("ticks");
-		Deque<Tuple<UUID, EnumFacing>> routingInfo = new ArrayDeque<>();
+		Deque<EnumFacing> routingInfo = new ArrayDeque<>();
 		NBTTagList routeList = (NBTTagList) compound.getTag("route");
 		for(Iterator<NBTBase> i = routeList.iterator(); i.hasNext();) {
 			NBTTagCompound node = (NBTTagCompound) i.next();
-			Tuple<UUID, EnumFacing> nodeTuple = new Tuple<>(null, EnumFacing.values()[node.getInteger("heading")]);
+			EnumFacing nodeTuple = EnumFacing.values()[node.getInteger("heading")];
 			routingInfo.add(nodeTuple);
 		}
 		LPRoutedItem item = new LPRoutedItem(x, y, z, content, ticks, id);

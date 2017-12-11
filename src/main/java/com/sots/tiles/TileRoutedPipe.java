@@ -37,7 +37,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	
 	private final int MAX_MODS = 1;
 	private ItemStackHandler modules = new ItemStackHandler(MAX_MODS);
-	private List<Tuple<Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>>, ItemStack>> waitingToRoute = new ArrayList<Tuple<Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>>, ItemStack>>();
+	private List<Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>> waitingToRoute = new ArrayList<Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>>();
 	
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
@@ -243,22 +243,22 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	}
 
 	public void routeItemTo(UUID nodeT, ItemStack item) {
-		Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>> route = network.getRouteFromTo(nodeID, nodeT);
+		Tuple<Boolean, Deque<EnumFacing>> route = network.getRouteFromTo(nodeID, nodeT);
 		if (route == null) {
 			return;
 		}
-		waitingToRoute.add(new Tuple<Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>>, ItemStack>(route, item));
+		waitingToRoute.add(new Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>(route, item));
 	}
 
 	private void checkIfRoutesAreReady() {
 		if (!waitingToRoute.isEmpty()) {
-			for (Iterator<Tuple<Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>>, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
-				Tuple<Tuple<Boolean, Deque<Tuple<UUID, EnumFacing>>>, ItemStack> route = i.next();
+			for (Iterator<Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
+				Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack> route = i.next();
 				if (route.getKey().getKey() == false) {
 					continue;
 				}
 				ItemStack item = route.getVal();
-				Deque<Tuple<UUID, EnumFacing>> routeCopy = new ArrayDeque<Tuple<UUID, EnumFacing>>();
+				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
 				routeCopy.addAll(route.getKey().getVal());
 				EnumFacing side = network.getDirectionForDestination(nodeID);
 				if (hasItemInInventoryOnSide(side, item)) {
