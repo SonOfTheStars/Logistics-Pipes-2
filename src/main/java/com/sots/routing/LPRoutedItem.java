@@ -103,6 +103,7 @@ public class LPRoutedItem{
 			NBTTagCompound nodeTag = new NBTTagCompound();
 			//nodeTag.setUniqueId("UID", node.getKey());
 			nodeTag.setInteger("heading", node.getVal().ordinal());
+			routeList.appendTag(nodeTag);
 		}
 		tag.setTag("route", routeList);
 		return tag;
