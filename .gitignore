@@ -20,3 +20,4 @@ src/main/java/net/*
 *.iml
 *.ipr
 *.iws
+out/*
