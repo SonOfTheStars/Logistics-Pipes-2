@@ -18,5 +18,6 @@ public class TileRegistry {
 	
 	public static void bindRenders() {
 		ClientRegistry.bindTileEntitySpecialRenderer(TileBasicPipe.class, new TileRenderBasicPipe());
+		ClientRegistry.bindTileEntitySpecialRenderer(TileRoutedPipe.class, new TileRenderBasicPipe());
 	}
 }
