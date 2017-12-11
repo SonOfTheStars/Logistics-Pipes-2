@@ -1,9 +1,6 @@
 package com.sots.tiles;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.apache.logging.log4j.Level;
 
@@ -11,13 +8,15 @@ import com.sots.EventManager;
 import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.particle.ParticleUtil;
-import com.sots.routing.LPRoutedItem;
-import com.sots.routing.Network;
+import com.sots.routing.*;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.ConnectionHelper;
+import com.sots.util.data.*;
+import com.sots.util.data.Tuple;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -26,9 +25,8 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ITickable;
+import net.minecraft.util.*;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -219,7 +217,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			}
 		}
 		if(!contents.isEmpty()) {
-			//for(LPRoutedItem item : contents) {
+			Set<LPRoutedItem> toBeAdded = new HashSet<LPRoutedItem>();
 			for(Iterator<LPRoutedItem> i = contents.iterator(); i.hasNext();) {
 				LPRoutedItem item = i.next();
 				item.ticks++;
@@ -230,7 +228,31 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					boolean debug = world.isRemote;
 					if(getConnection(item.getHeading())==ConnectionTypes.PIPE) {
 						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(item.getHeading()));
-						if(pipe!=null) {
+						if (!pipe.isRoutable()) {
+							//network.clearCache();
+							Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route = network.getRouteFromTo(this.nodeID, item.getDestination());
+							if (route == null) { 
+								// This should only be the case when the current location and the destination are the same, which should only happen when sending an item to and from one of the "fake" destinations around a blocking pipe
+								i.remove();
+								continue;
+							}
+
+							while (route.getKey() == false) {}
+
+							if (Network.routeContainsNode(route.getVal().getThird(), this.nodeID)) {
+								LogisticsPipes2.logger.info("Clearing the cache");
+								network.clearCache();
+								route = network.getRouteFromTo(this.nodeID, item.getDestination());
+
+								while (route.getKey() == false) {}
+							}
+
+
+							Deque<Tuple<UUID, EnumFacing>> routeCopy = new ArrayDeque<Tuple<UUID, EnumFacing>>();
+							routeCopy.addAll(route.getVal().getThird());
+							toBeAdded.add(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), item.getContent(), item.getHeading().getOpposite(), this, routeCopy, route.getVal().getSecnd().getId()));
+							i.remove();
+						} else if(pipe!=null) {
 							pipe.catchItem(item);
 							i.remove();
 						}
@@ -244,14 +266,20 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 								itemStack = itemHandler.insertItem(j, itemStack, false);
 							}
 							world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, itemStack));
+							i.remove();
 						}
 					}
 					else {
 						LogisticsPipes2.logger.info(item.getHeading()); //DEBUG
 						world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, item.getContent()));
+						i.remove();
 					}
 				}
 			}
+			for (LPRoutedItem item : toBeAdded) {
+				catchItem(item);
+			}
+
 			markForUpdate();
 		}
 	}
@@ -456,7 +484,15 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 				return true;
 			}
 			
+			if (heldItem.isEmpty()) {
+				//if (player instanceof EntityPlayerSP) {
+					//((EntityPlayerSP) player).sendChatMessage(this.nodeID.toString());
+				//}
+				player.sendStatusMessage(new TextComponentString(this.nodeID.toString()), true);
+
+			}
 		}
+
 		
 		
 		return false;

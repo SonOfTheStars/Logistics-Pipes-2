@@ -10,4 +10,6 @@ public interface IPipe {
 	public boolean hasAdjacent();
 	
 	public boolean catchItem(LPRoutedItem item);
+
+	public boolean isRoutable();
 }

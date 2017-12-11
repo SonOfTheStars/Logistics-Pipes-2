@@ -103,7 +103,8 @@ public class MultiCachedDijkstraRouter{
 
 								for (int i = 0; i < 6; i++) {
 									Tuple<WeightedNetworkNode, Integer> neighborT = current.weightedNeighbors[i];
-									if (neighborT == null) {
+									if (neighborT == null || !(neighborT.getKey().isNodeRoutable())) {
+										LogisticsPipes2.logger.info("Routing continues " + (neighborT == null ? "True" : "False")); //DEBUG
 										continue;
 									}
 
@@ -143,7 +144,7 @@ public class MultiCachedDijkstraRouter{
 							}
 							result.setVal(cache.get(new Tuple<NetworkNode, NetworkNode>(start, target)));
 							result.setKey(true);
-							LogisticsPipes2.logger.info("Done routing for now " + start + "-" + target);
+							LogisticsPipes2.logger.info("Done routing for now " + start.getId().toString() + " - " + target.getId().toString());
 							sources.remove(start.getId());
 							return null;
 							//return cache.get(new Tuple<NetworkNode, NetworkNode>(start, target));
@@ -192,4 +193,9 @@ public class MultiCachedDijkstraRouter{
 		executor = Executors.newFixedThreadPool(NUM_THREADS);
 		cache.clear();
 	}
+
+	public void clearCache() {
+		cache.clear();
+	}
+
 }

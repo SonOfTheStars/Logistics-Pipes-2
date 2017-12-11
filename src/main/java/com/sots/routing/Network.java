@@ -127,9 +127,11 @@ public class Network {
 		return routes;
 	}
 	
-	public boolean getRouteFromTo(UUID nodeS, UUID nodeT) {
+	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> getRouteFromTo(UUID nodeS, UUID nodeT) {
 		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> route = null;
 		if(nodeS != nodeT) {
+			//NetworkNode start = nodes.get(nodeS);
+			//NetworkNode target = nodes.get(nodeT);
 			NetworkNode start = destinations.get(nodeS).getKey();
 			NetworkNode target = destinations.get(nodeT).getKey();
 			
@@ -137,7 +139,19 @@ public class Network {
 			router.clean();
 			LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), target.getId().toString(), (route!= null ? "" : "not") + " been found!"));
 		}
-		return route != null ? true : false;
+		return route;
 	}
-	
+
+	public void clearCache() {
+		router.clearCache();
+	}
+
+	public static boolean routeContainsNode(Deque<Tuple<UUID, EnumFacing>> route, UUID nodeID) {
+		for (int i = 0; i < 6; i++) {
+			if (route.contains(new Tuple<UUID, EnumFacing>(nodeID, EnumFacing.getFront(i)))) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

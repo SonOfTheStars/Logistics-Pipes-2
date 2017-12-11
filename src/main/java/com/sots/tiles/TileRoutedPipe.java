@@ -27,6 +27,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -132,7 +133,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 						for (int i = 0; i < 6; i++) {
 							if (hasItemInInventoryOnSide(EnumFacing.getFront(i), new ItemStack(Items.APPLE))) {
 								ItemStack stack = takeFromInventoryOnSide(EnumFacing.getFront(i), new ItemStack(Items.APPLE));
-								catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, EnumFacing.getFront(i), this, routeCopy));
+								catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, EnumFacing.getFront(i), this, routeCopy, route.getVal().getSecnd().getId()));
 								break;
 							}
 						}
@@ -218,6 +219,14 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 				}
 				return true;
 			}
+
+		}
+		if (heldItem.isEmpty()) {
+			//if (player instanceof EntityPlayerSP) {
+				//((EntityPlayerSP) player).sendChatMessage(this.nodeID.toString());
+			//}
+			player.sendStatusMessage(new TextComponentString(this.nodeID.toString()), true);
+
 		}
 		
 		return false;

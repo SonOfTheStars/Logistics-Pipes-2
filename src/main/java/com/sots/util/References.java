@@ -9,6 +9,7 @@ public abstract class References {
 	public static final String NAME_ORE_RUTILE = MODID + ".ore_rutile";
 	public static final String NAME_PIPE_BASIC = MODID + ".pipe_basic";
 	public static final String NAME_PIPE_ROUTED = MODID + ".pipe_routed";
+	public static final String NAME_PIPE_BLOCKING = MODID + ".pipe_blocking";
 	public static final String NAME_NETWORK_CORE = MODID + ".network_core";
 	
 	//Item Names
@@ -45,6 +46,7 @@ public abstract class References {
 	public static final String RN_INGOT_TITANIUM = "ingot_titanium";
 	public static final String RN_PIPE_BASIC = "pipe_basic";
 	public static final String RN_PIPE_ROUTED = "pipe_routed";
+	public static final String RN_PIPE_BLOCKING = "pipe_blocking";
 	public static final String RN_NETWORK_CORE = "network_core";
 	
 	public static final String RN_MODULE_BASE = "module_base";
