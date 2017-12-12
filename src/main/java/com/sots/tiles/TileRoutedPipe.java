@@ -266,6 +266,8 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 					catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy));
 				}
 				i.remove();
+
+				break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.
 			}
 		}
 	}
