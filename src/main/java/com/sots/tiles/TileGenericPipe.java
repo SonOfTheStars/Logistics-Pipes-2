@@ -280,6 +280,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					
 					network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
 					network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
+					network.recalculateNetwork();
 					continue;
 				}
 				//Notify other Neighbors of our presence
@@ -287,6 +288,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					LogisticsPipes2.logger.log(Level.INFO, "Notified GenericPipe " + target.nodeID.toString() + " of presence of: " + nodeID.toString());
 					network.getNodeByID(target.nodeID).addNeighbor(network.getNodeByID(nodeID), direction.getOpposite().getIndex());//Tell target node he has a new neighbor
 					network.getNodeByID(nodeID).addNeighbor(network.getNodeByID(target.nodeID), direction.getIndex());//Add the Target as my neighbor
+					network.recalculateNetwork();
 					continue;
 				}
 			}
