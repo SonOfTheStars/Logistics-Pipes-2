@@ -55,9 +55,11 @@ public class MultiCachedDijkstraRouter{
 		while (sources.contains(s.getId())) {}
 
 		if (cache.containsKey(input)) {
+			LogisticsPipes2.logger.info("Getting route from cache");
 			return new Tuple<Boolean, Deque<EnumFacing>>(true, cache.get(input));
 		}
 
+		LogisticsPipes2.logger.info("Calculating new route");
 		Tuple<Boolean, Deque<EnumFacing>> result = doActualRouting(s, t);
 		return result;
 	}
@@ -192,4 +194,9 @@ public class MultiCachedDijkstraRouter{
 		executor = Executors.newFixedThreadPool(NUM_THREADS);
 		cache.clear();
 	}
+
+	public void clearCache() {
+		cache.clear();
+	}
+
 }

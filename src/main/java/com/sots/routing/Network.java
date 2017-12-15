@@ -79,7 +79,7 @@ public class Network {
 		nodes.put(id, node);
 		Pipe.subscribe(this);
 
-		NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
+		recalculateNetwork();
 
 		return id;
 	}
@@ -149,4 +149,9 @@ public class Network {
 		}
 		return route;
 	}
+
+	public void recalculateNetwork() {
+		NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
+	}
+
 }
