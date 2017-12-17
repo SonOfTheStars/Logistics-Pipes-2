@@ -3,12 +3,29 @@ package com.sots.tiles;
 import java.util.ArrayList;
 
 import com.sots.LogisticsPipes2;
+import com.sots.routing.LPRoutedItem;
 import com.sots.util.Connections;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
 public class TileBlockingPipe extends TileGenericPipe {
+
+	private boolean redstone;
+
+	public void onLoad() {
+		super.onLoad();
+		redstone = world.isBlockPowered(pos);
+	}
+
+
+	public void setRedstoneState(boolean redstone) {
+		LogisticsPipes2.logger.info(redstone);
+		if (hasNetwork() && this.redstone != redstone) {
+			network.purgeNetwork();
+		}
+		this.redstone = redstone;
+	}
 
 	@Override
 	public boolean isRouted() {return false;}
@@ -47,4 +64,24 @@ public class TileBlockingPipe extends TileGenericPipe {
 		}
 		return hidden;
 	}
+
+	@Override
+	public void network() {
+		if (redstone) {
+			
+		} else {
+			super.network();
+		}
+	}
+
+	@Override
+	public boolean catchItem(LPRoutedItem item) {
+		if (redstone) { // Remove this if-statement to allow items to pass through while redstone signal is active
+			return false;
+		} else {
+			return super.catchItem(item);
+		}
+	}
+
+
 }

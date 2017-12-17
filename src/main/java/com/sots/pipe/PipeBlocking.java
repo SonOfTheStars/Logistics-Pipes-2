@@ -40,11 +40,15 @@ public class PipeBlocking extends BlockGenericPipe {
 	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block, BlockPos fromPos){
 		((TileBlockingPipe)world.getTileEntity(pos)).getAdjacentPipes(world);
 		world.getTileEntity(pos).markDirty();
+		((TileBlockingPipe)world.getTileEntity(pos)).setRedstoneState(world.isBlockPowered(pos));
 	}
 
 	@Override
 	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
 		((TileBlockingPipe)world.getTileEntity(pos)).getAdjacentPipes(world);
+		if (world instanceof World) {
+			((TileBlockingPipe)world.getTileEntity(pos)).setRedstoneState(((World)world).isBlockPowered(pos));
+		}
 	}
 
 	@Override
