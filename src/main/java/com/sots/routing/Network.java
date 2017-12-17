@@ -80,6 +80,7 @@ public class Network {
 		Pipe.subscribe(this);
 
 		recalculateNetwork();
+		router.shutdown();
 
 		return id;
 	}
