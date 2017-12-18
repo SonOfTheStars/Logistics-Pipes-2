@@ -1,11 +1,6 @@
 package com.sots.tiles;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.apache.logging.log4j.Level;
 
@@ -386,8 +381,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		return false;
 	}
 	
-	public Deque<ItemStack> getItemTypesInInventory(EnumFacing face){
-		Deque<ItemStack> result = new ArrayDeque<ItemStack>();
+	public ArrayList<ItemStack> getItemTypesInInventory(EnumFacing face){
+		ArrayList<ItemStack> result = new ArrayList<ItemStack>();
 		
 		if (!hasInventoryOnSide(face.getIndex())) {
 			return result;

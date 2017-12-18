@@ -129,20 +129,21 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 					int count = 0;
 					int slot = 0;
 					EnumFacing face = network.getDirectionForDestination(nodeID);
-					Deque<ItemStack> stacks = getItemTypesInInventory(face);
+					ArrayList<ItemStack> stacks = getItemTypesInInventory(face);
 					Iterator<ItemStack> iter = stacks.iterator();
 					for (UUID nodeT : nodes) {
 						if(nodeT.equals(nodeID))
 							continue;
 						count+=1;
-						ItemStack stack = stacks[slot].copy();
-						stack.setCount(1);//Only send one item per destination
+						ItemStack stack = stacks.get(slot).copy();
 						if(stack.getCount()>=count) {
+							stack.setCount(1);//Only send one item per destination
 							routeItemTo(nodeT, stack);
 						}
 						else {
 							slot+=1;
-							stack = stacks[slot].copy();
+							count = 1;
+							stack = stacks.get(slot).copy();
 							stack.setCount(1);//Only send one item per destination
 							routeItemTo(nodeT, stack);
 						}
