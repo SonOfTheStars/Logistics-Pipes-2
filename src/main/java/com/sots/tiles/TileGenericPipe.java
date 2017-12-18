@@ -1,11 +1,12 @@
 package com.sots.tiles;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
-import net.minecraft.nbt.NBTBase;
 import org.apache.logging.log4j.Level;
 
 import com.sots.EventManager;
@@ -21,7 +22,9 @@ import com.sots.util.ConnectionHelper;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
@@ -381,6 +384,26 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			}
 		}
 		return false;
+	}
+	
+	public Deque<ItemStack> getItemTypesInInventory(EnumFacing face){
+		Deque<ItemStack> result = new ArrayDeque<ItemStack>();
+		
+		if (!hasInventoryOnSide(face.getIndex())) {
+			return result;
+		}
+		TileEntity te = world.getTileEntity(getPos().offset(face));
+		if (!te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite())) {
+			return result;
+		}
+		IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite());
+		for(int i=0; i < itemHandler.getSlots(); i++) {
+			ItemStack slotStack = itemHandler.getStackInSlot(i);
+			if(!slotStack.isEmpty()) {
+				result.add(slotStack);
+			}
+		}
+		return result;
 	}
 
 

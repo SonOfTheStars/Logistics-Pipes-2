@@ -21,3 +21,4 @@ src/main/java/net/*
 *.ipr
 *.iws
 out/*
+.settings/org.eclipse.jdt.core.prefs

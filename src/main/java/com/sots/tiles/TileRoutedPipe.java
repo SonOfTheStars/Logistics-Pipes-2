@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.sots.item.ItemWrench;
@@ -124,10 +125,28 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		if(heldItem.getItem()!=null) {
 			if(heldItem.getItem() instanceof ItemSign) {
 				if (hasNetwork) {
-					for (UUID nodeT : network.getAllDestinations()) {
-						routeItemTo(nodeT, new ItemStack(Items.APPLE));
+					Set<UUID> nodes = network.getAllDestinations();
+					int count = 0;
+					int slot = 0;
+					EnumFacing face = network.getDirectionForDestination(nodeID);
+					Deque<ItemStack> stacks = getItemTypesInInventory(face);
+					Iterator<ItemStack> iter = stacks.iterator();
+					for (UUID nodeT : nodes) {
+						if(nodeT.equals(nodeID))
+							continue;
+						count+=1;
+						ItemStack stack = stacks[slot].copy();
+						stack.setCount(1);//Only send one item per destination
+						if(stack.getCount()>=count) {
+							routeItemTo(nodeT, stack);
+						}
+						else {
+							slot+=1;
+							stack = stacks[slot].copy();
+							stack.setCount(1);//Only send one item per destination
+							routeItemTo(nodeT, stack);
+						}
 					}
-
 				}
 			}
 			if(heldItem.getItem() instanceof ItemWrench) {
