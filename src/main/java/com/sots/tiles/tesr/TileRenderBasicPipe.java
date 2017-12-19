@@ -1,24 +1,20 @@
 package com.sots.tiles.tesr;
 
-import java.util.Set;
-
 import com.sots.routing.LPRoutedItem;
 import com.sots.tiles.TileGenericPipe;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.init.Items;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
 
-public class TileRenderBasicPipe extends TileEntitySpecialRenderer<TileGenericPipe>{
-	float angle=0f;
+import java.util.Set;
+
+public class TileRenderBasicPipe extends TileEntitySpecialRenderer<TileGenericPipe> {
 
 	@Override
 	public void renderTileEntityAt(TileGenericPipe te, double x, double y, double z, float partialTicks,
@@ -26,10 +22,6 @@ public class TileRenderBasicPipe extends TileEntitySpecialRenderer<TileGenericPi
 		if(!te.getWorld().isBlockLoaded(te.getPos(), false))
 			return;
 		Set<LPRoutedItem> displays = te.getContents();
-		if(!displays.isEmpty()) {
-			int i = 1;
-			i++;
-		}
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x+.5, y+.5, z+.5);
 		if(!displays.isEmpty()) {
@@ -46,19 +38,19 @@ public class TileRenderBasicPipe extends TileEntitySpecialRenderer<TileGenericPi
 					Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 					IBakedModel ibakedmodel = itemRenderer.getItemModelWithOverrides(stack, te.getWorld(), null);
 					calculateTranslation(item, partialTicks);
-					GlStateManager.rotate((((float) getWorld().getTotalWorldTime() + partialTicks) / 40F) * (180F / (float) Math.PI), 0.0F, 1.0F, 0.0F);
-					GlStateManager.scale(.5f, .5f, .5f);
+					if(stack.getItem() instanceof ItemBlock) {
+						GlStateManager.scale(.3f, .3f, .3f);
+					} else {
+						GlStateManager.rotate((((float) getWorld().getTotalWorldTime() + partialTicks) / 40F) * (180F / (float) Math.PI), 0.0F, 1.0F, 0.0F);
+						GlStateManager.scale(.5f, .5f, .5f);
+					}
 					itemRenderer.renderItem(stack, ibakedmodel);
 					GlStateManager.disableRescaleNormal();
 					GlStateManager.disableBlend();
 					GlStateManager.popMatrix();
 				}
-				//System.out.println("Rendering item: " + item.getContent());
 			}
 		}
-//		float scale = .625f;
-//		GlStateManager.scale(scale, scale, scale);
-//		Minecraft.getMinecraft().getRenderItem().renderItem(new ItemStack(Items.APPLE, 1), ItemCameraTransforms.TransformType.FIXED);
 		GlStateManager.popMatrix();
 	}
 
