@@ -49,23 +49,24 @@ public class MultiCachedDijkstraRouter{
 	 * The first part of the output is a boolean, which is false if the route has not yet been calculated, and is true when the route has been calculated
 	 * The second part of the output is a triple consisting of the start node, the target node and the route from the start node to the target node
 	 */
-	public Tuple<Boolean, Deque<EnumFacing>> route(NetworkNode s, NetworkNode t) {
+	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route(NetworkNode s, NetworkNode t) {
 		Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>(s, t);
 
 		while (sources.contains(s.getId())) {}
 
 		if (cache.containsKey(input)) {
 			LogisticsPipes2.logger.info("Getting route from cache");
-			return new Tuple<Boolean, Deque<EnumFacing>>(true, cache.get(input));
+			return new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>(true, new Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>(s, t, cache.get(input)));
 		}
 
 		LogisticsPipes2.logger.info("Calculating new route");
-		Tuple<Boolean, Deque<EnumFacing>> result = doActualRouting(s, t);
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> result = doActualRouting(s, t);
 		return result;
 	}
 
-	public Tuple<Boolean, Deque<EnumFacing>> doActualRouting(NetworkNode s, NetworkNode t) {
-		WeightedNetworkNode start, target;
+	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> doActualRouting(NetworkNode s, NetworkNode t) {
+		NetworkNode start; 
+		WeightedNetworkNode target;
 
 		Map<UUID, WeightedNetworkNode> junctions = new HashMap<UUID, WeightedNetworkNode>(this.junctions);
 		Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations = new HashMap<UUID, Tuple<NetworkNode, EnumFacing>>(this.destinations);
@@ -74,8 +75,9 @@ public class MultiCachedDijkstraRouter{
 		if (junctions.containsKey(s.getId())) {
 			start = junctions.get(s.getId());
 		} else {
-			LogisticsPipes2.logger.info("You tried routing from a node, which was not a destination or junction.");
-			return null;
+			//LogisticsPipes2.logger.info("You tried routing from a node, which was not a destination or junction.");
+			//return null;
+			start = nodes.get(s.getId());
 		}
 
 		if (junctions.containsKey(t.getId())) {
@@ -85,9 +87,9 @@ public class MultiCachedDijkstraRouter{
 			return null;
 		}
 
-		sources.add(start.getId());
+		sources.add(s.getId());
 
-		Tuple<Boolean, Deque<EnumFacing>> result = new Tuple<Boolean, Deque<EnumFacing>>(false, null);
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> result = new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>(false, null);
 
 		FutureTask<Void> routingTask =
 			new FutureTask<Void>(
@@ -95,9 +97,40 @@ public class MultiCachedDijkstraRouter{
 						@Override
 						public Void call() 
 								throws Exception {
-							start.p_cost=0;
-							start.parent=null;
-							unvisited.add(start);
+							if (!(start instanceof WeightedNetworkNode)) {
+								start.p_cost=0;
+								start.parent=null;
+								Queue<NetworkNode> unvisitedNonWeighted = new LinkedBlockingQueue<NetworkNode>();
+								Queue<NetworkNode> visitedNonWeighted = new LinkedBlockingQueue<NetworkNode>();
+								unvisitedNonWeighted.add(start);
+								while(!unvisitedNonWeighted.isEmpty()) {
+									NetworkNode current = unvisitedNonWeighted.poll();
+									current.getMember().spawnParticle(0f, 1.000f, 0f);
+									for (int i = 0; i < 6; i++) {
+										NetworkNode neighbor = current.getNeighborAt(i);
+										if (neighbor == null) {
+											continue;
+										}
+										if (junctions.containsKey(neighbor.getId())) {
+											WeightedNetworkNode neighborW = junctions.get(neighbor.getId());
+											neighborW.p_cost = current.p_cost + 1;
+											neighborW.parent = new Tuple<NetworkNode, EnumFacing>(current, EnumFacing.getFront(i));
+											unvisited.add(neighborW);
+										} else {
+											if (!(unvisitedNonWeighted.contains(neighbor) || visitedNonWeighted.contains(neighbor))) {
+												neighbor.p_cost = current.p_cost + 1;
+												neighbor.parent = new Tuple<NetworkNode, EnumFacing>(current, EnumFacing.getFront(i));
+												unvisitedNonWeighted.add(neighbor);
+											}
+										}
+									}
+									visitedNonWeighted.add(current);
+								}
+							} else {
+								start.p_cost=0;
+								start.parent=null;
+								unvisited.add((WeightedNetworkNode) start);
+							}
 							while(!unvisited.isEmpty()) {
 								WeightedNetworkNode current = unvisited.poll();
 								current.getMember().spawnParticle(0f, 1.000f, 0f);
@@ -127,7 +160,8 @@ public class MultiCachedDijkstraRouter{
 							}
 							for (Tuple<NetworkNode, EnumFacing> n : destinations.values()) {
 								//NetworkNode help = n;
-								WeightedNetworkNode help = junctions.get(n.getKey().getId());
+								//WeightedNetworkNode help = junctions.get(n.getKey().getId());
+								NetworkNode help = junctions.get(n.getKey().getId());
 
 								Deque<EnumFacing> route = new ArrayDeque<EnumFacing>();
 								route.push(n.getVal());
@@ -135,15 +169,15 @@ public class MultiCachedDijkstraRouter{
 									pushToRouteUntillParent(help, route);
 
 									help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
-									//help = help.parent.getKey();
-									help = junctions.get(help.parent.getKey().getId());
+									help = help.parent.getKey();
+									//help = junctions.get(help.parent.getKey().getId());
 								}
 								Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>((NetworkNode) start, n.getKey());
 								Deque<EnumFacing> tmp_result = route;
 								cache.put(input, tmp_result);
 								//LogisticsPipes2.logger.info("Route found of length " + route.size());
 							}
-							result.setVal(cache.get(new Tuple<NetworkNode, NetworkNode>(start, target)));
+							result.setVal(new Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>(start, target, cache.get(new Tuple<NetworkNode, NetworkNode>(start, target))));
 							result.setKey(true);
 							LogisticsPipes2.logger.info("Done routing for now " + start + "-" + target);
 							sources.remove(start.getId());

@@ -123,9 +123,9 @@ public class Network {
 		return name.toString();
 	}
 	
-	public List<Tuple<Boolean, Deque<EnumFacing>>> getAllRoutesFrom(UUID nodeId){
+	public List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>> getAllRoutesFrom(UUID nodeId){
 		NetworkNode start = destinations.get(nodeId).getKey();
-		List<Tuple<Boolean, Deque<EnumFacing>>> routes = new ArrayList<Tuple<Boolean, Deque<EnumFacing>>>();;
+		List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>> routes = new ArrayList<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>>();;
 		Set<UUID> keys = destinations.keySet();
 		for(UUID key : keys) {
 			NetworkNode dest = destinations.get(key).getKey();
@@ -138,13 +138,14 @@ public class Network {
 		return routes;
 	}
 	
-	public Tuple<Boolean, Deque<EnumFacing>> getRouteFromTo(UUID nodeS, UUID nodeT) {
-		Tuple<Boolean, Deque<EnumFacing>> route = null;
+	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> getRouteFromTo(UUID nodeS, UUID nodeT) {
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route = null;
 		if(nodeS != nodeT) {
-			NetworkNode start = destinations.get(nodeS).getKey();
+			//NetworkNode start = destinations.get(nodeS).getKey();
 			NetworkNode target = destinations.get(nodeT).getKey();
 			
-			route = router.route(start, target);
+			route = router.route(nodes.get(nodeS), target);
+			//route = router.route(start, target);
 			router.clean();
 			//LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), target.getId().toString(), (route!= null ? "" : "not") + " been found!"));
 		}

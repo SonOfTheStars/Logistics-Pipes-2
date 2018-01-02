@@ -10,9 +10,11 @@ import com.sots.item.ItemWrench;
 import com.sots.particle.ParticleUtil;
 import com.sots.routing.LPRoutedItem;
 import com.sots.routing.Network;
+import com.sots.routing.NetworkNode;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.ConnectionHelper;
+import com.sots.util.data.*;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
@@ -37,6 +39,7 @@ import net.minecraftforge.items.IItemHandler;
 public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable, ITileEntityBase{
 	
 	private volatile Set<LPRoutedItem> contents = new HashSet<LPRoutedItem>();
+	private List<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>> waitingToReroute = new ArrayList<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>>();
 	
 	public static enum ConnectionTypes{
 		NONE, PIPE, BLOCK, FORCENONE
@@ -258,9 +261,15 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 						}
 					}
 					else {
-						LogisticsPipes2.logger.info(item.getHeading()); //DEBUG
 						if (!world.isRemote) {
-							world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, item.getContent()));
+								if (network.getAllDestinations().contains(item.getDestination().nodeID)) {
+									rerouteItemTo(item.getDestination().nodeID, item.getContent(), item.getHeading());
+								} else {
+									LogisticsPipes2.logger.info(item.getHeading()); //DEBUG
+									if (!world.isRemote) {
+										world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, item.getContent()));
+									}
+								}
 						}
 					}
 					i.remove();
@@ -268,6 +277,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			}
 			markForUpdate();
 		}
+		checkIfReroutesAreReady();
 	}
 	
 	protected void network() {
@@ -531,6 +541,33 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	public void markForUpdate() {
 		EventManager.markTEForUpdate(this.getPos(), this);
 	}
-	
+
+	public void rerouteItemTo(UUID nodeT, ItemStack item, EnumFacing side) {
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route = network.getRouteFromTo(nodeID, nodeT);
+		if (route == null) {
+			LogisticsPipes2.logger.info("Route returned null");
+			return;
+		}
+		waitingToReroute.add(new Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>(route, item, side.getOpposite()));
+	}
+
+	private void checkIfReroutesAreReady() {
+		if (!waitingToReroute.isEmpty()) {
+			for (Iterator<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>> i = waitingToReroute.iterator(); i.hasNext();) {
+				Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing> route = i.next();
+				if (route.getFirst().getKey() == false) {
+					continue;
+				}
+				ItemStack item = route.getSecnd();
+				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
+				routeCopy.addAll(route.getFirst().getVal().getThird());
+				EnumFacing side = route.getThird();
+				catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), item, side, this, routeCopy, (TileGenericPipe) route.getFirst().getVal().getSecnd().getMember()));
+				i.remove();
+
+				break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.
+			}
+		}
+	}
 }
 

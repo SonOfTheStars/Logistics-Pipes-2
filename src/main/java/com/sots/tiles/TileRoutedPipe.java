@@ -38,7 +38,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	
 	private final int MAX_MODS = 1;
 	private ItemStackHandler modules = new ItemStackHandler(MAX_MODS);
-	private List<Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>> waitingToRoute = new ArrayList<Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>>();
+	private List<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>> waitingToRoute = new ArrayList<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>>();
 	
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
@@ -263,27 +263,27 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	}
 
 	public void routeItemTo(UUID nodeT, ItemStack item) {
-		Tuple<Boolean, Deque<EnumFacing>> route = network.getRouteFromTo(nodeID, nodeT);
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route = network.getRouteFromTo(nodeID, nodeT);
 		if (route == null) {
 			return;
 		}
-		waitingToRoute.add(new Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>(route, item));
+		waitingToRoute.add(new Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>(route, item));
 	}
 
 	private void checkIfRoutesAreReady() {
 		if (!waitingToRoute.isEmpty()) {
-			for (Iterator<Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
-				Tuple<Tuple<Boolean, Deque<EnumFacing>>, ItemStack> route = i.next();
+			for (Iterator<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
+				Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack> route = i.next();
 				if (route.getKey().getKey() == false) {
 					continue;
 				}
 				ItemStack item = route.getVal();
 				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
-				routeCopy.addAll(route.getKey().getVal());
+				routeCopy.addAll(route.getKey().getVal().getThird());
 				EnumFacing side = network.getDirectionForDestination(nodeID);
 				if (hasItemInInventoryOnSide(side, item)) {
 					ItemStack stack = takeFromInventoryOnSide(side, item);
-					catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy));
+					catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getVal().getSecnd().getMember()));
 				}
 				i.remove();
 
@@ -291,5 +291,6 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 			}
 		}
 	}
+	
 
 }

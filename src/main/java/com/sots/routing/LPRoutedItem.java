@@ -22,7 +22,8 @@ public class LPRoutedItem{
 	private ItemStack stack;
 	private Triple<Double, Double, Double> position;
 	private final UUID ID;
-	public LPRoutedItem(double x, double y, double z, ItemStack content, EnumFacing initVector, TileGenericPipe holder, Deque<EnumFacing> routingInfo) {
+	private TileGenericPipe destination;
+	public LPRoutedItem(double x, double y, double z, ItemStack content, EnumFacing initVector, TileGenericPipe holder, Deque<EnumFacing> routingInfo, TileGenericPipe destination) {
 		setHeading(initVector);
 		setHolding(holder);
 		route = routingInfo;
@@ -30,6 +31,7 @@ public class LPRoutedItem{
 		this.stack = content.copy();
 		this.position=new Triple<Double, Double, Double>(x, y, z);
 		ID=UUID.randomUUID();
+		this.destination = destination;
 	}
 
 	public LPRoutedItem(double x, double y, double z, ItemStack content, int ticks, UUID ID) {
@@ -128,6 +130,10 @@ public class LPRoutedItem{
 		item.setHolding(holder);
 		item.route = routingInfo;
 		return item;
+	}
+
+	public TileGenericPipe getDestination() {
+		return destination;
 	}
 
 }
