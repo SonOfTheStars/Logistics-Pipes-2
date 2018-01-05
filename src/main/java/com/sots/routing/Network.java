@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
@@ -23,9 +24,10 @@ public class Network {
 	private volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations = new HashMap<UUID, Tuple<NetworkNode, EnumFacing>>();
 	private volatile Map<UUID, NetworkNode> nodes = new HashMap<UUID, NetworkNode>();
 
-	private volatile Map<UUID, WeightedNetworkNode> junctions = new HashMap<UUID, WeightedNetworkNode>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
+	private volatile Map<UUID, WeightedNetworkNode> junctions = new ConcurrentHashMap<UUID, WeightedNetworkNode>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
 
 	private NetworkNode root = null;
+	private NetworkSimplifier networkSimplifier = new NetworkSimplifier();
 	
 	private MultiCachedDijkstraRouter router;
 	
@@ -39,7 +41,8 @@ public class Network {
 	public void registerDestination(UUID in, EnumFacing dir) {
 		if(!destinations.containsKey(in)) {
 			destinations.put(in, new Tuple<NetworkNode, EnumFacing>(getNodeByID(in), dir));
-			NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
+			networkSimplifier.shutdown();
+			networkSimplifier.rescanNetwork(nodes, destinations, junctions);
 			getNodeByID(in).setAsDestination(true);
 			LogisticsPipes2.logger.log(Level.INFO, "Registered destination [" + in + "] in network [" + name + "]");
 		}
@@ -51,7 +54,8 @@ public class Network {
 	public void unregisterDestination(UUID out) {
 		if (destinations.containsKey(out)) {
 			destinations.remove(out);
-			NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
+			networkSimplifier.shutdown();
+			networkSimplifier.rescanNetwork(nodes, destinations, junctions);
 			getNodeByID(out).setAsDestination(false);
 			LogisticsPipes2.logger.log(Level.INFO, "Unregistered destination [" + out + "] in network [" + name + "]");
 		}
@@ -153,7 +157,8 @@ public class Network {
 	}
 
 	public void recalculateNetwork() {
-		NetworkSimplifier.rescanNetwork(nodes, destinations, junctions);
+		networkSimplifier.shutdown();
+		networkSimplifier.rescanNetwork(nodes, destinations, junctions);
 	}
 
 }

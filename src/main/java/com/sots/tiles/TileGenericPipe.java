@@ -262,7 +262,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					}
 					else {
 						if (!world.isRemote) {
-								if (network.getAllDestinations().contains(item.getDestination().nodeID)) {
+								if (item.getDestination() != null && network.getAllDestinations().contains(item.getDestination().nodeID)) {
 									rerouteItemTo(item.getDestination().nodeID, item.getContent(), item.getHeading());
 								} else {
 									LogisticsPipes2.logger.info(item.getHeading()); //DEBUG

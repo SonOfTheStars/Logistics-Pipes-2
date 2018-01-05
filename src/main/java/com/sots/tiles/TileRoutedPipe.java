@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.item.modules.IItemModule;
 import com.sots.module.IModule;
@@ -123,6 +124,46 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	public boolean activate(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
 		ItemStack heldItem = player.getHeldItem(hand);
 		if(heldItem.getItem()!=null) {
+			if(heldItem.isItemEqual(new ItemStack(Items.STICK))) {
+				for (int i = -1; i <= 1; i++) {
+					for (int j = -1; j <= 1; j++) {
+						for (int k = -1; k <= 1; k++) {
+							if (!(world.getTileEntity(pos.add(i, j, k)) instanceof TileRoutedPipe)) {
+								continue;
+							}
+							TileRoutedPipe current = (TileRoutedPipe) world.getTileEntity(pos.add(i, j, k));
+							if (current.hasNetwork) {
+								Set<UUID> nodes = current.network.getAllDestinations();
+								int count = 0;
+								int slot = 0;
+								EnumFacing face = current.network.getDirectionForDestination(nodeID);
+								ArrayList<ItemStack> stacks = current.getItemTypesInInventory(face);
+								Iterator<ItemStack> iter = stacks.iterator();
+								for (UUID nodeT : nodes) {
+									if(nodeT.equals(current.nodeID))
+										continue;
+									count+=1;
+									ItemStack stack = stacks.get(slot).copy();
+									if(stack.getCount()>=count) {
+										stack.setCount(1);//Only send one item per destination
+										current.routeItemTo(nodeT, stack);
+									}
+									else {
+										if (stacks.size() <= slot + 1) {
+											break;
+										}
+										slot+=1;
+										count = 1;
+										stack = stacks.get(slot).copy();
+										stack.setCount(1);//Only send one item per destination
+										current.routeItemTo(nodeT, stack);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 			if(heldItem.getItem() instanceof ItemSign) {
 				if (hasNetwork) {
 					Set<UUID> nodes = network.getAllDestinations();
@@ -275,6 +316,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 			for (Iterator<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
 				Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack> route = i.next();
 				if (route.getKey().getKey() == false) {
+					LogisticsPipes2.logger.info("A route is not done routing yet");
 					continue;
 				}
 				ItemStack item = route.getVal();

@@ -23,7 +23,7 @@ import com.sots.util.data.Tuple;
 import net.minecraft.util.EnumFacing;
 
 public class MultiCachedDijkstraRouter{
-	private static final int NUM_THREADS = 4;
+	private static final int NUM_THREADS = 9;
 	//WeightedNetworkNode start, target;
 	//private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
@@ -74,9 +74,11 @@ public class MultiCachedDijkstraRouter{
 
 		if (junctions.containsKey(s.getId())) {
 			start = junctions.get(s.getId());
+			//LogisticsPipes2.logger.info("Routing from a junction");
 		} else {
 			//LogisticsPipes2.logger.info("You tried routing from a node, which was not a destination or junction.");
 			//return null;
+			//LogisticsPipes2.logger.info("Routing from a non-junction");
 			start = nodes.get(s.getId());
 		}
 
