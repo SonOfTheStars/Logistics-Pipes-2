@@ -10,6 +10,7 @@ public abstract class References {
 	public static final String NAME_PIPE_BASIC = MODID + ".pipe_basic";
 	public static final String NAME_PIPE_ROUTED = MODID + ".pipe_routed";
 	public static final String NAME_PIPE_BLOCKING = MODID + ".pipe_blocking";
+	public static final String NAME_PIPE_CHASSIS_MKI = MODID + ".pipe_chassis_mki";
 	public static final String NAME_NETWORK_CORE = MODID + ".network_core";
 	
 	//Item Names
@@ -47,6 +48,7 @@ public abstract class References {
 	public static final String RN_PIPE_BASIC = "pipe_basic";
 	public static final String RN_PIPE_ROUTED = "pipe_routed";
 	public static final String RN_PIPE_BLOCKING = "pipe_blocking";
+	public static final String RN_PIPE_CHASSIS_MKI = "pipe_chassis_mki";
 	public static final String RN_NETWORK_CORE = "network_core";
 	
 	public static final String RN_MODULE_BASE = "module_base";
@@ -71,5 +73,13 @@ public abstract class References {
 	public static final String RN_MODULE_SUPPLIER = "module_supplier";
 	public static final String RN_MODULE_SINK = "module_sink";
 	public static final String RN_ITEM_WRENCH = "item_wrench";
+	
+	public static final int MOD_COUNT_BASE = 1;
+	public static final int MOD_COUNT_MKI = 2;
+	public static final int MOD_COUNT_MKII = 3;
+	public static final int MOD_COUNT_MKIII = 4;
+	public static final int MOD_COUNT_MKIV = 6;
+	public static final int MOD_COUNT_MKV = 8;
+	public static final int MOD_COUNT_MKVI = 10;
 	
 }

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.sots.item.modules.ItemModuleSink;
 import com.sots.tiles.TileGenericPipe;
+import com.sots.tiles.TileRoutedPipe;
 
 import net.minecraft.item.ItemStack;
 
@@ -17,7 +18,7 @@ public interface IModule {
 	 * @param te The Pipe executing this Module
 	 * @return True if the Logic could be executed. If a module returns false, Items used in its operation will be spilled!
 	 */
-	public boolean execute(TileGenericPipe te);
+	public boolean execute(TileRoutedPipe te);
 	
 	/**
 	 * @return True if the Module can execute its Logic, False if not

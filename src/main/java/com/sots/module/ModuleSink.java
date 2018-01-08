@@ -2,7 +2,7 @@ package com.sots.module;
 
 import java.util.UUID;
 
-import com.sots.tiles.TileGenericPipe;
+import com.sots.tiles.TileRoutedPipe;
 
 public class ModuleSink extends ModuleBase implements IModule{
 
@@ -11,7 +11,7 @@ public class ModuleSink extends ModuleBase implements IModule{
 	}
 	
 	@Override
-	public boolean execute(TileGenericPipe te) {
+	public boolean execute(TileRoutedPipe te) {
 		return false;
 	}
 	

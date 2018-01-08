@@ -14,7 +14,6 @@ import com.sots.item.modules.IItemModule;
 import com.sots.module.IModule;
 import com.sots.routing.LPRoutedItem;
 import com.sots.routing.NetworkNode;
-import com.sots.routing.interfaces.IDestination;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.Connections;
@@ -36,14 +35,11 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.items.ItemStackHandler;
 
-public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe, IDestination{
+public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 	
-	protected ItemStackHandler modules;
-	protected List<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>> waitingToRoute = new ArrayList<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>>();
-	
-	public TileRoutedPipe() {
-		modules = new ItemStackHandler(References.MOD_COUNT_BASE);
-	}
+	private int internalModCount = 0;
+	private ItemStackHandler modules = new ItemStackHandler(References.MOD_COUNT_MKI);
+	private List<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>> waitingToRoute = new ArrayList<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>>();
 	
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
@@ -174,7 +170,6 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 					int slot = 0;
 					EnumFacing face = network.getDirectionForDestination(nodeID);
 					ArrayList<ItemStack> stacks = getItemTypesInInventory(face);
-					Iterator<ItemStack> iter = stacks.iterator();
 					for (UUID nodeT : nodes) {
 						if(nodeT.equals(nodeID))
 							continue;
@@ -301,9 +296,14 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
 		super.breakBlock(world, pos, state, player);
-		if(modules.getStackInSlot(0)!=null) {
-			Misc.spawnInventoryInWorld(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, modules);
+		int x = 0;
+		while(x<References.MOD_COUNT_MKI) {
+			if(modules.getStackInSlot(x)!=null) {
+				Misc.spawnInventoryInWorld(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, modules);
+			}
+			x+=1;
 		}
+		
 	}
 
 	public void routeItemTo(UUID nodeT, ItemStack item) {
@@ -314,7 +314,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		waitingToRoute.add(new Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>(route, item));
 	}
 
-	protected void checkIfRoutesAreReady() {
+	private void checkIfRoutesAreReady() {
 		if (!waitingToRoute.isEmpty()) {
 			for (Iterator<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
 				Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack> route = i.next();
@@ -336,6 +336,4 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 			}
 		}
 	}
-	
-
 }

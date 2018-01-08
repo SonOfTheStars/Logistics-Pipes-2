@@ -49,7 +49,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	protected boolean hasNetwork = false;
 	
-	protected Network network = null;
+	public Network network = null;
 	public UUID nodeID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 	
 	public static ConnectionTypes typeFromInt(int value) {
@@ -410,7 +410,6 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		}
 		return result;
 	}
-
 
 	@Override
 	public int posX() {return pos.getX();}

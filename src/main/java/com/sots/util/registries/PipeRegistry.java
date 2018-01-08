@@ -16,18 +16,21 @@ public class PipeRegistry {
 	public static BlockGenericPipe pipe_basic;
 	public static BlockGenericPipe pipe_routed;
 	public static BlockGenericPipe pipe_blocking;
+	public static BlockGenericPipe pipe_chassis_mki;
 	
 	public static void init() {
 		network_core = new NetworkCore();
 		pipe_basic = new PipeBasic();
 		pipe_routed = new PipeRouted();
 		pipe_blocking = new PipeBlocking();
+		pipe_chassis_mki = new PipeChassisMkI();
 		
 		
 		registry.add(network_core);
 		registry.add(pipe_basic);
 		registry.add(pipe_routed);
 		registry.add(pipe_blocking);
+		registry.add(pipe_chassis_mki);
 		
 		for(BlockGenericPipe pipe : registry) {
 			GameRegistry.register(pipe);

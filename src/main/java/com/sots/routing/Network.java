@@ -3,11 +3,13 @@ package com.sots.routing;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
@@ -18,6 +20,7 @@ import com.sots.routing.router.MultiCachedDijkstraRouter;
 import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
+import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 
 public class Network {
@@ -26,6 +29,8 @@ public class Network {
 
 	private volatile Map<UUID, WeightedNetworkNode> junctions = new ConcurrentHashMap<UUID, WeightedNetworkNode>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
 
+	private volatile Set<Tuple<UUID, Item>> stores = new HashSet<Tuple<UUID, Item>>();
+	
 	private NetworkNode root = null;
 	private NetworkSimplifier networkSimplifier = new NetworkSimplifier();
 	
@@ -154,6 +159,15 @@ public class Network {
 			//LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), target.getId().toString(), (route!= null ? "" : "not") + " been found!"));
 		}
 		return route;
+	}
+	
+	public ArrayList<UUID> getStorageNodesForItem(Item item){
+		ArrayList<UUID> output = new ArrayList<UUID>();
+		stores.stream()
+		.filter(p -> p.getVal().equals(item))
+		.collect(Collectors.toList())
+		.forEach(p -> output.add(p.getKey()));
+		return output;
 	}
 
 	public void recalculateNetwork() {
