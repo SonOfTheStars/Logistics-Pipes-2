@@ -169,6 +169,14 @@ public class Network {
 		.forEach(p -> output.add(p.getKey()));
 		return output;
 	}
+	
+	public boolean registerItemStorage(Tuple<UUID, Item> input) {
+		if(!stores.contains(input)) {
+			stores.add(input);
+			return true;
+		}
+		return false;
+	}
 
 	public void recalculateNetwork() {
 		networkSimplifier.shutdown();

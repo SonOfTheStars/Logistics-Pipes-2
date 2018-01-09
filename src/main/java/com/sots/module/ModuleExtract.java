@@ -5,11 +5,14 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.sots.tiles.TileRoutedPipe;
+import com.sots.util.References;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 
 public class ModuleExtract extends ModuleBase implements IModule{
+	
+	private int ticksTillOp = References.MOD_BASE_OPERATION_RATE;
 
 	public ModuleExtract(UUID ID) {
 		super(ID);
@@ -17,34 +20,48 @@ public class ModuleExtract extends ModuleBase implements IModule{
 
 	@Override
 	public boolean execute(TileRoutedPipe te) {
-		boolean hasWorked = false;
-		int count = 0;
-		int slot = 0;
-		EnumFacing face = te.network.getDirectionForDestination(te.nodeID);
-		ArrayList<ItemStack> stacks = te.getItemTypesInInventory(face);
 		
-		UUID nodeT = te.network.getStorageNodesForItem(stacks.get(0).getItem()).get(0);
-		while(!hasWorked) {
-			if(nodeT.equals(te.nodeID))
-				count+=1;
-				ItemStack stack = stacks.get(slot).copy();
-				if(stack.getCount()>=count) {
-					stack.setCount(1);//Only send one item per destination
-					te.routeItemTo(nodeT, stack);
-				}
-				else {
-					if (stacks.size() <= slot + 1) {
-						break;
+		if(ticksTillOp!=0) {
+			ticksTillOp-=1;
+		}else {
+			
+			ticksTillOp=References.MOD_BASE_OPERATION_RATE;
+			if(te.hasInventory()) {
+				boolean hasWorked = false;
+				int tryDest = 0;
+				int tryItem = 0;
+				ArrayList<ItemStack> stacks = te.getItemTypesInInventory(te.network.getDirectionForDestination(te.nodeID));
+				try {
+					if(!stacks.isEmpty()) {
+						ArrayList<UUID> nodes = te.network.getStorageNodesForItem(stacks.get(tryItem).getItem());
+						UUID nodeT;
+						while(!hasWorked) {
+							if(nodes.isEmpty()) {
+								tryItem+=1;
+								nodes = te.network.getStorageNodesForItem(stacks.get(tryItem).getItem());
+							}else {
+								nodeT = nodes.get(tryDest);
+								if(nodeT.equals(te.nodeID)) {
+									tryDest+=1;
+									nodeT = te.network.getStorageNodesForItem(stacks.get(tryItem).getItem()).get(tryDest);
+									continue;
+								}
+								
+								ItemStack stack = stacks.get(tryItem).copy();
+								if(stack.getCount()>References.MOD_EXTRACT_BASE_COUNT) {
+									stack.setCount(References.MOD_EXTRACT_BASE_COUNT);
+								}
+								te.routeItemTo(nodeT, stack);
+							}
+							hasWorked=true;
+						}
 					}
-					slot+=1;
-					count = 1;
-					stack = stacks.get(slot).copy();
-					stack.setCount(1);//Only send one item per destination
-					te.routeItemTo(nodeT, stack);
+				} catch (Exception e) {
+					return false;
 				}
+			}
 		}
-		
-		return false;
+		return true;
 	}
 
 	@Override

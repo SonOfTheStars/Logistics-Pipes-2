@@ -81,5 +81,9 @@ public abstract class References {
 	public static final int MOD_COUNT_MKIV = 6;
 	public static final int MOD_COUNT_MKV = 8;
 	public static final int MOD_COUNT_MKVI = 10;
+	//Extracted Items per OP
+	public static final int MOD_EXTRACT_BASE_COUNT = 4;
+	//Module Operation rate delay in ticks
+	public static final int MOD_BASE_OPERATION_RATE = 20;
 	
 }

@@ -8,6 +8,7 @@ import com.sots.item.ItemWrench;
 import com.sots.item.LPItemBase;
 import com.sots.item.ShardRutile;
 import com.sots.item.modules.ItemModuleBase;
+import com.sots.item.modules.ItemModuleExtract;
 import com.sots.item.modules.ItemModuleOrder;
 import com.sots.item.modules.ItemModuleProvide;
 import com.sots.item.modules.ItemModuleSink;
@@ -38,6 +39,7 @@ public class ItemRegistry {
 	public static LPItemBase module_provide;
 	public static LPItemBase module_sink;
 	public static LPItemBase module_sort;
+	public static LPItemBase module_extract;
 	public static LPItemBase item_wrench;
 	
 	/**
@@ -58,6 +60,7 @@ public class ItemRegistry {
 		module_provide = new ItemModuleProvide();
 		module_sink = new ItemModuleSink();
 		module_sort = new ItemModuleSort();
+		module_extract = new ItemModuleExtract();
 		item_wrench = new ItemWrench();
 		
 		registry.add(shard_rutile);
@@ -71,6 +74,7 @@ public class ItemRegistry {
 		registry.add(module_sink);
 		registry.add(module_sort);
 		registry.add(module_order);
+		registry.add(module_extract);
 		registry.add(item_wrench);
 		
 		

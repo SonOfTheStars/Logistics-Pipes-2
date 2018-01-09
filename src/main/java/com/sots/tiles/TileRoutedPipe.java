@@ -3,6 +3,7 @@ package com.sots.tiles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -38,17 +39,22 @@ import net.minecraftforge.items.ItemStackHandler;
 
 public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe, IDestination{
 	
+	protected boolean hasInv = false;
 	protected ItemStackHandler modules;
+	protected Set<IModule> moduleLogics;
 	protected List<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>> waitingToRoute = new ArrayList<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>>();
 	
 	public TileRoutedPipe() {
 		modules = new ItemStackHandler(References.MOD_COUNT_BASE);
+		moduleLogics = new HashSet<IModule>();
 	}
 	
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
 		modules.deserializeNBT(compound.getCompoundTag("modules"));
+		IModule mod = ((IItemModule) modules.getStackInSlot(0).getItem()).getModLogic();
+		moduleLogics.add(mod);
 	}
 	
 	@Override
@@ -264,6 +270,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 				IModule mod = ((IItemModule) heldItem.getItem()).getModLogic();
 				if(mod.canInsert()){
 					modules.insertItem(0, heldItem.splitStack(1), false);
+					moduleLogics.add(mod);
 					if(heldItem.isEmpty()) {
 						heldItem = null;
 					}
@@ -287,7 +294,6 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 				}
 			}
 		} else if (this.hasNetwork && (network.getNodeByID(this.nodeID).isDestination())) {
-			boolean hasInv = false;
 			for (int i = 0; i < 6; i++) {
 				if (hasInventoryOnSide(i))
 					hasInv = true;
@@ -295,6 +301,11 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 			if (!hasInv)
 				network.unregisterDestination(this.nodeID);
 		}
+		moduleLogics.forEach(p -> {
+			if(p.canExecute()) {
+				p.execute(this);
+			}
+		});
 		checkIfRoutesAreReady();
 	}
 	
@@ -337,5 +348,6 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		}
 	}
 	
+	public boolean hasInventory() {return hasInv;}
 
 }
