@@ -26,33 +26,31 @@ public class ModuleExtract extends ModuleBase implements IModule{
 		}else {
 			
 			ticksTillOp=References.MOD_BASE_OPERATION_RATE;
-			if(te.hasInventory()) {
+			if(te.hasInventory() && te.hasNetwork()) {
 				boolean hasWorked = false;
 				int tryDest = 0;
 				int tryItem = 0;
-				ArrayList<ItemStack> stacks = te.getItemTypesInInventory(te.network.getDirectionForDestination(te.nodeID));
+				ArrayList<ItemStack> stacks = te.getItemsInInventory(te.network.getDirectionForDestination(te.nodeID));
 				try {
 					if(!stacks.isEmpty()) {
+						while(!te.network.hasStorageForItem(stacks.get(tryItem).getItem())) {
+							tryItem+=1;
+						}
 						ArrayList<UUID> nodes = te.network.getStorageNodesForItem(stacks.get(tryItem).getItem());
 						UUID nodeT;
 						while(!hasWorked) {
-							if(nodes.isEmpty()) {
-								tryItem+=1;
-								nodes = te.network.getStorageNodesForItem(stacks.get(tryItem).getItem());
-							}else {
+							nodeT = nodes.get(tryDest);
+							if(nodeT.equals(te.nodeID)) {
+								tryDest+=1;
 								nodeT = nodes.get(tryDest);
-								if(nodeT.equals(te.nodeID)) {
-									tryDest+=1;
-									nodeT = te.network.getStorageNodesForItem(stacks.get(tryItem).getItem()).get(tryDest);
-									continue;
-								}
-								
-								ItemStack stack = stacks.get(tryItem).copy();
-								if(stack.getCount()>References.MOD_EXTRACT_BASE_COUNT) {
-									stack.setCount(References.MOD_EXTRACT_BASE_COUNT);
-								}
-								te.routeItemTo(nodeT, stack);
+								continue;
 							}
+							
+							ItemStack stack = stacks.get(tryItem).copy();
+							if(stack.getCount()>References.MOD_EXTRACT_BASE_COUNT) {
+								stack.setCount(References.MOD_EXTRACT_BASE_COUNT);
+							}
+							te.routeItemTo(nodeT, stack);
 							hasWorked=true;
 						}
 					}
@@ -72,5 +70,11 @@ public class ModuleExtract extends ModuleBase implements IModule{
 
 	@Override
 	public ModuleType modType() {return ModuleType.EXTRACT;}
+	
+	@Override
+	public void disconnect() {
+		//Doesnt need to be disconnected
+		return;
+	}
 
 }

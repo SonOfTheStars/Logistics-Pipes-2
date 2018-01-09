@@ -20,11 +20,11 @@ public class ModuleSink extends ModuleBase implements IModule{
 	@Override
 	public boolean execute(TileRoutedPipe te) {
 		if(!hasRegistered) {
-			if(te.hasInventory()) {
-				ArrayList<ItemStack> stacks = te.getItemTypesInInventory(te.network.getDirectionForDestination(te.nodeID));
-				if(!stacks.isEmpty()) {
-					stacks.forEach(p -> {
-						te.network.registerItemStorage(new Tuple<UUID, Item>(te.nodeID, p.getItem()));
+			if(te.hasInventory() && te.hasNetwork()) {
+				ArrayList<Item> types = te.getItemTypesInInventory(te.network.getDirectionForDestination(te.nodeID));
+				if(!types.isEmpty()) {
+					types.forEach(p -> {
+						te.network.registerItemStorage(new Tuple<UUID, Item>(te.nodeID, p));
 					});
 					hasRegistered=true;
 				}
@@ -41,5 +41,11 @@ public class ModuleSink extends ModuleBase implements IModule{
 	
 	@Override
 	public ModuleType modType() {return ModuleType.SINK;}
+	
+	@Override
+	public void disconnect() {
+		//has to be disconnected!
+		hasRegistered=false;
+	}
 
 }

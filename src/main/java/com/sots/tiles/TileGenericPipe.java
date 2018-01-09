@@ -137,7 +137,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		LogisticsPipes2.logger.log(Level.DEBUG, "Removed TileGenericPipe" + toString() + " from Network:" + network.getName());
 		hasNetwork=false;
 		network=null;
-		}
+	}
 
 	@Override
 	public boolean hasPower() {return false;}
@@ -397,7 +397,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		return false;
 	}
 	
-	public ArrayList<ItemStack> getItemTypesInInventory(EnumFacing face){
+	//this needs a name change
+	public ArrayList<ItemStack> getItemsInInventory(EnumFacing face){
 		ArrayList<ItemStack> result = new ArrayList<ItemStack>();
 		
 		if (!hasInventoryOnSide(face.getIndex())) {
@@ -412,6 +413,27 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			ItemStack slotStack = itemHandler.getStackInSlot(i);
 			if(!slotStack.isEmpty()) {
 				result.add(slotStack);
+			}
+		}
+		return result;
+	}
+	
+	public ArrayList<Item> getItemTypesInInventory(EnumFacing face){
+		ArrayList<Item> result = new ArrayList<Item>();
+		
+		if (!hasInventoryOnSide(face.getIndex())) {
+			return result;
+		}
+		TileEntity te = world.getTileEntity(getPos().offset(face));
+		if (!te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite())) {
+			return result;
+		}
+		IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite());
+		for(int i=0; i < itemHandler.getSlots(); i++) {
+			ItemStack slotStack = itemHandler.getStackInSlot(i);
+			Item item = slotStack.getItem();
+			if(!slotStack.isEmpty() && !result.contains(item)) {
+				result.add(item);
 			}
 		}
 		return result;

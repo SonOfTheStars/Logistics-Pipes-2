@@ -32,4 +32,9 @@ public class ModuleBase implements IModule {
 		return ModuleType.NONE;
 	}
 
+	@Override
+	public void disconnect() {
+		return;
+	}
+
 }

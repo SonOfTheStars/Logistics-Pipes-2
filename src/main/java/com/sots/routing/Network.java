@@ -116,6 +116,7 @@ public class Network {
 		junctions.clear();
 		nodes.put(root.getId(), root);
 		router.shutdown();
+		stores.clear();
 	}
 	
 	
@@ -168,6 +169,10 @@ public class Network {
 		.collect(Collectors.toList())
 		.forEach(p -> output.add(p.getKey()));
 		return output;
+	}
+	
+	public boolean hasStorageForItem(Item item) {
+		return stores.stream().anyMatch(p -> p.getVal().equals(item));
 	}
 	
 	public boolean registerItemStorage(Tuple<UUID, Item> input) {

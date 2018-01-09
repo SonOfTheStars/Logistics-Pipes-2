@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Level;
+
 import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.item.modules.IItemModule;
@@ -147,7 +149,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 								int count = 0;
 								int slot = 0;
 								EnumFacing face = current.network.getDirectionForDestination(nodeID);
-								ArrayList<ItemStack> stacks = current.getItemTypesInInventory(face);
+								ArrayList<ItemStack> stacks = current.getItemsInInventory(face);
 								for (UUID nodeT : nodes) {
 									if(nodeT.equals(current.nodeID))
 										continue;
@@ -179,7 +181,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 					int count = 0;
 					int slot = 0;
 					EnumFacing face = network.getDirectionForDestination(nodeID);
-					ArrayList<ItemStack> stacks = getItemTypesInInventory(face);
+					ArrayList<ItemStack> stacks = getItemsInInventory(face);
 					Iterator<ItemStack> iter = stacks.iterator();
 					for (UUID nodeT : nodes) {
 						if(nodeT.equals(nodeID))
@@ -298,8 +300,11 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 				if (hasInventoryOnSide(i))
 					hasInv = true;
 			}
-			if (!hasInv)
+			if (!hasInv) {
 				network.unregisterDestination(this.nodeID);
+				moduleLogics.forEach(p -> p.disconnect());
+			}
+			
 		}
 		moduleLogics.forEach(p -> {
 			if(p.canExecute()) {
@@ -315,6 +320,14 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		if(modules.getStackInSlot(0)!=null) {
 			Misc.spawnInventoryInWorld(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, modules);
 		}
+	}
+	
+	@Override
+	public void disconnect() {
+		LogisticsPipes2.logger.log(Level.DEBUG, "Removed TileGenericPipe" + toString() + " from Network:" + network.getName());
+		hasNetwork=false;
+		network=null;
+		moduleLogics.forEach(p -> p.disconnect());
 	}
 
 	public void routeItemTo(UUID nodeT, ItemStack item) {

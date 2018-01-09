@@ -35,6 +35,8 @@ public interface IModule {
 	 */
 	public ModuleType modType();
 	
+	public void disconnect();
+	
 	public static IModule getFromType(String t) {
 		IModule mod = null;
 		switch(t) {

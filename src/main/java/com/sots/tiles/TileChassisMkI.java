@@ -137,7 +137,7 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 								int count = 0;
 								int slot = 0;
 								EnumFacing face = current.network.getDirectionForDestination(nodeID);
-								ArrayList<ItemStack> stacks = current.getItemTypesInInventory(face);
+								ArrayList<ItemStack> stacks = current.getItemsInInventory(face);
 								for (UUID nodeT : nodes) {
 									if(nodeT.equals(current.nodeID))
 										continue;
@@ -169,7 +169,7 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 					int count = 0;
 					int slot = 0;
 					EnumFacing face = network.getDirectionForDestination(nodeID);
-					ArrayList<ItemStack> stacks = getItemTypesInInventory(face);
+					ArrayList<ItemStack> stacks = getItemsInInventory(face);
 					for (UUID nodeT : nodes) {
 						if(nodeT.equals(nodeID))
 							continue;
