@@ -1,14 +1,8 @@
 package com.sots.routing;
 
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.UUID;
+import java.util.*;
+import java.util.Map.*;
+import java.util.concurrent.*;
 
 import org.apache.logging.log4j.Level;
 
@@ -160,5 +154,44 @@ public class Network {
 		networkSimplifier.shutdown();
 		networkSimplifier.rescanNetwork(nodes, destinations, junctions);
 	}
+
+	/*
+	 * Takes a UUID of a node in the network, and a list of destinations in the network, and returns the list of destinations sorted by the length of the route from nodeS to the node in the list.
+	 * The list should not be accessed until the boolean in the Tuple is true.
+	 */
+	public Tuple<Boolean, List<UUID>> getListOfDestinationsOrderedByRoute(UUID nodeS, List<UUID> nodeTs) {
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+
+		Tuple<Boolean, List<UUID>> result = new Tuple<Boolean, List<UUID>>(false, new ArrayList<UUID>());
+
+		FutureTask<Void> listingTask = new FutureTask<Void>(new Callable<Void>() {
+			@Override
+			public Void call() throws Exception {
+				List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>> routes = new ArrayList<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>>();
+				for (UUID nodeT : nodeTs) {
+					routes.add(getRouteFromTo(nodeS, nodeT));
+				}
+				for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route : routes) {
+					while (route.getKey() == false) {}
+				}
+
+				Collections.sort(routes, new Comparator<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>>() {
+					@Override
+					public int compare(Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> o1, Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> o2) {
+						return o1.getVal().getThird().size() - o2.getVal().getThird().size();
+					}
+				});
+				for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route : routes) {
+					result.getVal().add(route.getVal().getSecnd().getId());
+				}
+				result.setKey(true);
+				return null;
+			}
+		});
+		executor.execute(listingTask);
+
+		return result;
+	}
+
 
 }
