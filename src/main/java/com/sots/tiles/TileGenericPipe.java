@@ -9,6 +9,7 @@ import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.particle.ParticleUtil;
 import com.sots.routing.LPRoutedItem;
+import com.sots.routing.LPRoutedFluid;
 import com.sots.routing.Network;
 import com.sots.routing.NetworkNode;
 import com.sots.routing.interfaces.IPipe;
@@ -35,11 +36,15 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.fluids.capability.*;
+import net.minecraftforge.fluids.*;
 
 public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable, ITileEntityBase{
 	
 	private volatile Set<LPRoutedItem> contents = new HashSet<LPRoutedItem>();
+	private volatile Set<LPRoutedFluid> contents_fluid = new HashSet<LPRoutedFluid>();
 	private List<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>> waitingToReroute = new ArrayList<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>>();
+	private List<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack, EnumFacing>> waitingToReroute_fluid = new ArrayList<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack, EnumFacing>>();
 	
 	public static enum ConnectionTypes{
 		NONE, PIPE, BLOCK, FORCENONE
@@ -49,7 +54,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	protected boolean hasNetwork = false;
 	
-	public Network network = null;
+	protected Network network = null;
 	public UUID nodeID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 	
 	public static ConnectionTypes typeFromInt(int value) {
@@ -93,6 +98,13 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 				contents.add(LPRoutedItem.readFromNBT((NBTTagCompound) i.next(), this));
 			}
 		}
+		if(compound.hasKey("contents_fluid")) {
+			NBTTagList list = (NBTTagList) compound.getTag("contents_fluid");
+			contents_fluid.clear();
+			for(Iterator<NBTBase> i = list.iterator(); i.hasNext();) {
+				contents_fluid.add(LPRoutedFluid.readFromNBT((NBTTagCompound) i.next(), this));
+			}
+		}
 	}
 	
 	@Override
@@ -104,6 +116,13 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
         }
         if(!list.hasNoTags()) {
         	compound.setTag("contents", list);
+        }
+        NBTTagList list_fluid = new NBTTagList();
+        for(LPRoutedFluid lprf : contents_fluid) {
+        	list_fluid.appendTag(lprf.writeToNBT());
+        }
+        if(!list_fluid.hasNoTags()) {
+        	compound.setTag("contents_fluid", list_fluid);
         }
         
         return compound;
@@ -206,6 +225,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		else if(tile!=null) {
 			if(world.getTileEntity(pos).hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side.getOpposite()))
 				return ConnectionTypes.BLOCK;
+			if(world.getTileEntity(pos).hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side.getOpposite()))
+				return ConnectionTypes.BLOCK;
 		}
 		return ConnectionTypes.NONE;
 	}
@@ -257,8 +278,15 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 								itemStack = itemHandler.insertItem(j, itemStack, false);
 							}
 							if(!itemStack.isEmpty())
-								world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, itemStack));
+								if (!world.isRemote) {
+									world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, itemStack));
+								}
+						} else {
+							if (!world.isRemote) {
+								world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, item.getContent()));
+							}
 						}
+
 					}
 					else {
 						if (!world.isRemote) {
@@ -284,6 +312,67 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			markForUpdate();
 		}
 		checkIfReroutesAreReady();
+		if(!contents_fluid.isEmpty()) {
+			//for(LPRoutedItem item : contents_fluid) {
+			for(Iterator<LPRoutedFluid> i = contents_fluid.iterator(); i.hasNext();) {
+				LPRoutedFluid fluid = i.next();
+				fluid.ticks++;
+				if(fluid.ticks==fluid.TICK_MAX/2) {
+					fluid.setHeading(fluid.getHeadingForNode());
+				}
+				if(fluid.ticks==fluid.TICK_MAX) {
+					boolean debug = world.isRemote;
+					if(getConnection(fluid.getHeading())==ConnectionTypes.PIPE) {
+						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(fluid.getHeading()));
+						if(pipe!=null) {
+							if (!pipe.catchFluid(fluid)) {
+								if (!world.isRemote) {
+									world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, UniversalBucket.getFilledBucket(new UniversalBucket(), fluid.getContent().getFluid())));
+								}
+							}
+
+//							i.remove();
+						}
+					}
+					else if (getConnection(fluid.getHeading())==ConnectionTypes.BLOCK) {
+						TileEntity te = world.getTileEntity(getPos().offset(fluid.getHeading()));
+						if (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, fluid.getHeading().getOpposite())) {
+							IFluidHandler fluidHandler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, fluid.getHeading().getOpposite());
+							FluidStack fluidStack = fluid.getContent();
+							//for (int j = 0; j < fluidHandler.getSlots(); j++) {
+								//fluidStack = fluidHandler.insertFluid(j, fluidStack, false);
+							//}
+							int amountLeft = fluidHandler.fill(fluidStack, true);
+							//if(!fluidStack.isEmpty())
+							if (amountLeft < fluidStack.amount)
+								if (!world.isRemote) {
+									world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, UniversalBucket.getFilledBucket(new UniversalBucket(), fluidStack.getFluid())));
+								}
+						} else {
+							if (!world.isRemote) {
+								world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, UniversalBucket.getFilledBucket(new UniversalBucket(), fluid.getContent().getFluid())));
+							}
+						}
+
+					}
+					else {
+						if (!world.isRemote) {
+								if (fluid.getDestination() != null && network.getAllDestinations().contains(fluid.getDestination().nodeID)) {
+									rerouteFluidTo(fluid.getDestination().nodeID, fluid.getContent(), fluid.getHeading());
+								} else {
+									LogisticsPipes2.logger.info(fluid.getHeading()); //DEBUG
+									if (!world.isRemote) {
+										world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, UniversalBucket.getFilledBucket(new UniversalBucket(), fluid.getContent().getFluid())));
+									}
+								}
+						}
+					}
+					i.remove();
+				}
+			}
+			markForUpdate();
+		}
+		checkIfFluidReroutesAreReady();
 	}
 	
 	protected void network() {
@@ -375,6 +464,31 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		}
 		return result;
 	}
+
+	public FluidStack takeFluidFromInventoryOnSide(EnumFacing face, FluidStack fluid) {
+		if (!hasInventoryOnSide(face.getIndex())) {
+			return null;
+		}
+		TileEntity te = world.getTileEntity(getPos().offset(face));
+		if (!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite())) {
+			return null;
+		}
+		IFluidHandler fluidHandler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite());
+		FluidStack result = new FluidStack(fluid.getFluid(), 0);
+		for (int i = 0; i < fluidHandler.getTankProperties().length; i++) {
+			if (fluidHandler.getTankProperties()[i].getContents().isFluidEqual(fluid)) {
+				FluidStack tmp = fluidHandler.drain(fluid, true);
+				result = new FluidStack(fluid.getFluid(), tmp.amount + result.amount);
+				fluid = new FluidStack(fluid.getFluid(), fluid.amount - tmp.amount);
+			}
+			if (fluid.amount <= 0) {
+				break;
+			}
+		}
+		if (result.amount == 0)
+			return null;
+		return result;
+	}
 	
 	public boolean hasItemInInventoryOnSide(EnumFacing face, ItemStack item) {
 		if (!hasInventoryOnSide(face.getIndex())) {
@@ -396,8 +510,28 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		}
 		return false;
 	}
+
+	public boolean hasFluidInInventoryOnSide(EnumFacing face, FluidStack fluid) {
+		if (!hasInventoryOnSide(face.getIndex())) {
+			return false;
+		}
+		TileEntity te = world.getTileEntity(getPos().offset(face));
+		if (!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite())) {
+			return false;
+		}
+		IFluidHandler fluidHandler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite());
+		FluidStack result = new FluidStack(fluid.getFluid(), 0);
+		for (int i = 0; i < fluidHandler.getTankProperties().length; i++) {
+			if (fluidHandler.getTankProperties()[i].getContents().isFluidEqual(fluid)) {
+				result = new FluidStack(fluid.getFluid(), fluidHandler.getTankProperties()[i].getContents().amount + result.amount);
+			}
+			if (result.amount >= fluid.amount) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
-	//this needs a name change
 	public ArrayList<ItemStack> getItemsInInventory(EnumFacing face){
 		ArrayList<ItemStack> result = new ArrayList<ItemStack>();
 		
@@ -417,7 +551,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		}
 		return result;
 	}
-	
+
 	public ArrayList<Item> getItemTypesInInventory(EnumFacing face){
 		ArrayList<Item> result = new ArrayList<Item>();
 		
@@ -438,6 +572,27 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		}
 		return result;
 	}
+
+
+	public ArrayList<FluidStack> getFluidStacksInInventory(EnumFacing face){
+		ArrayList<FluidStack> result = new ArrayList<FluidStack>();
+		
+		if (!hasInventoryOnSide(face.getIndex())) {
+			return result;
+		}
+		TileEntity te = world.getTileEntity(getPos().offset(face));
+		if (!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite())) {
+			return result;
+		}
+		IFluidHandler fluidHandler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite());
+		for (IFluidTankProperties tank : fluidHandler.getTankProperties()) {
+			if (!(tank.getContents() == null)) {
+				result.add(tank.getContents());
+			}
+		}
+		return result;
+	}
+
 
 	@Override
 	public int posX() {return pos.getX();}
@@ -552,6 +707,19 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			return false;
 		}
 	}
+
+	public boolean catchFluid(LPRoutedFluid fluid) {
+		try {
+			contents_fluid.add(fluid);
+			fluid.ticks = 0;
+			//spawnParticle(1f, 1f, 1f);
+			//LogisticsPipes2.logger.info("Caugth an item");
+			return true;
+		}
+		catch(Exception e) {
+			return false;
+		}
+	}
 	
 	private boolean passItem(TileGenericPipe pipe, LPRoutedItem item) {
 		if(pipe!=null && item!=null) {
@@ -562,6 +730,10 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	public Set<LPRoutedItem> getContents(){
 		return contents;
+	}
+
+	public Set<LPRoutedFluid> getContents_fluid(){
+		return contents_fluid;
 	}
 
 	@Override
@@ -578,6 +750,15 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		waitingToReroute.add(new Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>(route, item, side.getOpposite()));
 	}
 
+	public void rerouteFluidTo(UUID nodeT, FluidStack fluid, EnumFacing side) {
+		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route = network.getRouteFromTo(nodeID, nodeT);
+		if (route == null) {
+			LogisticsPipes2.logger.info("Route returned null");
+			return;
+		}
+		waitingToReroute_fluid.add(new Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack, EnumFacing>(route, fluid, side.getOpposite()));
+	}
+
 	private void checkIfReroutesAreReady() {
 		if (!waitingToReroute.isEmpty()) {
 			for (Iterator<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>> i = waitingToReroute.iterator(); i.hasNext();) {
@@ -590,6 +771,25 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 				routeCopy.addAll(route.getFirst().getVal().getThird());
 				EnumFacing side = route.getThird();
 				catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), item, side, this, routeCopy, (TileGenericPipe) route.getFirst().getVal().getSecnd().getMember()));
+				i.remove();
+
+				break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.
+			}
+		}
+	}
+
+	private void checkIfFluidReroutesAreReady() {
+		if (!waitingToReroute_fluid.isEmpty()) {
+			for (Iterator<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack, EnumFacing>> i = waitingToReroute_fluid.iterator(); i.hasNext();) {
+				Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack, EnumFacing> route = i.next();
+				if (route.getFirst().getKey() == false) {
+					continue;
+				}
+				FluidStack fluid = route.getSecnd();
+				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
+				routeCopy.addAll(route.getFirst().getVal().getThird());
+				EnumFacing side = route.getThird();
+				catchFluid(new LPRoutedFluid((double) posX(), (double) posY(), (double) posZ(), fluid, side, this, routeCopy, (TileGenericPipe) route.getFirst().getVal().getSecnd().getMember()));
 				i.remove();
 
 				break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.
