@@ -1,14 +1,13 @@
 package com.sots.module;
 
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.UUID;
 
 import com.sots.tiles.TileRoutedPipe;
 import com.sots.util.References;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
 
 public class ModuleExtract extends ModuleBase implements IModule{
 	
@@ -20,7 +19,6 @@ public class ModuleExtract extends ModuleBase implements IModule{
 
 	@Override
 	public boolean execute(TileRoutedPipe te) {
-		
 		if(ticksTillOp!=0) {
 			ticksTillOp-=1;
 		}else {
@@ -33,16 +31,19 @@ public class ModuleExtract extends ModuleBase implements IModule{
 				ArrayList<ItemStack> stacks = te.getItemsInInventory(te.network.getDirectionForDestination(te.nodeID));
 				try {
 					if(!stacks.isEmpty()) {
-						while(!te.network.hasStorageForItem(stacks.get(tryItem).getItem())) {
+						Item item = stacks.get(tryItem).getItem();
+						while(!te.network.hasStorageForItem(item) && tryItem<stacks.size()) {
 							tryItem+=1;
+							item = stacks.get(tryItem).getItem();
 						}
-						ArrayList<UUID> nodes = te.network.getStorageNodesForItem(stacks.get(tryItem).getItem());
-						UUID nodeT;
+						UUID nodeT = te.network.getClosestStorageNode(item, te.nodeID, tryDest);
 						while(!hasWorked) {
-							nodeT = nodes.get(tryDest);
+							if(nodeT==null) {
+								return false;
+							}
 							if(nodeT.equals(te.nodeID)) {
 								tryDest+=1;
-								nodeT = nodes.get(tryDest);
+								nodeT = te.network.getClosestStorageNode(item, te.nodeID, tryDest);
 								continue;
 							}
 							
@@ -59,6 +60,7 @@ public class ModuleExtract extends ModuleBase implements IModule{
 				}
 			}
 		}
+		
 		return true;
 	}
 

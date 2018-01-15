@@ -1,8 +1,22 @@
 package com.sots.routing;
 
-import java.util.*;
-import java.util.Map.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
 
@@ -12,6 +26,7 @@ import com.sots.routing.router.MultiCachedDijkstraRouter;
 import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
+import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 
 public class Network {
@@ -20,6 +35,8 @@ public class Network {
 
 	private volatile Map<UUID, WeightedNetworkNode> junctions = new ConcurrentHashMap<UUID, WeightedNetworkNode>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
 
+	private volatile Set<Tuple<UUID, Item>> stores = new HashSet<Tuple<UUID, Item>>();
+	
 	private NetworkNode root = null;
 	private NetworkSimplifier networkSimplifier = new NetworkSimplifier();
 	
@@ -105,6 +122,7 @@ public class Network {
 		junctions.clear();
 		nodes.put(root.getId(), root);
 		router.shutdown();
+		stores.clear();
 	}
 	
 	
@@ -149,12 +167,47 @@ public class Network {
 		}
 		return route;
 	}
+	
+	public ArrayList<UUID> getStorageNodesForItem(Item item){
+		ArrayList<UUID> output = new ArrayList<UUID>();
+		stores.stream()
+		.filter(p -> p.getVal().equals(item))
+		.collect(Collectors.toList())
+		.forEach(p -> output.add(p.getKey()));
+		return output;
+	}
+	
+	public boolean hasStorageForItem(Item item) {
+		return stores.stream().anyMatch(p -> p.getVal().equals(item));
+	}
+	
+	public boolean registerItemStorage(Tuple<UUID, Item> input) {
+		if(!stores.contains(input)) {
+			stores.add(input);
+			return true;
+		}
+		return false;
+	}
+	
+	public UUID getClosestStorageNode(Item item, UUID source, int skip) {
+		UUID out = null;
+		List<UUID> stores = getStorageNodesForItem(item);
+		List<UUID> sorted = null;
+		if(!stores.isEmpty()) {
+			sorted = sortRoutesByDistance(source, stores);
+		}
+		if(sorted!=null && !sorted.isEmpty()) {
+			if(skip<sorted.size())
+				out=sorted.get(skip);
+		}
+		return out;
+	}
 
 	public void recalculateNetwork() {
 		networkSimplifier.shutdown();
 		networkSimplifier.rescanNetwork(nodes, destinations, junctions);
 	}
-
+	
 	/*
 	 * Takes a UUID of a node in the network, and a list of destinations in the network, and returns the list of destinations sorted by the length of the route from nodeS to the node in the list.
 	 * The list should not be accessed until the boolean in the Tuple is true.
@@ -192,6 +245,30 @@ public class Network {
 
 		return result;
 	}
+	
+	/*
+	 * Takes a UUID of a node in the network, and a list of destinations in the network
+	 * and returns the list of destinations sorted by the length of the route from nodeS to the node in the list.
+	 */
+	public List<UUID> sortRoutesByDistance(UUID nodeS, List<UUID> nodeTs){
+		List<UUID> out = new ArrayList<UUID>();
+		List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>> routes = new ArrayList<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>>();
+		for (UUID nodeT : nodeTs) {
+			routes.add(getRouteFromTo(nodeS, nodeT));
+		}
+		for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route : routes) {
+			while (route.getKey() == false) {}
+		}
 
+		Collections.sort(routes, new Comparator<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>>() {
+			@Override
+			public int compare(Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> o1, Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> o2) {
+				return o1.getVal().getThird().size() - o2.getVal().getThird().size();
+			}
+		});
+		routes.forEach(p -> out.add(p.getVal().getSecnd().getId()));
+		
+		return out;
+	}
 
 }
