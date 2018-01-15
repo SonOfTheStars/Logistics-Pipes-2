@@ -21,10 +21,10 @@ public class ModuleSink extends ModuleBase implements IModule{
 	public boolean execute(TileRoutedPipe te) {
 		if(!hasRegistered) {
 			if(te.hasInventory() && te.hasNetwork()) {
-				ArrayList<Item> types = te.getItemTypesInInventory(te.network.getDirectionForDestination(te.nodeID));
+				ArrayList<Item> types = te.getItemTypesInInventory(te.getNetwork().getDirectionForDestination(te.nodeID));
 				if(!types.isEmpty()) {
 					types.forEach(p -> {
-						te.network.registerItemStorage(new Tuple<UUID, Item>(te.nodeID, p));
+						te.getNetwork().registerItemStorage(new Tuple<UUID, Item>(te.nodeID, p));
 					});
 					hasRegistered=true;
 				}
