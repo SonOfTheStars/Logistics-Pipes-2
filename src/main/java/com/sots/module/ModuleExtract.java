@@ -3,6 +3,9 @@ package com.sots.module;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Level;
+
+import com.sots.LogisticsPipes2;
 import com.sots.tiles.TileRoutedPipe;
 import com.sots.util.References;
 
@@ -35,6 +38,7 @@ public class ModuleExtract extends ModuleBase implements IModule{
 						while(!te.getNetwork().hasStorageForItem(item) && tryItem<stacks.size()) {
 							tryItem+=1;
 							item = stacks.get(tryItem).getItem();
+							LogisticsPipes2.logger.log(Level.INFO, "Module:" + this.MODULE_ID + " has skipped an Itemstack!");
 						}
 						UUID nodeT = te.getNetwork().getClosestStorageNode(item, te.nodeID, tryDest);
 						while(!hasWorked) {
@@ -44,6 +48,7 @@ public class ModuleExtract extends ModuleBase implements IModule{
 							if(nodeT.equals(te.nodeID)) {
 								tryDest+=1;
 								nodeT = te.getNetwork().getClosestStorageNode(item, te.nodeID, tryDest);
+								LogisticsPipes2.logger.log(Level.INFO, "Module:" + this.MODULE_ID + " avoided Self-Routing!");
 								continue;
 							}
 							

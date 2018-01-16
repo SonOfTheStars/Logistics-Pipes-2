@@ -252,7 +252,9 @@ public class Network {
 			routes.add(getRouteFromTo(nodeS, nodeT));
 		}
 		for (LogisticsRoute route : routes) {
-			while (!route.isComplete()) {}
+			while (!route.isComplete()) {
+				LogisticsPipes2.logger.log(Level.INFO, "IncompleteRouteSkipped");
+			}
 		}
 
 		Collections.sort(routes, new Comparator<LogisticsRoute>() {
