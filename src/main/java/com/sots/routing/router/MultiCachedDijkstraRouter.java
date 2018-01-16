@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 import com.sots.LogisticsPipes2;
 import com.sots.routing.LogisticsRoute;
@@ -56,7 +57,7 @@ public class MultiCachedDijkstraRouter{
 		try {
 			if(!cache.isEmpty()) {
 				LogisticsRoute cachedRoute = cache.stream()
-						.filter(p -> p.isRouteFor(s.getId(), t.getId()))
+						.filter(p -> p.isRouteFor(s.getId(), t.getId()) && p.isComplete() && p.getWeight()!=0)
 						.findFirst().get();
 					if(cachedRoute!=null) {
 						LogisticsPipes2.logger.info("Getting route from cache");
@@ -173,9 +174,9 @@ public class MultiCachedDijkstraRouter{
 								visited.add(current);
 								//Thread.sleep(120);
 							}
+							
 							for (Tuple<NetworkNode, EnumFacing> n : destinations.values()) {
-								//NetworkNode help = n;
-								//WeightedNetworkNode help = junctions.get(n.getKey().getId());
+								
 								NetworkNode help = junctions.get(n.getKey().getId());
 
 								Deque<EnumFacing> route = new ArrayDeque<EnumFacing>();
@@ -185,37 +186,26 @@ public class MultiCachedDijkstraRouter{
 
 									help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
 									help = help.parent.getKey();
-									//help = junctions.get(help.parent.getKey().getId());
 								}
 								Deque<EnumFacing> tmp_result = route;
 								cache.add(new LogisticsRoute(start, n.getKey(), tmp_result));
 								//LogisticsPipes2.logger.info("Route found of length " + route.size());
 							}
-							//result.setVal(new Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>(start, target, cache.get(new Tuple<NetworkNode, NetworkNode>(start, target))));
-							//result.setKey(true);
+							
 							result.setDirectionStack(cache.stream()
 									.filter(p -> p.isRouteFor(start.getId(), target.getId()))
 									.findFirst().get().getdirectionStack());
 							result.weightFromStack();
 							result.setCompletion(true);
+							cache.add(result);
 							LogisticsPipes2.logger.info("Done routing for now " + start + "-" + target);
 							sources.remove(start.getId());
 							return null;
-							//return cache.get(new Tuple<NetworkNode, NetworkNode>(start, target));
 						}
-
 
 					});
 		executor.execute(routingTask);
-		//try {
-			//routingInfo = routingTask.get();
-			////executor.shutdownNow();
-		//}
-		//catch (Exception e) {
-			//CrashReport.makeCrashReport(e, "A logistics Pipes router was interrupted!");
-		//}
-
-
+		
 		return result;
 	}
 

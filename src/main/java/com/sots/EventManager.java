@@ -7,7 +7,6 @@ import com.sots.network.LPPacketHandler;
 import com.sots.network.message.MessagePipeContentUpdate;
 import com.sots.proxies.ClientProxy;
 
-import mezz.jei.network.PacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;

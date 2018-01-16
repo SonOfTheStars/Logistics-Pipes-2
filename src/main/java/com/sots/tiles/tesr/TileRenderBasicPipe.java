@@ -1,8 +1,11 @@
 package com.sots.tiles.tesr;
 
-import com.sots.routing.LPRoutedItem;
+import java.util.Set;
+
 import com.sots.routing.LPRoutedFluid;
+import com.sots.routing.LPRoutedItem;
 import com.sots.tiles.TileGenericPipe;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -12,9 +15,7 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fluids.*;
-
-import java.util.Set;
+import net.minecraftforge.fluids.UniversalBucket;
 
 public class TileRenderBasicPipe extends TileEntitySpecialRenderer<TileGenericPipe> {
 

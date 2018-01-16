@@ -1,7 +1,7 @@
 package com.sots.routing.interfaces;
 
-import com.sots.routing.LPRoutedItem;
 import com.sots.routing.LPRoutedFluid;
+import com.sots.routing.LPRoutedItem;
 
 import net.minecraft.world.IBlockAccess;
 

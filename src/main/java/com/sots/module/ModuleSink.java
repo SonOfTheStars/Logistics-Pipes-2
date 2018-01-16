@@ -7,7 +7,6 @@ import com.sots.tiles.TileRoutedPipe;
 import com.sots.util.data.Tuple;
 
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 
 public class ModuleSink extends ModuleBase implements IModule{
 	

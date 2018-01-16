@@ -1,13 +1,18 @@
 package com.sots.routing;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.UUID;
 
 import com.sots.tiles.TileGenericPipe;
-import com.sots.util.data.*;
+import com.sots.util.data.Triple;
 
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
+import net.minecraftforge.fluids.FluidStack;
 
 public class LPRoutedFluid {
 	

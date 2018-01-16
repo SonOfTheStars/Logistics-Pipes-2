@@ -15,17 +15,15 @@ import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.item.modules.IItemModule;
 import com.sots.module.IModule;
+import com.sots.routing.LPRoutedFluid;
 import com.sots.routing.LPRoutedItem;
 import com.sots.routing.LogisticsRoute;
-import com.sots.routing.LPRoutedFluid;
-import com.sots.routing.NetworkNode;
 import com.sots.routing.interfaces.IDestination;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.Connections;
 import com.sots.util.Misc;
 import com.sots.util.References;
-import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
 import net.minecraft.block.state.IBlockState;
@@ -39,8 +37,8 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.fluids.*;
 
 public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe, IDestination{
 	
@@ -383,12 +381,11 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 
 	protected void checkIfRoutesAreReady() {
 		if (!waitingToRoute.isEmpty()) {
-			for (Iterator<Tuple<LogisticsRoute, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
-				Tuple<LogisticsRoute, ItemStack> route = i.next();
-				if (!route.getKey().isComplete()) {
-					LogisticsPipes2.logger.info("A route is not done routing yet");
-					continue;
-				}
+			
+			try {
+				Tuple<LogisticsRoute, ItemStack> route = waitingToRoute.stream()
+						.filter(entry -> entry.getKey().isComplete())
+						.findFirst().get();
 				ItemStack item = route.getVal();
 				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
 				routeCopy.addAll(route.getKey().getdirectionStack());
@@ -397,10 +394,11 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 					ItemStack stack = takeFromInventoryOnSide(side, item);
 					catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember()));
 				}
-				i.remove();
-
-				break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.
+				waitingToRoute.remove(route);
+			} catch (Exception e) {
+				//Discard Exception. If we get any here that means there simply was no route ready yet.
 			}
+			
 		}
 	}
 

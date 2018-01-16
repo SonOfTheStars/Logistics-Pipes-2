@@ -1,7 +1,5 @@
 package com.sots.util.data;
 
-import com.sots.LogisticsPipes2;
-
 public class Tuple<K, V> {
 	
 	private K key;

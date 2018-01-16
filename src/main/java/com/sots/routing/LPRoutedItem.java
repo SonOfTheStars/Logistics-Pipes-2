@@ -1,10 +1,12 @@
 package com.sots.routing;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.UUID;
 
 import com.sots.tiles.TileGenericPipe;
 import com.sots.util.data.Triple;
-import com.sots.util.data.Tuple;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;

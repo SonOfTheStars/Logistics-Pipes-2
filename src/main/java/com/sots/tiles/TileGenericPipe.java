@@ -1,6 +1,13 @@
 package com.sots.tiles;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
 
@@ -8,15 +15,14 @@ import com.sots.EventManager;
 import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.particle.ParticleUtil;
+import com.sots.routing.LPRoutedFluid;
 import com.sots.routing.LPRoutedItem;
 import com.sots.routing.LogisticsRoute;
-import com.sots.routing.LPRoutedFluid;
 import com.sots.routing.Network;
-import com.sots.routing.NetworkNode;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.ConnectionHelper;
-import com.sots.util.data.*;
+import com.sots.util.data.Triple;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
@@ -35,10 +41,13 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.UniversalBucket;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.fluids.capability.*;
-import net.minecraftforge.fluids.*;
 
 public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable, ITileEntityBase{
 	

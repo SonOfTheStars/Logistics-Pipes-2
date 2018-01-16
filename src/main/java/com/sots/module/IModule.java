@@ -2,11 +2,7 @@ package com.sots.module;
 
 import java.util.UUID;
 
-import com.sots.item.modules.ItemModuleSink;
-import com.sots.tiles.TileGenericPipe;
 import com.sots.tiles.TileRoutedPipe;
-
-import net.minecraft.item.ItemStack;
 
 public interface IModule {
 	public static enum ModuleType{
