@@ -14,7 +14,9 @@ public class LogisticsRoute {
 	private boolean isComplete = false;
 	
 	public LogisticsRoute(NetworkNode start, NetworkNode target) {
-		
+		this.start = start;
+		this.target = target;
+		this.weight = 0;
 	}
 	
 	public LogisticsRoute(NetworkNode start, NetworkNode target, Deque<EnumFacing> directionStack) {
