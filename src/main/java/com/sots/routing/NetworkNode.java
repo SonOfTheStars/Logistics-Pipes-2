@@ -2,7 +2,6 @@ package com.sots.routing;
 
 import java.util.UUID;
 
-import com.sots.LogisticsPipes2;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.data.Tuple;
 

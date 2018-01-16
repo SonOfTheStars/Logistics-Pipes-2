@@ -1,6 +1,9 @@
 package com.sots.util.registries;
 
-import com.sots.tiles.*;
+import com.sots.tiles.TileBasicPipe;
+import com.sots.tiles.TileBlockingPipe;
+import com.sots.tiles.TileNetworkCore;
+import com.sots.tiles.TileRoutedPipe;
 import com.sots.tiles.tesr.TileRenderBasicPipe;
 import com.sots.util.References;
 

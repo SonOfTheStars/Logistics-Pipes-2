@@ -3,6 +3,9 @@ package com.sots.module;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Level;
+
+import com.sots.LogisticsPipes2;
 import com.sots.tiles.TileRoutedPipe;
 import com.sots.util.References;
 
@@ -28,22 +31,24 @@ public class ModuleExtract extends ModuleBase implements IModule{
 				boolean hasWorked = false;
 				int tryDest = 0;
 				int tryItem = 0;
-				ArrayList<ItemStack> stacks = te.getItemsInInventory(te.network.getDirectionForDestination(te.nodeID));
+				ArrayList<ItemStack> stacks = te.getItemsInInventory(te.getNetwork().getDirectionForDestination(te.nodeID));
 				try {
 					if(!stacks.isEmpty()) {
 						Item item = stacks.get(tryItem).getItem();
-						while(!te.network.hasStorageForItem(item) && tryItem<stacks.size()) {
+						while(!te.getNetwork().hasStorageForItem(item) && tryItem<stacks.size()) {
 							tryItem+=1;
 							item = stacks.get(tryItem).getItem();
+							LogisticsPipes2.logger.log(Level.INFO, "Module:" + this.MODULE_ID + " has skipped an Itemstack!");
 						}
-						UUID nodeT = te.network.getClosestStorageNode(item, te.nodeID, tryDest);
+						UUID nodeT = te.getNetwork().getClosestStorageNode(item, te.nodeID, tryDest);
 						while(!hasWorked) {
 							if(nodeT==null) {
 								return false;
 							}
 							if(nodeT.equals(te.nodeID)) {
 								tryDest+=1;
-								nodeT = te.network.getClosestStorageNode(item, te.nodeID, tryDest);
+								nodeT = te.getNetwork().getClosestStorageNode(item, te.nodeID, tryDest);
+								LogisticsPipes2.logger.log(Level.INFO, "Module:" + this.MODULE_ID + " avoided Self-Routing!");
 								continue;
 							}
 							

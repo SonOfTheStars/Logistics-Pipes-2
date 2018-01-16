@@ -3,8 +3,6 @@ package com.sots.routing;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,15 +21,14 @@ import org.apache.logging.log4j.Level;
 import com.sots.LogisticsPipes2;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.routing.router.MultiCachedDijkstraRouter;
-import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 
 public class Network {
-	private volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations = new HashMap<UUID, Tuple<NetworkNode, EnumFacing>>();
-	private volatile Map<UUID, NetworkNode> nodes = new HashMap<UUID, NetworkNode>();
+	private volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations = new ConcurrentHashMap<UUID, Tuple<NetworkNode, EnumFacing>>();
+	private volatile Map<UUID, NetworkNode> nodes = new ConcurrentHashMap<UUID, NetworkNode>();
 
 	private volatile Map<UUID, WeightedNetworkNode> junctions = new ConcurrentHashMap<UUID, WeightedNetworkNode>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
 
@@ -139,9 +136,9 @@ public class Network {
 		return name.toString();
 	}
 	
-	public List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>> getAllRoutesFrom(UUID nodeId){
+	public List<LogisticsRoute> getAllRoutesFrom(UUID nodeId){
 		NetworkNode start = destinations.get(nodeId).getKey();
-		List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>> routes = new ArrayList<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>>();;
+		List<LogisticsRoute> routes = new ArrayList<LogisticsRoute>();
 		Set<UUID> keys = destinations.keySet();
 		for(UUID key : keys) {
 			NetworkNode dest = destinations.get(key).getKey();
@@ -154,14 +151,12 @@ public class Network {
 		return routes;
 	}
 	
-	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> getRouteFromTo(UUID nodeS, UUID nodeT) {
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route = null;
+	public LogisticsRoute getRouteFromTo(UUID nodeS, UUID nodeT) {
+		LogisticsRoute route = null;
 		if(nodeS != nodeT) {
-			//NetworkNode start = destinations.get(nodeS).getKey();
 			NetworkNode target = destinations.get(nodeT).getKey();
 			
 			route = router.route(nodes.get(nodeS), target);
-			//route = router.route(start, target);
 			router.clean();
 			//LogisticsPipes2.logger.info(String.format("A route from Pipe [ %s ] to Pipe [ %s ] has %s",start.getId().toString(), target.getId().toString(), (route!= null ? "" : "not") + " been found!"));
 		}
@@ -199,7 +194,7 @@ public class Network {
 		if(sorted!=null && !sorted.isEmpty()) {
 			if(skip<sorted.size())
 				out=sorted.get(skip);
-		}
+		} 
 		return out;
 	}
 
@@ -220,22 +215,22 @@ public class Network {
 		FutureTask<Void> listingTask = new FutureTask<Void>(new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-				List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>> routes = new ArrayList<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>>();
+				List<LogisticsRoute> routes = new ArrayList<LogisticsRoute>();
 				for (UUID nodeT : nodeTs) {
 					routes.add(getRouteFromTo(nodeS, nodeT));
 				}
-				for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route : routes) {
-					while (route.getKey() == false) {}
+				for (LogisticsRoute route : routes) {
+					while (!route.isComplete()) {}
 				}
 
-				Collections.sort(routes, new Comparator<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>>() {
+				Collections.sort(routes, new Comparator<LogisticsRoute>() {
 					@Override
-					public int compare(Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> o1, Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> o2) {
-						return o1.getVal().getThird().size() - o2.getVal().getThird().size();
+					public int compare(LogisticsRoute o1, LogisticsRoute o2) {
+						return o1.getWeight() - o2.getWeight();
 					}
 				});
-				for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route : routes) {
-					result.getVal().add(route.getVal().getSecnd().getId());
+				for (LogisticsRoute route : routes) {
+					result.getVal().add(route.getTarget().getId());
 				}
 				result.setKey(true);
 				return null;
@@ -252,21 +247,23 @@ public class Network {
 	 */
 	public List<UUID> sortRoutesByDistance(UUID nodeS, List<UUID> nodeTs){
 		List<UUID> out = new ArrayList<UUID>();
-		List<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>> routes = new ArrayList<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>>();
+		List<LogisticsRoute> routes = new ArrayList<LogisticsRoute>();
 		for (UUID nodeT : nodeTs) {
 			routes.add(getRouteFromTo(nodeS, nodeT));
 		}
-		for (Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route : routes) {
-			while (route.getKey() == false) {}
+		for (LogisticsRoute route : routes) {
+			while (!route.isComplete()) {
+				LogisticsPipes2.logger.log(Level.INFO, "IncompleteRouteSkipped");
+			}
 		}
 
-		Collections.sort(routes, new Comparator<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>>() {
+		Collections.sort(routes, new Comparator<LogisticsRoute>() {
 			@Override
-			public int compare(Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> o1, Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> o2) {
-				return o1.getVal().getThird().size() - o2.getVal().getThird().size();
+			public int compare(LogisticsRoute o1, LogisticsRoute o2) {
+				return o1.getWeight() - o2.getWeight();
 			}
 		});
-		routes.forEach(p -> out.add(p.getVal().getSecnd().getId()));
+		routes.forEach(p -> out.add(p.getTarget().getId()));
 		
 		return out;
 	}

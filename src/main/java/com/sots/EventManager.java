@@ -1,13 +1,12 @@
 package com.sots;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.sots.network.LPPacketHandler;
 import com.sots.network.message.MessagePipeContentUpdate;
 import com.sots.proxies.ClientProxy;
 
-import mezz.jei.network.PacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
@@ -28,7 +27,7 @@ public class EventManager {
 	public static float tickCounter = 0;
 	public static int ticks = 0;
 	
-	public static Map<BlockPos, TileEntity> toUpdate = new HashMap<BlockPos, TileEntity>();
+	public static Map<BlockPos, TileEntity> toUpdate = new ConcurrentHashMap<BlockPos, TileEntity>();
 	static EntityPlayer clientPlayer = null;
 	
 	public static void markTEForUpdate(BlockPos pos, TileEntity tile){

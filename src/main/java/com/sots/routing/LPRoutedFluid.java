@@ -8,24 +8,24 @@ import java.util.UUID;
 import com.sots.tiles.TileGenericPipe;
 import com.sots.util.data.Triple;
 
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
+import net.minecraftforge.fluids.FluidStack;
 
-public class LPRoutedItem{
-
+public class LPRoutedFluid {
+	
 	public final int TICK_MAX = 10;
 	public int ticks;
 	private EnumFacing heading;
 	private TileGenericPipe holding;
 	private Deque<EnumFacing> route;
-	private ItemStack stack;
+	private FluidStack stack;
 	private Triple<Double, Double, Double> position;
 	private final UUID ID;
 	private TileGenericPipe destination;
-	public LPRoutedItem(double x, double y, double z, ItemStack content, EnumFacing initVector, TileGenericPipe holder, Deque<EnumFacing> routingInfo, TileGenericPipe destination) {
+	public LPRoutedFluid(double x, double y, double z, FluidStack content, EnumFacing initVector, TileGenericPipe holder, Deque<EnumFacing> routingInfo, TileGenericPipe destination) {
 		setHeading(initVector);
 		setHolding(holder);
 		route = routingInfo;
@@ -36,7 +36,7 @@ public class LPRoutedItem{
 		this.destination = destination;
 	}
 
-	public LPRoutedItem(double x, double y, double z, ItemStack content, int ticks, UUID ID) {
+	public LPRoutedFluid(double x, double y, double z, FluidStack content, int ticks, UUID ID) {
 		this.ticks=ticks;
 		this.position=new Triple<Double, Double, Double>(x, y, z);
 		this.stack = content.copy();
@@ -66,7 +66,7 @@ public class LPRoutedItem{
 		return route.pop();
 	}
 
-	public ItemStack getContent() {
+	public FluidStack getContent() {
 		return stack;
 	}
 
@@ -100,7 +100,7 @@ public class LPRoutedItem{
 		tag.setDouble("posZ", pos.getThird());
 		tag.setInteger("heading", heading.ordinal());
 		tag.setUniqueId("UID", this.ID);
-		tag.setTag("inventory", stack.serializeNBT());
+		tag.setTag("inventory", stack.writeToNBT(new NBTTagCompound()));
 		tag.setInteger("ticks", this.ticks);
 		NBTTagList routeList = new NBTTagList();
 		for(EnumFacing node : route) {
@@ -113,12 +113,12 @@ public class LPRoutedItem{
 		return tag;
 	}
 
-	public static LPRoutedItem readFromNBT(NBTTagCompound compound, TileGenericPipe holder) {
+	public static LPRoutedFluid readFromNBT(NBTTagCompound compound, TileGenericPipe holder) {
 		double x = compound.getDouble("posX");
 		double y = compound.getDouble("posY");
 		double z = compound.getDouble("posZ");
 		UUID id = compound.getUniqueId("UID");
-		ItemStack content = new ItemStack(compound.getCompoundTag("inventory"));
+		FluidStack content = FluidStack.loadFluidStackFromNBT(compound.getCompoundTag("inventory"));
 		int ticks = compound.getInteger("ticks");
 		Deque<EnumFacing> routingInfo = new ArrayDeque<>();
 		NBTTagList routeList = (NBTTagList) compound.getTag("route");
@@ -127,7 +127,7 @@ public class LPRoutedItem{
 			EnumFacing nodeTuple = EnumFacing.values()[node.getInteger("heading")];
 			routingInfo.add(nodeTuple);
 		}
-		LPRoutedItem item = new LPRoutedItem(x, y, z, content, ticks, id);
+		LPRoutedFluid item = new LPRoutedFluid(x, y, z, content, ticks, id);
 		item.setHeading(EnumFacing.VALUES[compound.getInteger("heading")]);
 		item.setHolding(holder);
 		item.route = routingInfo;
@@ -137,5 +137,4 @@ public class LPRoutedItem{
 	public TileGenericPipe getDestination() {
 		return destination;
 	}
-
 }

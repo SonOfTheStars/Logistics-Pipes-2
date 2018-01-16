@@ -3,7 +3,12 @@ package com.sots.util.registries;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sots.pipe.*;
+import com.sots.pipe.BlockGenericPipe;
+import com.sots.pipe.NetworkCore;
+import com.sots.pipe.PipeBasic;
+import com.sots.pipe.PipeBlocking;
+import com.sots.pipe.PipeChassisMkI;
+import com.sots.pipe.PipeRouted;
 
 import net.minecraft.item.ItemBlock;
 import net.minecraftforge.fml.common.registry.GameRegistry;

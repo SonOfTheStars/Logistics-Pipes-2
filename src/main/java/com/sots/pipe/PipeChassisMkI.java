@@ -2,7 +2,6 @@ package com.sots.pipe;
 
 import java.util.ArrayList;
 
-import com.sots.tiles.TileBasicPipe;
 import com.sots.tiles.TileChassisMkI;
 import com.sots.tiles.TileGenericPipe;
 import com.sots.util.References;
