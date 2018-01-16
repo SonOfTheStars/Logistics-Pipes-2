@@ -188,16 +188,19 @@ public class MultiCachedDijkstraRouter{
 									help = help.parent.getKey();
 								}
 								Deque<EnumFacing> tmp_result = route;
-								cache.add(new LogisticsRoute(start, n.getKey(), tmp_result));
+								cache.add(new LogisticsRoute(start, n.getKey(), tmp_result, tmp_result.size(), true));
 								//LogisticsPipes2.logger.info("Route found of length " + route.size());
 							}
 							
-							result.setDirectionStack(cache.stream()
+							result.copyDataFromRoute(cache.stream()
 									.filter(p -> p.isRouteFor(start.getId(), target.getId()))
-									.findFirst().get().getdirectionStack());
-							result.weightFromStack();
-							result.setCompletion(true);
-							cache.add(result);
+									.findFirst().get());
+							//result.setDirectionStack(cache.stream()
+									//.filter(p -> p.isRouteFor(start.getId(), target.getId()))
+									//.findFirst().get().getdirectionStack());
+							//result.weightFromStack();
+							//result.setCompletion(true);
+							//cache.add(result);
 							LogisticsPipes2.logger.info("Done routing for now " + start + "-" + target);
 							sources.remove(start.getId());
 							return null;

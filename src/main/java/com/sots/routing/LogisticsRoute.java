@@ -101,4 +101,13 @@ public class LogisticsRoute {
 	public boolean isRouteFor(UUID start, UUID target) {
 		return (this.start.getId().equals(start) && this.target.getId().equals(target));
 	}
+
+	public void copyDataFromRoute(LogisticsRoute route) {
+		this.setStart(route.getStart());
+		this.setTarget(route.getTarget());
+		this.setDirectionStack(route.getdirectionStack());
+		this.setWeight(route.getWeight());
+		this.setCompletion(route.isComplete());
+	}
+
 }
