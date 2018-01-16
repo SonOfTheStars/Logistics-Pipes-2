@@ -16,6 +16,7 @@ import com.sots.item.ItemWrench;
 import com.sots.item.modules.IItemModule;
 import com.sots.module.IModule;
 import com.sots.routing.LPRoutedItem;
+import com.sots.routing.LogisticsRoute;
 import com.sots.routing.LPRoutedFluid;
 import com.sots.routing.NetworkNode;
 import com.sots.routing.interfaces.IDestination;
@@ -46,8 +47,8 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	protected boolean hasInv = false;
 	protected ItemStackHandler modules;
 	protected Set<IModule> moduleLogics;
-	protected List<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>> waitingToRoute = new ArrayList<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>>();
-	protected List<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack>> waitingToRoute_fluid = new ArrayList<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack>>();
+	protected List<Tuple<LogisticsRoute, ItemStack>> waitingToRoute = new ArrayList<Tuple<LogisticsRoute, ItemStack>>();
+	protected List<Tuple<LogisticsRoute, FluidStack>> waitingToRoute_fluid = new ArrayList<Tuple<LogisticsRoute, FluidStack>>();
 
 
 	public TileRoutedPipe() {
@@ -365,36 +366,36 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	}
 
 	public void routeItemTo(UUID nodeT, ItemStack item) {
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route = network.getRouteFromTo(nodeID, nodeT);
+		LogisticsRoute route = network.getRouteFromTo(nodeID, nodeT);
 		if (route == null) {
 			return;
 		}
-		waitingToRoute.add(new Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>(route, item));
+		waitingToRoute.add(new Tuple<LogisticsRoute, ItemStack>(route, item));
 	}
 
 	public void routeFluidTo(UUID nodeT, FluidStack fluid) {
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route = network.getRouteFromTo(nodeID, nodeT);
+		LogisticsRoute route = network.getRouteFromTo(nodeID, nodeT);
 		if (route == null) {
 			return;
 		}
-		waitingToRoute_fluid.add(new Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack>(route, fluid));
+		waitingToRoute_fluid.add(new Tuple<LogisticsRoute, FluidStack>(route, fluid));
 	}
 
 	protected void checkIfRoutesAreReady() {
 		if (!waitingToRoute.isEmpty()) {
-			for (Iterator<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
-				Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack> route = i.next();
-				if (route.getKey().getKey() == false) {
+			for (Iterator<Tuple<LogisticsRoute, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
+				Tuple<LogisticsRoute, ItemStack> route = i.next();
+				if (!route.getKey().isComplete()) {
 					LogisticsPipes2.logger.info("A route is not done routing yet");
 					continue;
 				}
 				ItemStack item = route.getVal();
 				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
-				routeCopy.addAll(route.getKey().getVal().getThird());
+				routeCopy.addAll(route.getKey().getdirectionStack());
 				EnumFacing side = network.getDirectionForDestination(nodeID);
 				if (hasItemInInventoryOnSide(side, item)) {
 					ItemStack stack = takeFromInventoryOnSide(side, item);
-					catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getVal().getSecnd().getMember()));
+					catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember()));
 				}
 				i.remove();
 
@@ -405,19 +406,19 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 
 	private void checkIfFluidRoutesAreReady() {
 		if (!waitingToRoute_fluid.isEmpty()) {
-			for (Iterator<Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack>> i = waitingToRoute_fluid.iterator(); i.hasNext();) {
-				Tuple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack> route = i.next();
-				if (route.getKey().getKey() == false) {
+			for (Iterator<Tuple<LogisticsRoute, FluidStack>> i = waitingToRoute_fluid.iterator(); i.hasNext();) {
+				Tuple<LogisticsRoute, FluidStack> route = i.next();
+				if (!route.getKey().isComplete()) {
 					LogisticsPipes2.logger.info("A route is not done routing yet");
 					continue;
 				}
 				FluidStack fluid = route.getVal();
 				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
-				routeCopy.addAll(route.getKey().getVal().getThird());
+				routeCopy.addAll(route.getKey().getdirectionStack());
 				EnumFacing side = network.getDirectionForDestination(nodeID);
 				if (hasFluidInInventoryOnSide(side, fluid)) {
 					FluidStack stack = takeFluidFromInventoryOnSide(side, fluid);
-					catchFluid(new LPRoutedFluid((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getVal().getSecnd().getMember()));
+					catchFluid(new LPRoutedFluid((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember()));
 				}
 				i.remove();
 

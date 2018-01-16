@@ -9,6 +9,7 @@ import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.particle.ParticleUtil;
 import com.sots.routing.LPRoutedItem;
+import com.sots.routing.LogisticsRoute;
 import com.sots.routing.LPRoutedFluid;
 import com.sots.routing.Network;
 import com.sots.routing.NetworkNode;
@@ -43,8 +44,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	
 	private volatile Set<LPRoutedItem> contents = new HashSet<LPRoutedItem>();
 	private volatile Set<LPRoutedFluid> contents_fluid = new HashSet<LPRoutedFluid>();
-	private List<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>> waitingToReroute = new ArrayList<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>>();
-	private List<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack, EnumFacing>> waitingToReroute_fluid = new ArrayList<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack, EnumFacing>>();
+	private List<Triple<LogisticsRoute, ItemStack, EnumFacing>> waitingToReroute = new ArrayList<Triple<LogisticsRoute, ItemStack, EnumFacing>>();
+	private List<Triple<LogisticsRoute, FluidStack, EnumFacing>> waitingToReroute_fluid = new ArrayList<Triple<LogisticsRoute, FluidStack, EnumFacing>>();
 	
 	public static enum ConnectionTypes{
 		NONE, PIPE, BLOCK, FORCENONE
@@ -256,7 +257,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					item.setHeading(item.getHeadingForNode());
 				}
 				if(item.ticks==item.TICK_MAX) {
-					boolean debug = world.isRemote;
+					//boolean debug = world.isRemote;
 					if(getConnection(item.getHeading())==ConnectionTypes.PIPE) {
 						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(item.getHeading()));
 						if(pipe!=null) {
@@ -321,7 +322,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					fluid.setHeading(fluid.getHeadingForNode());
 				}
 				if(fluid.ticks==fluid.TICK_MAX) {
-					boolean debug = world.isRemote;
+					//boolean debug = world.isRemote;
 					if(getConnection(fluid.getHeading())==ConnectionTypes.PIPE) {
 						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(fluid.getHeading()));
 						if(pipe!=null) {
@@ -742,35 +743,35 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	}
 
 	public void rerouteItemTo(UUID nodeT, ItemStack item, EnumFacing side) {
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route = network.getRouteFromTo(nodeID, nodeT);
+		LogisticsRoute route = network.getRouteFromTo(nodeID, nodeT);
 		if (route == null) {
 			LogisticsPipes2.logger.info("Route returned null");
 			return;
 		}
-		waitingToReroute.add(new Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>(route, item, side.getOpposite()));
+		waitingToReroute.add(new Triple<LogisticsRoute, ItemStack, EnumFacing>(route, item, side.getOpposite()));
 	}
 
 	public void rerouteFluidTo(UUID nodeT, FluidStack fluid, EnumFacing side) {
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route = network.getRouteFromTo(nodeID, nodeT);
+		LogisticsRoute route = network.getRouteFromTo(nodeID, nodeT);
 		if (route == null) {
 			LogisticsPipes2.logger.info("Route returned null");
 			return;
 		}
-		waitingToReroute_fluid.add(new Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack, EnumFacing>(route, fluid, side.getOpposite()));
+		waitingToReroute_fluid.add(new Triple<LogisticsRoute, FluidStack, EnumFacing>(route, fluid, side.getOpposite()));
 	}
 
 	private void checkIfReroutesAreReady() {
 		if (!waitingToReroute.isEmpty()) {
-			for (Iterator<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing>> i = waitingToReroute.iterator(); i.hasNext();) {
-				Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, ItemStack, EnumFacing> route = i.next();
-				if (route.getFirst().getKey() == false) {
+			for (Iterator<Triple<LogisticsRoute, ItemStack, EnumFacing>> i = waitingToReroute.iterator(); i.hasNext();) {
+				Triple<LogisticsRoute, ItemStack, EnumFacing> route = i.next();
+				if (!route.getFirst().isComplete()) {
 					continue;
 				}
 				ItemStack item = route.getSecnd();
 				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
-				routeCopy.addAll(route.getFirst().getVal().getThird());
+				routeCopy.addAll(route.getFirst().getdirectionStack());
 				EnumFacing side = route.getThird();
-				catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), item, side, this, routeCopy, (TileGenericPipe) route.getFirst().getVal().getSecnd().getMember()));
+				catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), item, side, this, routeCopy, (TileGenericPipe) route.getFirst().getTarget().getMember()));
 				i.remove();
 
 				break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.
@@ -780,16 +781,16 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 
 	private void checkIfFluidReroutesAreReady() {
 		if (!waitingToReroute_fluid.isEmpty()) {
-			for (Iterator<Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack, EnumFacing>> i = waitingToReroute_fluid.iterator(); i.hasNext();) {
-				Triple<Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>, FluidStack, EnumFacing> route = i.next();
-				if (route.getFirst().getKey() == false) {
+			for (Iterator<Triple<LogisticsRoute, FluidStack, EnumFacing>> i = waitingToReroute_fluid.iterator(); i.hasNext();) {
+				Triple<LogisticsRoute, FluidStack, EnumFacing> route = i.next();
+				if (!route.getFirst().isComplete()) {
 					continue;
 				}
 				FluidStack fluid = route.getSecnd();
 				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
-				routeCopy.addAll(route.getFirst().getVal().getThird());
+				routeCopy.addAll(route.getFirst().getdirectionStack());
 				EnumFacing side = route.getThird();
-				catchFluid(new LPRoutedFluid((double) posX(), (double) posY(), (double) posZ(), fluid, side, this, routeCopy, (TileGenericPipe) route.getFirst().getVal().getSecnd().getMember()));
+				catchFluid(new LPRoutedFluid((double) posX(), (double) posY(), (double) posZ(), fluid, side, this, routeCopy, (TileGenericPipe) route.getFirst().getTarget().getMember()));
 				i.remove();
 
 				break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.

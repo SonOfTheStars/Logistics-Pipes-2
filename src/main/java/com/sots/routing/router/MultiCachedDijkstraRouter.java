@@ -15,9 +15,9 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.sots.LogisticsPipes2;
+import com.sots.routing.LogisticsRoute;
 import com.sots.routing.NetworkNode;
 import com.sots.routing.WeightedNetworkNode;
-import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
 import net.minecraft.util.EnumFacing;
@@ -35,7 +35,7 @@ public class MultiCachedDijkstraRouter{
 	protected volatile Map<UUID, NetworkNode> nodes;
 
 	//private volatile Map<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Triple<NetworkNode, NetworkNode, Deque<Tuple<UUID, EnumFacing>>>>();
-	private volatile Map<Tuple<NetworkNode, NetworkNode>, Deque<EnumFacing>> cache = new HashMap<Tuple<NetworkNode, NetworkNode>, Deque<EnumFacing>>();
+	private volatile Set<LogisticsRoute> cache = new HashSet<LogisticsRoute>();
 
 	protected volatile Set<UUID> sources = new HashSet<UUID>();
 
@@ -49,22 +49,35 @@ public class MultiCachedDijkstraRouter{
 	 * The first part of the output is a boolean, which is false if the route has not yet been calculated, and is true when the route has been calculated
 	 * The second part of the output is a triple consisting of the start node, the target node and the route from the start node to the target node
 	 */
-	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> route(NetworkNode s, NetworkNode t) {
-		Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>(s, t);
+	public LogisticsRoute route(NetworkNode s, NetworkNode t) {
 
 		while (sources.contains(s.getId())) {}
 
-		if (cache.containsKey(input)) {
+		try {
+			if(!cache.isEmpty()) {
+				LogisticsRoute cachedRoute = cache.stream()
+						.filter(p -> p.isRouteFor(s.getId(), t.getId()))
+						.findFirst().get();
+					if(cachedRoute!=null) {
+						LogisticsPipes2.logger.info("Getting route from cache");
+						return cachedRoute;
+					}
+			}
+		} catch (Exception e) {
+			//Discard Exception, No route for this in cache or broken cache
+		}
+		
+		/*if (cache.containsKey(input)) {
 			LogisticsPipes2.logger.info("Getting route from cache");
 			return new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>(true, new Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>(s, t, cache.get(input)));
-		}
+		}*/
 
 		LogisticsPipes2.logger.info("Calculating new route");
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> result = doActualRouting(s, t);
+		LogisticsRoute result = doActualRouting(s, t);
 		return result;
 	}
 
-	public Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> doActualRouting(NetworkNode s, NetworkNode t) {
+	public LogisticsRoute doActualRouting(NetworkNode s, NetworkNode t) {
 		NetworkNode start; 
 		WeightedNetworkNode target;
 
@@ -91,7 +104,7 @@ public class MultiCachedDijkstraRouter{
 
 		sources.add(s.getId());
 
-		Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>> result = new Tuple<Boolean, Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>>(false, null);
+		LogisticsRoute result = new LogisticsRoute(start, target);
 
 		FutureTask<Void> routingTask =
 			new FutureTask<Void>(
@@ -174,13 +187,17 @@ public class MultiCachedDijkstraRouter{
 									help = help.parent.getKey();
 									//help = junctions.get(help.parent.getKey().getId());
 								}
-								Tuple<NetworkNode, NetworkNode> input = new Tuple<NetworkNode, NetworkNode>((NetworkNode) start, n.getKey());
 								Deque<EnumFacing> tmp_result = route;
-								cache.put(input, tmp_result);
+								cache.add(new LogisticsRoute(start, n.getKey(), tmp_result));
 								//LogisticsPipes2.logger.info("Route found of length " + route.size());
 							}
-							result.setVal(new Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>(start, target, cache.get(new Tuple<NetworkNode, NetworkNode>(start, target))));
-							result.setKey(true);
+							//result.setVal(new Triple<NetworkNode, NetworkNode, Deque<EnumFacing>>(start, target, cache.get(new Tuple<NetworkNode, NetworkNode>(start, target))));
+							//result.setKey(true);
+							result.setDirectionStack(cache.stream()
+									.filter(p -> p.isRouteFor(start.getId(), target.getId()))
+									.findFirst().get().getdirectionStack());
+							result.weightFromStack();
+							result.setCompletion(true);
 							LogisticsPipes2.logger.info("Done routing for now " + start + "-" + target);
 							sources.remove(start.getId());
 							return null;
