@@ -3,7 +3,7 @@ package com.sots.tiles;
 import java.util.ArrayList;
 
 import com.sots.LogisticsPipes2;
-import com.sots.routing.LPRoutedItem;
+import com.sots.routing.*;
 import com.sots.util.Connections;
 
 import net.minecraft.util.math.BlockPos;
@@ -75,7 +75,7 @@ public class TileBlockingPipe extends TileGenericPipe {
 	}
 
 	@Override
-	public boolean catchItem(LPRoutedItem item) {
+	public boolean catchItem(LPRoutedObject item) {
 		if (redstone) { // Remove this if-statement to allow items to pass through while redstone signal is active
 			return false;
 		} else {

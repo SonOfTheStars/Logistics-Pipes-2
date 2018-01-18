@@ -12,8 +12,7 @@ import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
 import com.sots.item.modules.IItemModule;
 import com.sots.module.IModule;
-import com.sots.routing.LPRoutedFluid;
-import com.sots.routing.LPRoutedItem;
+import com.sots.routing.*;
 import com.sots.routing.LogisticsRoute;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
@@ -41,7 +40,7 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 	private int internalModCount = 0;
 	private ItemStackHandler modules = new ItemStackHandler(References.MOD_COUNT_MKI);
 	protected List<Tuple<LogisticsRoute, ItemStack>> waitingToRoute = new ArrayList<Tuple<LogisticsRoute, ItemStack>>();
-	protected List<Tuple<LogisticsRoute, FluidStack>> waitingToRoute_fluid = new ArrayList<Tuple<LogisticsRoute, FluidStack>>();
+	//protected List<Tuple<LogisticsRoute, FluidStack>> waitingToRoute_fluid = new ArrayList<Tuple<LogisticsRoute, FluidStack>>();
 	
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
@@ -316,13 +315,13 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 		waitingToRoute.add(new Tuple<LogisticsRoute, ItemStack>(route, item));
 	}
 
-	public void routeFluidTo(UUID nodeT, FluidStack fluid) {
-		LogisticsRoute route = network.getRouteFromTo(nodeID, nodeT);
-		if (route == null) {
-			return;
-		}
-		waitingToRoute_fluid.add(new Tuple<LogisticsRoute, FluidStack>(route, fluid));
-	}
+	//public void routeFluidTo(UUID nodeT, FluidStack fluid) {
+		//LogisticsRoute route = network.getRouteFromTo(nodeID, nodeT);
+		//if (route == null) {
+			//return;
+		//}
+		//waitingToRoute_fluid.add(new Tuple<LogisticsRoute, FluidStack>(route, fluid));
+	//}
 
 	protected void checkIfRoutesAreReady() {
 		if (!waitingToRoute.isEmpty()) {
@@ -336,10 +335,11 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
 				routeCopy.addAll(route.getKey().getdirectionStack());
 				EnumFacing side = network.getDirectionForDestination(nodeID);
-				if (hasItemInInventoryOnSide(side, item)) {
-					ItemStack stack = takeFromInventoryOnSide(side, item);
-					catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember()));
-				}
+				catchItem(LPRoutedObject.takeFromBlock(world.getTileEntity(getPos().offset(side)), side, item, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember(), this, item.getClass()));
+				//if (hasItemInInventoryOnSide(side, item)) {
+					//ItemStack stack = takeFromInventoryOnSide(side, item);
+					//catchItem(new LPRoutedItem(stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember()));
+				//}
 				i.remove();
 
 				break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.
@@ -347,26 +347,26 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 		}
 	}
 
-	private void checkIfFluidRoutesAreReady() {
-		if (!waitingToRoute_fluid.isEmpty()) {
-			for (Iterator<Tuple<LogisticsRoute, FluidStack>> i = waitingToRoute_fluid.iterator(); i.hasNext();) {
-				Tuple<LogisticsRoute, FluidStack> route = i.next();
-				if (!route.getKey().isComplete()) {
-					LogisticsPipes2.logger.info("A route is not done routing yet");
-					continue;
-				}
-				FluidStack fluid = route.getVal();
-				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
-				routeCopy.addAll(route.getKey().getdirectionStack());
-				EnumFacing side = network.getDirectionForDestination(nodeID);
-				if (hasFluidInInventoryOnSide(side, fluid)) {
-					FluidStack stack = takeFluidFromInventoryOnSide(side, fluid);
-					catchFluid(new LPRoutedFluid((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember()));
-				}
-				i.remove();
+	//private void checkIfFluidRoutesAreReady() {
+		//if (!waitingToRoute_fluid.isEmpty()) {
+			//for (Iterator<Tuple<LogisticsRoute, FluidStack>> i = waitingToRoute_fluid.iterator(); i.hasNext();) {
+				//Tuple<LogisticsRoute, FluidStack> route = i.next();
+				//if (!route.getKey().isComplete()) {
+					//LogisticsPipes2.logger.info("A route is not done routing yet");
+					//continue;
+				//}
+				//FluidStack fluid = route.getVal();
+				//Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
+				//routeCopy.addAll(route.getKey().getdirectionStack());
+				//EnumFacing side = network.getDirectionForDestination(nodeID);
+				//if (hasFluidInInventoryOnSide(side, fluid)) {
+					//FluidStack stack = takeFluidFromInventoryOnSide(side, fluid);
+					//catchItem(new LPRoutedFluid(stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember()));
+				//}
+				//i.remove();
 
-				break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.
-			}
-		}
-	}
+				//break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.
+			//}
+		//}
+	//}
 }
