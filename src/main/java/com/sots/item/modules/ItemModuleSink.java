@@ -26,6 +26,6 @@ public class ItemModuleSink extends LPItemBase implements IItemModule{
 	}
 	
 	public IModule getModLogic() {
-		return new ModuleSink(UUID.randomUUID());
+		return new ModuleSink();
 	}
 }

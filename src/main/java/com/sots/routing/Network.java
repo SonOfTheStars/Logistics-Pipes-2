@@ -27,12 +27,12 @@ import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 
 public class Network {
-	private volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations = new ConcurrentHashMap<UUID, Tuple<NetworkNode, EnumFacing>>();
-	private volatile Map<UUID, NetworkNode> nodes = new ConcurrentHashMap<UUID, NetworkNode>();
+	private volatile Map<UUID, Tuple<NetworkNode, EnumFacing>> destinations = new ConcurrentHashMap<>();
+	private volatile Map<UUID, NetworkNode> nodes = new ConcurrentHashMap<>();
 
-	private volatile Map<UUID, WeightedNetworkNode> junctions = new ConcurrentHashMap<UUID, WeightedNetworkNode>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
+	private volatile Map<UUID, WeightedNetworkNode> junctions = new ConcurrentHashMap<>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
 
-	private volatile Set<Tuple<UUID, Item>> stores = new HashSet<Tuple<UUID, Item>>();
+	private volatile Set<Tuple<UUID, Item>> stores = new HashSet<>();
 	
 	private NetworkNode root = null;
 	private NetworkSimplifier networkSimplifier = new NetworkSimplifier();
@@ -48,7 +48,7 @@ public class Network {
 	
 	public void registerDestination(UUID in, EnumFacing dir) {
 		if(!destinations.containsKey(in)) {
-			destinations.put(in, new Tuple<NetworkNode, EnumFacing>(getNodeByID(in), dir));
+			destinations.put(in, new Tuple<>(getNodeByID(in), dir));
 			networkSimplifier.shutdown();
 			networkSimplifier.rescanNetwork(nodes, destinations, junctions);
 			getNodeByID(in).setAsDestination(true);

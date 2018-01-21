@@ -13,7 +13,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemModuleExtract extends LPItemBase implements IItemModule{
+public class ItemModuleExtract extends ItemModuleBase{
 
 	public ItemModuleExtract() {
 		setRegistryName(References.RN_MODULE_EXTRACTOR);
@@ -27,7 +27,7 @@ public class ItemModuleExtract extends LPItemBase implements IItemModule{
 	}
 
 	@Override
-	public IModule getModLogic() {
-		return new ModuleExtract(UUID.randomUUID());
+	protected IModule getModuleLogic() {
+		return new ModuleExtract();
 	}
 }

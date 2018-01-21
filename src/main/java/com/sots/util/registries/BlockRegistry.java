@@ -20,7 +20,7 @@ import net.minecraftforge.oredict.OreDictionary;
 public class BlockRegistry {
 	
 	//All blocks to be registered
-	public static List<LPBlockBase> registry = new ArrayList<LPBlockBase>();
+	public static List<LPBlockBase> registry = new ArrayList<>();
 	
 	/**
 	 * Registers all registered Blocks on Startup.

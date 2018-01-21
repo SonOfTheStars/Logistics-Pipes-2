@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.sots.util.ModuleInv;
+import net.minecraftforge.common.capabilities.Capability;
 import org.apache.logging.log4j.Level;
 
 import com.sots.EventManager;
@@ -22,7 +24,6 @@ import com.sots.util.ConnectionHelper;
 import com.sots.util.data.Triple;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -39,18 +40,20 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.UniversalBucket;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable, ITileEntityBase{
 	
-	private volatile Set<LPRoutedObject> contents = new HashSet<LPRoutedObject>();
+	private volatile Set<LPRoutedObject> contents = new HashSet<>();
 	//private volatile Set<LPRoutedFluid> contents_fluid = new HashSet<LPRoutedFluid>();
-	private List<Triple<LogisticsRoute, Object, EnumFacing>> waitingToReroute = new ArrayList<Triple<LogisticsRoute, Object, EnumFacing>>();
+	private List<Triple<LogisticsRoute, Object, EnumFacing>> waitingToReroute = new ArrayList<>();
 	//private List<Triple<LogisticsRoute, FluidStack, EnumFacing>> waitingToReroute_fluid = new ArrayList<Triple<LogisticsRoute, FluidStack, EnumFacing>>();
 	
 	public static enum ConnectionTypes{
@@ -80,8 +83,6 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 
 	@Override
 	public NBTTagCompound getUpdateTag() {
-		
-		
 		return writeToNBT(new NBTTagCompound());
 	}
 	
@@ -101,8 +102,8 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		if(compound.hasKey("contents")) {
 			NBTTagList list = (NBTTagList) compound.getTag("contents");
 			contents.clear();
-			for(Iterator<NBTBase> i = list.iterator(); i.hasNext();) {
-				contents.add(LPRoutedObject.readFromNBT((NBTTagCompound) i.next(), this));
+			for (NBTBase aList : list) {
+				contents.add(LPRoutedObject.readFromNBT((NBTTagCompound) aList, this));
 			}
 		}
 		//if(compound.hasKey("contents_fluid")) {
@@ -220,21 +221,26 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			east = con;
 		}
 	}
-	
+
+	// TODO: 21-1-2018 move to Module
 	public ConnectionTypes getConnection(IBlockAccess world, BlockPos pos, EnumFacing side) {
-		TileEntity tile = world.getTileEntity(pos);
+
 		if(getConnection(side) == ConnectionTypes.FORCENONE) {
 			return ConnectionTypes.FORCENONE;
 		}
-		if(tile instanceof IPipe) {
-			return ConnectionTypes.PIPE;
+		TileEntity tile = world.getTileEntity(pos);
+		if (tile != null){
+			if(tile instanceof IPipe) {
+				return ConnectionTypes.PIPE;
+			}
+			else {
+				if(world.getTileEntity(pos).hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side.getOpposite()))
+					return ConnectionTypes.BLOCK;
+				if(world.getTileEntity(pos).hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side.getOpposite()))
+					return ConnectionTypes.BLOCK;
+			}
 		}
-		else if(tile!=null) {
-			if(world.getTileEntity(pos).hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side.getOpposite()))
-				return ConnectionTypes.BLOCK;
-			if(world.getTileEntity(pos).hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side.getOpposite()))
-				return ConnectionTypes.BLOCK;
-		}
+
 		return ConnectionTypes.NONE;
 	}
 	
@@ -586,7 +592,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 
 
 	public ArrayList<FluidStack> getFluidStacksInInventory(EnumFacing face){
-		ArrayList<FluidStack> result = new ArrayList<FluidStack>();
+		ArrayList<FluidStack> result = new ArrayList<>();
 		
 		if (!hasInventoryOnSide(face.getIndex())) {
 			return result;
@@ -627,6 +633,29 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			return ConnectionTypes.FORCENONE;
 		}
 		return ConnectionTypes.NONE;
+	}
+
+	@Nullable
+	public ModuleInv getModuleInv(){
+		return null;
+	}
+
+	@Override
+	public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+		if (getModuleInv() != null)
+			return getModuleInv().hasCapability(capability, facing) || super.hasCapability(capability, facing);
+		return super.hasCapability(capability, facing);
+	}
+
+	@Nullable
+	@Override
+	public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+		if (getModuleInv() != null) {
+			T t = getModuleInv().getCapability(capability, facing);
+			if (t != null)
+				return t;
+		}
+		return super.getCapability(capability, facing);
 	}
 
 	@Override
@@ -758,7 +787,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			LogisticsPipes2.logger.info("Route returned null");
 			return;
 		}
-		waitingToReroute.add(new Triple<LogisticsRoute, Object, EnumFacing>(route, item, side.getOpposite()));
+		waitingToReroute.add(new Triple<>(route, item, side.getOpposite()));
 	}
 
 	//public void rerouteFluidTo(UUID nodeT, FluidStack fluid, EnumFacing side) {
@@ -778,8 +807,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 					continue;
 				}
 				Object item = route.getSecnd();
-				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
-				routeCopy.addAll(route.getFirst().getdirectionStack());
+				Deque<EnumFacing> routeCopy = new ArrayDeque<>(route.getFirst().getdirectionStack());
 				EnumFacing side = route.getThird();
 				//catchItem(new LPRoutedObject((double) posX(), (double) posY(), (double) posZ(), item, side, this, routeCopy, (TileGenericPipe) route.getFirst().getTarget().getMember()));
 				catchItem(LPRoutedObject.makeLPRoutedObjectFromContent(item, side, this, routeCopy, (TileGenericPipe) route.getFirst().getTarget().getMember()));

@@ -1,9 +1,6 @@
 package com.sots.util.registries;
 
-import com.sots.tiles.TileBasicPipe;
-import com.sots.tiles.TileBlockingPipe;
-import com.sots.tiles.TileNetworkCore;
-import com.sots.tiles.TileRoutedPipe;
+import com.sots.tiles.*;
 import com.sots.tiles.tesr.TileRenderBasicPipe;
 import com.sots.util.References;
 
@@ -16,11 +13,13 @@ public class TileRegistry {
 		GameRegistry.registerTileEntity(TileRoutedPipe.class, References.MODID+"_tileroutedpipe");
 		GameRegistry.registerTileEntity(TileBlockingPipe.class, References.MODID+"_tileblockingpipe");
 		GameRegistry.registerTileEntity(TileNetworkCore.class, References.MODID+"_tilenetworkcore");
+		GameRegistry.registerTileEntity(TileChassisMkI.class, References.MODID+"_tilechassismk1");
 	}
 	
 	public static void bindRenders() {
 		ClientRegistry.bindTileEntitySpecialRenderer(TileBasicPipe.class, new TileRenderBasicPipe());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileRoutedPipe.class, new TileRenderBasicPipe());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileBlockingPipe.class, new TileRenderBasicPipe());
+		ClientRegistry.bindTileEntitySpecialRenderer(TileChassisMkI.class, new TileRenderBasicPipe());
 	}
 }

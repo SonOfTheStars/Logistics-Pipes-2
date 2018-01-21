@@ -10,7 +10,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemModuleOrder extends LPItemBase implements IItemModule{
+public class ItemModuleOrder extends ItemModuleBase{
 	
 	public ItemModuleOrder() {
 		setRegistryName(References.RN_MODULE_ORDER);
@@ -24,8 +24,7 @@ public class ItemModuleOrder extends LPItemBase implements IItemModule{
 	}
 
 	@Override
-	public IModule getModLogic() {
-		// TODO Auto-generated method stub
+	protected IModule getModuleLogic() {
 		return null;
 	}
 }
