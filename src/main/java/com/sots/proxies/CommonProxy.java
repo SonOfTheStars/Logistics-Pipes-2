@@ -4,10 +4,7 @@ import java.io.File;
 
 import com.sots.network.LPPacketHandler;
 import com.sots.util.Config;
-import com.sots.util.registries.BlockRegistry;
-import com.sots.util.registries.ItemRegistry;
-import com.sots.util.registries.PipeRegistry;
-import com.sots.util.registries.TileRegistry;
+import com.sots.util.registries.*;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -36,6 +33,9 @@ public class CommonProxy {
 		TileRegistry.init();
 		
 		LPPacketHandler.registerMessages();
+
+		//Register types to be routed
+		LPRoutedTypeRegistry.init();
 	}
 	
 	public void init(FMLInitializationEvent event){

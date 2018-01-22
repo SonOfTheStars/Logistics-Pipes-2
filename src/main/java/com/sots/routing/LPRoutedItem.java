@@ -8,134 +8,135 @@ import java.util.UUID;
 import com.sots.tiles.TileGenericPipe;
 import com.sots.util.data.Triple;
 
+import net.minecraft.nbt.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.world.World;
 
-public class LPRoutedItem{
+import net.minecraftforge.items.*;
 
-	public final int TICK_MAX = 10;
-	public int ticks;
-	private EnumFacing heading;
-	private TileGenericPipe holding;
-	private Deque<EnumFacing> route;
-	private ItemStack stack;
-	private Triple<Double, Double, Double> position;
-	private final UUID ID;
-	private TileGenericPipe destination;
-	public LPRoutedItem(double x, double y, double z, ItemStack content, EnumFacing initVector, TileGenericPipe holder, Deque<EnumFacing> routingInfo, TileGenericPipe destination) {
-		setHeading(initVector);
+public class LPRoutedItem extends LPRoutedObject<ItemStack>{
+
+	public LPRoutedItem(ItemStack content, EnumFacing initVector, TileGenericPipe holder, Deque<EnumFacing> routingInfo, TileGenericPipe destination) {
+		super(content, initVector, holder, routingInfo, destination, ItemStack.class);
+		//setHeading(initVector);
+		//setHolding(holder);
+		//route = routingInfo;
+		//ticks = 0;
+		//this.stack = content.copy();
+		//this.position=new Triple<Double, Double, Double>(x, y, z);
+		//ID=UUID.randomUUID();
+		//this.destination = destination;
+	}
+
+	public LPRoutedItem(int ticks, UUID ID) {
+		super(ticks, ID, ItemStack.class);
+		//this.ticks=ticks;
+		//this.position=new Triple<Double, Double, Double>(x, y, z);
+		//this.stack = content.copy();
+		//this.ID = ID;
+	}
+
+	@Override
+	protected ItemStack copyContent(ItemStack content) {
+		return content.copy();
+	}
+
+	@Override
+	public void writeContentToNBT(NBTTagCompound compound) {
+		compound.setTag("inventory", getContent().serializeNBT());
+	}
+
+	@Override
+	public void readContentFromNBT(NBTTagCompound compound) {
+		setContent(new ItemStack(compound.getCompoundTag("inventory")));
+	}
+
+	@Override
+	public void render(TileGenericPipe te, float partialTicks) {
+		if (!getContent().isEmpty()) {
+			RenderItem itemRenderer = Minecraft.getMinecraft().getRenderItem();
+			GlStateManager.enableRescaleNormal();
+			GlStateManager.alphaFunc(516, 0.1F);
+			GlStateManager.enableBlend();
+			RenderHelper.enableStandardItemLighting();
+			GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+			GlStateManager.pushMatrix();
+			Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+			IBakedModel ibakedmodel = itemRenderer.getItemModelWithOverrides(getContent(), te.getWorld(), null);
+			Triple<Double, Double, Double> newCoords = calculateTranslation(partialTicks);
+			GlStateManager.translate(newCoords.getFirst(), newCoords.getSecnd(), newCoords.getThird());
+			if(getContent().getItem() instanceof ItemBlock) {
+				GlStateManager.scale(.3f, .3f, .3f);
+			} else {
+				GlStateManager.rotate((((float) te.getWorld().getTotalWorldTime() + partialTicks) / 40F) * (180F / (float) Math.PI), 0.0F, 1.0F, 0.0F);
+				GlStateManager.scale(.5f, .5f, .5f);
+			}
+			itemRenderer.renderItem(getContent(), ibakedmodel);
+			GlStateManager.disableRescaleNormal();
+			GlStateManager.disableBlend();
+			GlStateManager.popMatrix();
+		}
+	}
+
+	@Override
+	public void spawnInWorld(World world, double x, double y, double z) {
+		world.spawnEntity(new EntityItem(world, x, y, z, getContent()));
+	}
+
+	@Override
+	public void putInBlock(TileEntity te) {
+		if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getHeading().getOpposite())) {
+			IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getHeading().getOpposite());
+			ItemStack itemStack = getContent();
+			for (int j = 0; j < itemHandler.getSlots(); j++) {
+				itemStack = itemHandler.insertItem(j, itemStack, false);
+			}
+			if(!itemStack.isEmpty())
+				if (!te.getWorld().isRemote) {
+					spawnInWorld(te.getWorld(), te.getPos().getX()+0.5, te.getPos().getY()+1.5, te.getPos().getZ()+0.5);
+					//world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, itemStack));
+				}
+		} else {
+			if (!te.getWorld().isRemote) {
+				spawnInWorld(te.getWorld(), te.getPos().getX()+0.5, te.getPos().getY()+1.5, te.getPos().getZ()+0.5);
+				//world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, getContent()));
+			}
+		}
+	}
+
+	@Override
+	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, Object stack, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder) {
+		if (!(stack instanceof ItemStack)) {
+			return null;
+		}
+		ItemStack item = (ItemStack) stack;
+		if (!te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite())) {
+			return null;
+		}
+		IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite());
+		ItemStack result = ItemStack.EMPTY;
+		for (int i = 0; i < itemHandler.getSlots(); i++) {
+			if (itemHandler.getStackInSlot(i).isItemEqual(item)) {
+				ItemStack tmp = itemHandler.extractItem(i, item.getCount() - result.getCount(), false);
+				result = new ItemStack(item.getItem(), tmp.getCount() + result.getCount());
+			}
+			if (result.getCount() >= item.getCount()) {
+				break;
+			}
+		}
+		//return result;
+		setContent(result);
+		setHeading(face.getOpposite());
 		setHolding(holder);
-		route = routingInfo;
-		ticks = 0;
-		this.stack = content.copy();
-		this.position=new Triple<Double, Double, Double>(x, y, z);
-		ID=UUID.randomUUID();
-		this.destination = destination;
+		setRoute(route);
+		return this;
 	}
-
-	public LPRoutedItem(double x, double y, double z, ItemStack content, int ticks, UUID ID) {
-		this.ticks=ticks;
-		this.position=new Triple<Double, Double, Double>(x, y, z);
-		this.stack = content.copy();
-		this.ID = ID;
-	}
-
-	public EnumFacing getHeading() {
-		return heading;
-	}
-
-	public void setHeading(EnumFacing heading) {
-		this.heading = heading;
-	}
-
-	public TileGenericPipe getHolding() {
-		return holding;
-	}
-
-	public void setHolding(TileGenericPipe holding) {
-		this.holding = holding;
-	}
-
-	public EnumFacing getHeadingForNode(){
-		if (route.peek() == null) {
-			return EnumFacing.UP;
-		}
-		return route.pop();
-	}
-
-	public ItemStack getContent() {
-		return stack;
-	}
-
-	public Triple<Double, Double, Double> getPosition() {
-		double x = holding.posX() + 0.5;
-		double y = holding.posY() + 0.5;
-		double z = holding.posZ() + 0.5;
-
-		if (ticks < TICK_MAX/2) { // Approaching middle of pipe
-			x -= (((TICK_MAX/2)-ticks)/(TICK_MAX/2)) * heading.getDirectionVec().getX();
-			y -= (((TICK_MAX/2)-ticks)/(TICK_MAX/2)) * heading.getDirectionVec().getY();
-			z -= (((TICK_MAX/2)-ticks)/(TICK_MAX/2)) * heading.getDirectionVec().getZ();
-		} else { // Leaving middle of pipe
-			x += ((ticks-(TICK_MAX/2))/(TICK_MAX/2)) * heading.getDirectionVec().getX();
-			y += ((ticks-(TICK_MAX/2))/(TICK_MAX/2)) * heading.getDirectionVec().getY();
-			z += ((ticks-(TICK_MAX/2))/(TICK_MAX/2)) * heading.getDirectionVec().getZ();
-		}
-		position = new Triple<Double, Double, Double>(x, y, z);
-		return position;
-	}
-
-	public void setPosition(double x, double y, double z) {
-		position = new Triple<Double, Double, Double>(x, y, z);
-	}
-
-	public NBTTagCompound writeToNBT() {
-		NBTTagCompound tag = new NBTTagCompound();
-		Triple<Double, Double, Double> pos = getPosition();
-		tag.setDouble("posX", pos.getFirst());
-		tag.setDouble("posY", pos.getSecnd());
-		tag.setDouble("posZ", pos.getThird());
-		tag.setInteger("heading", heading.ordinal());
-		tag.setUniqueId("UID", this.ID);
-		tag.setTag("inventory", stack.serializeNBT());
-		tag.setInteger("ticks", this.ticks);
-		NBTTagList routeList = new NBTTagList();
-		for(EnumFacing node : route) {
-			NBTTagCompound nodeTag = new NBTTagCompound();
-			//nodeTag.setUniqueId("UID", node.getKey());
-			nodeTag.setInteger("heading", node.ordinal());
-			routeList.appendTag(nodeTag);
-		}
-		tag.setTag("route", routeList);
-		return tag;
-	}
-
-	public static LPRoutedItem readFromNBT(NBTTagCompound compound, TileGenericPipe holder) {
-		double x = compound.getDouble("posX");
-		double y = compound.getDouble("posY");
-		double z = compound.getDouble("posZ");
-		UUID id = compound.getUniqueId("UID");
-		ItemStack content = new ItemStack(compound.getCompoundTag("inventory"));
-		int ticks = compound.getInteger("ticks");
-		Deque<EnumFacing> routingInfo = new ArrayDeque<>();
-		NBTTagList routeList = (NBTTagList) compound.getTag("route");
-		for(Iterator<NBTBase> i = routeList.iterator(); i.hasNext();) {
-			NBTTagCompound node = (NBTTagCompound) i.next();
-			EnumFacing nodeTuple = EnumFacing.values()[node.getInteger("heading")];
-			routingInfo.add(nodeTuple);
-		}
-		LPRoutedItem item = new LPRoutedItem(x, y, z, content, ticks, id);
-		item.setHeading(EnumFacing.VALUES[compound.getInteger("heading")]);
-		item.setHolding(holder);
-		item.route = routingInfo;
-		return item;
-	}
-
-	public TileGenericPipe getDestination() {
-		return destination;
-	}
-
 }
