@@ -35,7 +35,7 @@ public class ParticleRenderer {
 		}
 	}
 	
-	public void renderParticles(EntityPlayer aPlayer, float pTicks) {
+	public void renderParticles(float pTicks) {
 		float f = ActiveRenderInfo.getRotationX();
         float f1 = ActiveRenderInfo.getRotationZ();
         float f2 = ActiveRenderInfo.getRotationYZ();

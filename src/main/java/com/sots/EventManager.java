@@ -27,8 +27,7 @@ public class EventManager {
 	public static float tickCounter = 0;
 	public static int ticks = 0;
 	
-	public static Map<BlockPos, TileEntity> toUpdate = new ConcurrentHashMap<BlockPos, TileEntity>();
-	static EntityPlayer clientPlayer = null;
+	public static Map<BlockPos, TileEntity> toUpdate = new ConcurrentHashMap<>();
 	
 	public static void markTEForUpdate(BlockPos pos, TileEntity tile){
 		if (!toUpdate.containsKey(pos)){
@@ -61,7 +60,7 @@ public class EventManager {
 		tickCounter++;
 		if(LogisticsPipes2.proxy instanceof ClientProxy) {
 			GlStateManager.pushMatrix();
-			ClientProxy.particleRender.renderParticles(Minecraft.getMinecraft().player, event.getPartialTicks());
+			ClientProxy.particleRender.renderParticles(event.getPartialTicks());
 			GlStateManager.popMatrix();
 		}
 	}
@@ -71,11 +70,8 @@ public class EventManager {
 		if (!event.world.isRemote && event.phase == TickEvent.Phase.END){
 			NBTTagList list = new NBTTagList();
 			TileEntity[] updateArray = toUpdate.values().toArray(new TileEntity[toUpdate.size()]);
-			for (int i = 0; i < updateArray.length; i ++){
-				TileEntity t = updateArray[i];
-				if (!event.world.isRemote){
-					list.appendTag(t.getUpdateTag());
-				}
+			for (TileEntity t : updateArray) {
+				list.appendTag(t.getUpdateTag());
 			}
 			if (!list.hasNoTags()){
 				NBTTagCompound tag = new NBTTagCompound();

@@ -3,6 +3,7 @@ package com.sots.module;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import com.sots.tiles.TileGenericPipe;
 import org.apache.logging.log4j.Level;
 
 import com.sots.LogisticsPipes2;
@@ -16,12 +17,8 @@ public class ModuleExtract extends ModuleBase implements IModule{
 	
 	private int ticksTillOp = References.MOD_BASE_OPERATION_RATE;
 
-	public ModuleExtract(UUID ID) {
-		super(ID);
-	}
-
 	@Override
-	public boolean execute(TileRoutedPipe te) {
+	public boolean execute(TileGenericPipe te) {
 		if(ticksTillOp!=0) {
 			ticksTillOp-=1;
 		}else {
@@ -81,7 +78,6 @@ public class ModuleExtract extends ModuleBase implements IModule{
 	@Override
 	public void disconnect() {
 		//Doesnt need to be disconnected
-		return;
 	}
 
 }

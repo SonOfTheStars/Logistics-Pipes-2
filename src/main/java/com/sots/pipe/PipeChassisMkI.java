@@ -52,9 +52,7 @@ public class PipeChassisMkI extends BlockGenericPipe{
 		((TileChassisMkI)world.getTileEntity(pos)).getAdjacentPipes(world);
 		world.getTileEntity(pos).markDirty();
 	}
-	
-	
-	 
+
 	@Override
 	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
 		((TileChassisMkI)world.getTileEntity(pos)).getAdjacentPipes(world);
@@ -79,8 +77,7 @@ public class PipeChassisMkI extends BlockGenericPipe{
 		}
 		return state;
 	}
-	
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess worldIn, BlockPos pos, EnumFacing side) {return false;}

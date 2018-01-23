@@ -41,10 +41,9 @@ public abstract class LPRoutedObject<T> {
 	}
 
 	public static LPRoutedObject makeLPRoutedObjectFromContent(Object content, EnumFacing initVector, TileGenericPipe holder, Deque<EnumFacing> routingInfo, TileGenericPipe destination) {
-		Class<? extends LPRoutedObject<? extends Object>> lpRoutedClass = types.get(content.getClass());
+		Class<? extends LPRoutedObject<?>> lpRoutedClass = types.get(content.getClass());
 		try {
-			LPRoutedObject lpRoutedObject = lpRoutedClass.getConstructor(Object.class, EnumFacing.class, TileGenericPipe.class, Deque.class, TileGenericPipe.class).newInstance(content, initVector, holder, routingInfo, destination, content.getClass());
-			return lpRoutedObject;
+			return lpRoutedClass.getConstructor(Object.class, EnumFacing.class, TileGenericPipe.class, Deque.class, TileGenericPipe.class).newInstance(content, initVector, holder, routingInfo, destination, content.getClass());
 		} catch (Exception e) {
 			LogisticsPipes2.logger.info("Something went wrong", e);
 			return null;
@@ -69,8 +68,7 @@ public abstract class LPRoutedObject<T> {
 		}
 
 		try {
-			LPRoutedObject lpRoutedObject = lpRoutedClass.getConstructor(int.class, UUID.class).newInstance(ticks, ID);
-			return lpRoutedObject;
+			return lpRoutedClass.getConstructor(int.class, UUID.class).newInstance(ticks, ID);
 		} catch (Exception e) {
 			LogisticsPipes2.logger.info("Something went wrong", e);
 			return null;
@@ -104,7 +102,6 @@ public abstract class LPRoutedObject<T> {
 		this.route = route;
 	}
 
-
 	public T getContent() {
 		return contents;
 	}
@@ -123,7 +120,7 @@ public abstract class LPRoutedObject<T> {
 		double newX = (getHeading().getDirectionVec().getX() * (tmpTicks / TICK_MAX - 0.5));
 		double newY = (getHeading().getDirectionVec().getY() * (tmpTicks / TICK_MAX - 0.5));
 		double newZ = (getHeading().getDirectionVec().getZ() * (tmpTicks / TICK_MAX - 0.5));
-		return new Triple<Double, Double, Double>(newX, newY, newZ);
+		return new Triple<>(newX, newY, newZ);
 	}
 
 	//public void setPosition(double x, double y, double z) {
@@ -165,8 +162,8 @@ public abstract class LPRoutedObject<T> {
 		int ticks = compound.getInteger("ticks");
 		Deque<EnumFacing> routingInfo = new ArrayDeque<>();
 		NBTTagList routeList = (NBTTagList) compound.getTag("route");
-		for(Iterator<NBTBase> i = routeList.iterator(); i.hasNext();) {
-			NBTTagCompound node = (NBTTagCompound) i.next();
+		for (NBTBase aRouteList : routeList) {
+			NBTTagCompound node = (NBTTagCompound) aRouteList;
 			EnumFacing nodeTuple = EnumFacing.values()[node.getInteger("heading")];
 			routingInfo.add(nodeTuple);
 		}
@@ -201,7 +198,7 @@ public abstract class LPRoutedObject<T> {
 		return lpRoutedObject.takeFromBlock(te, face, stack, route, destination, holder);
 	}
 
-	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, Object stack, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder) {
+	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, T stack, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder) {
 		return null;
 	}
 

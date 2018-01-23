@@ -39,7 +39,7 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 	
 	private int internalModCount = 0;
 	private ItemStackHandler modules = new ItemStackHandler(References.MOD_COUNT_MKI);
-	protected List<Tuple<LogisticsRoute, ItemStack>> waitingToRoute = new ArrayList<Tuple<LogisticsRoute, ItemStack>>();
+	protected List<Tuple<LogisticsRoute, Object>> waitingToRoute = new ArrayList<>();
 	//protected List<Tuple<LogisticsRoute, FluidStack>> waitingToRoute_fluid = new ArrayList<Tuple<LogisticsRoute, FluidStack>>();
 	
 	@Override
@@ -304,15 +304,15 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 			}
 			x+=1;
 		}
-		
+
 	}
 
-	public void routeItemTo(UUID nodeT, ItemStack item) {
+	public void routeItemTo(UUID nodeT, Object object) {
 		LogisticsRoute route = network.getRouteFromTo(nodeID, nodeT);
 		if (route == null) {
 			return;
 		}
-		waitingToRoute.add(new Tuple<LogisticsRoute, ItemStack>(route, item));
+		waitingToRoute.add(new Tuple<>(route, object));
 	}
 
 	//public void routeFluidTo(UUID nodeT, FluidStack fluid) {
@@ -325,15 +325,14 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 
 	protected void checkIfRoutesAreReady() {
 		if (!waitingToRoute.isEmpty()) {
-			for (Iterator<Tuple<LogisticsRoute, ItemStack>> i = waitingToRoute.iterator(); i.hasNext();) {
-				Tuple<LogisticsRoute, ItemStack> route = i.next();
+			for (Iterator<Tuple<LogisticsRoute, Object>> i = waitingToRoute.iterator(); i.hasNext();) {
+				Tuple<LogisticsRoute, Object> route = i.next();
 				if (!route.getKey().isComplete()) {
 					LogisticsPipes2.logger.info("A route is not done routing yet");
 					continue;
 				}
-				ItemStack item = route.getVal();
-				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
-				routeCopy.addAll(route.getKey().getdirectionStack());
+				Object item = route.getVal();
+				Deque<EnumFacing> routeCopy = new ArrayDeque<>(route.getKey().getdirectionStack());
 				EnumFacing side = network.getDirectionForDestination(nodeID);
 				catchItem(LPRoutedObject.takeFromBlock(world.getTileEntity(getPos().offset(side)), side, item, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember(), this, item.getClass()));
 				//if (hasItemInInventoryOnSide(side, item)) {

@@ -1,33 +1,21 @@
 package com.sots.tiles;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.logging.log4j.Level;
-
 import com.sots.LogisticsPipes2;
 import com.sots.item.ItemWrench;
-import com.sots.item.modules.IItemModule;
-import com.sots.module.IModule;
-import com.sots.routing.*;
+import com.sots.module.CapabilityModule;
+import com.sots.routing.LPRoutedObject;
 import com.sots.routing.LogisticsRoute;
 import com.sots.routing.interfaces.IDestination;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
 import com.sots.util.Connections;
-import com.sots.util.Misc;
+import com.sots.util.ModuleInv;
 import com.sots.util.References;
 import com.sots.util.data.Tuple;
-
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemSign;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -37,35 +25,32 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.items.ItemStackHandler;
+import org.apache.logging.log4j.Level;
 
-public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe, IDestination{
-	
-	protected boolean hasInv = false;
-	protected ItemStackHandler modules;
-	protected Set<IModule> moduleLogics;
-	protected List<Tuple<LogisticsRoute, Object>> waitingToRoute = new ArrayList<Tuple<LogisticsRoute, Object>>();
-	//protected List<Tuple<LogisticsRoute, FluidStack>> waitingToRoute_fluid = new ArrayList<Tuple<LogisticsRoute, FluidStack>>();
+import java.util.*;
+
+public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe, IDestination {
+
+    protected boolean hasInv = false;
+    private final ModuleInv moduleInv;
+    protected List<Tuple<LogisticsRoute, Object>> waitingToRoute = new ArrayList<>();
+    //protected List<Tuple<LogisticsRoute, FluidStack>> waitingToRoute_fluid = new ArrayList<Tuple<LogisticsRoute, FluidStack>>();
 
 
 	public TileRoutedPipe() {
-		modules = new ItemStackHandler(References.MOD_COUNT_BASE);
-		moduleLogics = new HashSet<IModule>();
-	}	
+
+        this.moduleInv = new ModuleInv(this, References.MOD_COUNT_BASE);
+    }
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
-		modules.deserializeNBT(compound.getCompoundTag("modules"));
-		if (modules.getStackInSlot(0).getItem() instanceof IItemModule) {
-			IModule mod = ((IItemModule) modules.getStackInSlot(0).getItem()).getModLogic();
-			moduleLogics.add(mod);
-		}
+		moduleInv.deserializeNBT(compound.getCompoundTag("modules"));
 	}
 	
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound = super.writeToNBT(compound);
-		compound.setTag("modules", modules.serializeNBT());
+		compound.setTag("modules", moduleInv.serializeNBT());
 		
 	    return compound;
 	}
@@ -109,11 +94,15 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	@Override
 	public boolean isRouted() {return true;}
 
-	@Override
-	public boolean isRoutable() {return true;}
+    @Override
+    public boolean isRoutable() {
+        return true;
+    }
 
-	@Override
-	public boolean hasPower() {return false;}
+    @Override
+    public boolean hasPower() {
+        return false;
+    }
 
 	@Override
 	public boolean consumesPower() {return true;}
@@ -298,24 +287,13 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 			}
 		}
 		
-		if(heldItem.getItem() instanceof IItemModule){
-			int count = 0;
-			if(modules.getStackInSlot(0)!=null) {
-				count = modules.getStackInSlot(0).getCount();
-			}
-			if(count < References.MOD_COUNT_BASE){
-				IModule mod = ((IItemModule) heldItem.getItem()).getModLogic();
-				if(mod.canInsert()){
-					modules.insertItem(0, heldItem.splitStack(1), false);
-					moduleLogics.add(mod);
-					if(heldItem.isEmpty()) {
-						heldItem = null;
-					}
-					markDirty();
-				}
-				return true;
-			}
-		}
+		if (heldItem.hasCapability(CapabilityModule.CAPABILITY_MODULE, null)){
+		    if (moduleInv.putstack(heldItem)) {
+                player.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, ItemStack.EMPTY);
+                return true;
+            }
+
+        }
 		
 		return false;
 	}
@@ -337,25 +315,19 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 			}
 			if (!hasInv) {
 				network.unregisterDestination(this.nodeID);
-				moduleLogics.forEach(p -> p.disconnect());
+				moduleInv.disConnect();
 			}
 			
 		}
-		moduleLogics.forEach(p -> {
-			if(p.canExecute()) {
-				p.execute(this);
-			}
-		});
+		moduleInv.execute();
 		checkIfRoutesAreReady();
 		//checkIfFluidRoutesAreReady();
 	}
 	
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
+        moduleInv.dropInv(world, pos);
 		super.breakBlock(world, pos, state, player);
-		if(modules.getStackInSlot(0)!=null) {
-			Misc.spawnInventoryInWorld(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, modules);
-		}
 	}
 	
 	@Override
@@ -363,7 +335,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		LogisticsPipes2.logger.log(Level.DEBUG, "Removed TileGenericPipe" + toString() + " from Network:" + network.getName());
 		hasNetwork=false;
 		network=null;
-		moduleLogics.forEach(p -> p.disconnect());
+		moduleInv.disConnect();
 	}
 
 	public void routeItemTo(UUID nodeT, Object item) {
@@ -371,7 +343,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		if (route == null) {
 			return;
 		}
-		waitingToRoute.add(new Tuple<LogisticsRoute, Object>(route, item));
+		waitingToRoute.add(new Tuple<>(route, item));
 	}
 
 	//public void routeFluidTo(UUID nodeT, FluidStack fluid) {
@@ -391,8 +363,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 						.findFirst().get();
 				Object item = route.getVal();
 				//ItemStack item = route.getVal();
-				Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
-				routeCopy.addAll(route.getKey().getdirectionStack());
+                Deque<EnumFacing> routeCopy = new ArrayDeque<>(route.getKey().getdirectionStack());
 				EnumFacing side = network.getDirectionForDestination(nodeID);
 				catchItem(LPRoutedObject.takeFromBlock(world.getTileEntity(getPos().offset(side)), side, item, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember(), this, item.getClass()));
 				//if (hasItemInInventoryOnSide(side, item)) {
@@ -407,29 +378,8 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		}
 	}
 
-	//private void checkIfFluidRoutesAreReady() {
-		//if (!waitingToRoute_fluid.isEmpty()) {
-			//for (Iterator<Tuple<LogisticsRoute, FluidStack>> i = waitingToRoute_fluid.iterator(); i.hasNext();) {
-				//Tuple<LogisticsRoute, FluidStack> route = i.next();
-				//if (!route.getKey().isComplete()) {
-					//LogisticsPipes2.logger.info("A route is not done routing yet");
-					//continue;
-				//}
-				//FluidStack fluid = route.getVal();
-				//Deque<EnumFacing> routeCopy = new ArrayDeque<EnumFacing>();
-				//routeCopy.addAll(route.getKey().getdirectionStack());
-				//EnumFacing side = network.getDirectionForDestination(nodeID);
-				//if (hasFluidInInventoryOnSide(side, fluid)) {
-					//FluidStack stack = takeFluidFromInventoryOnSide(side, fluid);
-					//catchItem(new LPRoutedFluid(stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember()));
-				//}
-				//i.remove();
-
-				//break; // This line makes it so, that only 1 item is routed pr. tick. Comment out this line to allow multiple items to be routed pr. tick.
-			//}
-		//}
-	//}
-	
-	public boolean hasInventory() {return hasInv;}
+    public boolean hasInventory() {
+        return hasInv;
+    }
 
 }

@@ -26,7 +26,7 @@ import net.minecraftforge.oredict.OreDictionary;
 public class ItemRegistry {
 	
 	//All Items to be Registered
-	public static List<LPItemBase> registry = new ArrayList<LPItemBase>();
+	public static List<LPItemBase> registry = new ArrayList<>();
 	public static LPItemBase shard_rutile;
 	public static LPItemBase ingot_titanium;
 	public static LPItemBase part_fpga;
@@ -34,7 +34,7 @@ public class ItemRegistry {
 	public static LPItemBase part_sink;
 	public static LPItemBase part_extract;
 	public static LPItemBase part_provider;
-	public static LPItemBase module_base;
+	//public static LPItemBase module_base;
 	public static LPItemBase module_order;
 	public static LPItemBase module_provide;
 	public static LPItemBase module_sink;
@@ -55,7 +55,7 @@ public class ItemRegistry {
 		part_sink = new PartSinkProc();
 		part_extract = new PartExtractProc();
 		part_provider = new PartProviderProc();
-		module_base = new ItemModuleBase();
+		//module_base = new ItemModuleBase();
 		module_order = new ItemModuleOrder();
 		module_provide = new ItemModuleProvide();
 		module_sink = new ItemModuleSink();

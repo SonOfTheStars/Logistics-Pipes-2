@@ -113,11 +113,7 @@ public class LPRoutedItem extends LPRoutedObject<ItemStack>{
 	}
 
 	@Override
-	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, Object stack, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder) {
-		if (!(stack instanceof ItemStack)) {
-			return null;
-		}
-		ItemStack item = (ItemStack) stack;
+	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, ItemStack item, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder) {
 		if (!te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite())) {
 			return null;
 		}

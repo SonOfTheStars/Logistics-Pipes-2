@@ -22,3 +22,4 @@ src/main/java/net/*
 *.iws
 out/*
 .settings/org.eclipse.jdt.core.prefs
+/.idea/

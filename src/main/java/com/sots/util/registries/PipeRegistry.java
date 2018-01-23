@@ -15,7 +15,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class PipeRegistry {
 	
-	public static List<BlockGenericPipe> registry = new ArrayList<BlockGenericPipe>();
+	public static List<BlockGenericPipe> registry = new ArrayList<>();
 	
 	public static BlockGenericPipe network_core;
 	public static BlockGenericPipe pipe_basic;
