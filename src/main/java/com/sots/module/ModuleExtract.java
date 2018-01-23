@@ -18,7 +18,7 @@ public class ModuleExtract extends ModuleBase implements IModule{
 	private int ticksTillOp = References.MOD_BASE_OPERATION_RATE;
 
 	@Override
-	public boolean execute(TileGenericPipe te) {
+	public boolean execute(TileRoutedPipe te) {
 		if(ticksTillOp!=0) {
 			ticksTillOp-=1;
 		}else {
@@ -76,8 +76,23 @@ public class ModuleExtract extends ModuleBase implements IModule{
 	public ModuleType modType() {return ModuleType.EXTRACT;}
 	
 	@Override
-	public void disconnect() {
-		//Doesnt need to be disconnected
+	public void connect(TileRoutedPipe te) {
+		
+	}
+	
+	@Override
+	public void disconnect(TileRoutedPipe te) {
+		
+	}
+	
+	@Override
+	public void onAdd(TileRoutedPipe te) {
+		
+	}
+	
+	@Override
+	public void onRemoved(TileRoutedPipe te) {
+		
 	}
 
 }

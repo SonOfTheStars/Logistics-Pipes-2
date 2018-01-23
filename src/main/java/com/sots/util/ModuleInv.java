@@ -3,6 +3,8 @@ package com.sots.util;
 import com.sots.module.CapabilityModule;
 import com.sots.module.IModule;
 import com.sots.tiles.TileGenericPipe;
+import com.sots.tiles.TileRoutedPipe;
+
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -21,11 +23,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class ModuleInv implements ICapabilitySerializable<NBTTagCompound> {
-    private final TileGenericPipe owner;
+    private final TileRoutedPipe owner;
     private final Map<UUID, IModule> modules = new HashMap<>();
     private final NonNullList<ItemStack> stacks;
 
-    public ModuleInv(TileGenericPipe owner, int size) {
+    public ModuleInv(TileRoutedPipe owner, int size) {
         this.owner = owner;
         this.stacks = NonNullList.withSize(size, ItemStack.EMPTY);
     }
@@ -47,15 +49,14 @@ public class ModuleInv implements ICapabilitySerializable<NBTTagCompound> {
     }
 
     public void disConnect() {
-        modules.values().forEach(IModule::disconnect);
+        modules.values().forEach(p -> p.disconnect(owner));
     }
 
     public void dropInv(World world, BlockPos pos) {
-        modules.values().forEach(IModule::disconnect);
-        modules.values().forEach(IModule::onRemoved);
-        for (ItemStack stack : stacks) {
-            Misc.spawnItemStackInWorld(world, pos, stack);
-        }
+        modules.values().forEach(p -> p.onRemoved(owner));
+        
+        stacks.forEach(stack -> Misc.spawnItemStackInWorld(world, pos, stack));
+        
         stacks.clear();
         modules.clear();
     }
@@ -75,8 +76,8 @@ public class ModuleInv implements ICapabilitySerializable<NBTTagCompound> {
             if (existing.isEmpty()) return false;
 
             IModule module = existing.getCapability(CapabilityModule.CAPABILITY_MODULE, null);
-            module.disconnect();
-            module.onRemoved();
+            module.disconnect(owner);
+            module.onRemoved(owner);
             modules.remove(module.getUUID());
             if (existing.getTagCompound() != null)
                 existing.getTagCompound().removeTag("moduleID");

@@ -1,18 +1,19 @@
 package com.sots.module;
 
-import com.sots.tiles.TileGenericPipe;
-import com.sots.tiles.TileRoutedPipe;
-import net.minecraft.nbt.NBTTagCompound;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
-import java.util.UUID;
+
+import com.sots.tiles.TileRoutedPipe;
+
+import net.minecraft.nbt.NBTTagCompound;
 
 public class ModuleBase implements IModule {
 	
 	protected UUID MODULE_ID;
 
 	@Override
-	public boolean execute(TileGenericPipe te) {
+	public boolean execute(TileRoutedPipe te) {
 		return false;
 	}
 
@@ -54,18 +55,22 @@ public class ModuleBase implements IModule {
 	}
 
 	@Override
-	public void connect(TileGenericPipe te) {}
-
-	@Override
-	public void disconnect() {}
-
-	@Override
-	public void onRemoved() {
-
+	public void connect(TileRoutedPipe te) {
+		
 	}
 
 	@Override
-	public void onAdd(TileGenericPipe te) {
+	public void disconnect(TileRoutedPipe te) {
+		
+	}
 
+	@Override
+	public void onRemoved(TileRoutedPipe te) {
+		
+	}
+
+	@Override
+	public void onAdd(TileRoutedPipe te) {
+		
 	}
 }

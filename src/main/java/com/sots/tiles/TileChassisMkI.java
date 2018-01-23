@@ -300,7 +300,7 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 		int x = 0;
 		while(x<References.MOD_COUNT_MKI) {
 			if(modules.getStackInSlot(x)!=null) {
-				Misc.spawnInventoryInWorld(world, pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5, modules);
+				Misc.spawnInventoryInWorld(world, this.pos, modules);
 			}
 			x+=1;
 		}

@@ -184,6 +184,13 @@ public class Network {
 		return false;
 	}
 	
+	public void unregisterItemStorage(UUID id) {
+		List<Tuple<UUID, Item>> toDelete = stores.parallelStream()
+			.filter(store -> store.getKey().equals(id))
+			.collect(Collectors.toList());
+		toDelete.forEach(entry -> stores.remove(entry));
+	}
+	
 	public UUID getClosestStorageNode(Item item, UUID source, int skip) {
 		UUID out = null;
 		List<UUID> stores = getStorageNodesForItem(item);

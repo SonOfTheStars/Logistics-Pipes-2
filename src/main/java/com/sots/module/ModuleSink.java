@@ -1,13 +1,7 @@
 package com.sots.module;
 
-import java.util.ArrayList;
-import java.util.UUID;
-
 import com.sots.tiles.TileGenericPipe;
 import com.sots.tiles.TileRoutedPipe;
-import com.sots.util.data.Tuple;
-
-import net.minecraft.item.Item;
 
 public class ModuleSink extends ModuleBase implements IModule{
 	
@@ -15,7 +9,7 @@ public class ModuleSink extends ModuleBase implements IModule{
 	
 	@Override
 	// TODO: 21-1-2018
-	public boolean execute(TileGenericPipe te) {
+	public boolean execute(TileRoutedPipe te) {
 		/*if(!hasRegistered) {
 			if(te.hasInventory() && te.hasNetwork()) {
 				ArrayList<Item> types = te.getItemTypesInInventory(te.getNetwork().getDirectionForDestination(te.nodeID));
@@ -39,9 +33,26 @@ public class ModuleSink extends ModuleBase implements IModule{
 	public ModuleType modType() {return ModuleType.SINK;}
 	
 	@Override
-	public void disconnect() {
+	public void connect(TileRoutedPipe te) {
+		
+	}
+	
+	@Override
+	public void disconnect(TileRoutedPipe te) {
 		//has to be disconnected!
 		hasRegistered=false;
+		te.getNetwork().unregisterItemStorage(te.nodeID);
 	}
+	
+	@Override
+	public void onAdd(TileRoutedPipe te) {
+		
+	}
+	
+	@Override
+	public void onRemoved(TileRoutedPipe te) {
+		
+	}
+	
 
 }

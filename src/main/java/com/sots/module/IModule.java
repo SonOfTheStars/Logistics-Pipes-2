@@ -3,6 +3,8 @@ package com.sots.module;
 import java.util.UUID;
 
 import com.sots.tiles.TileGenericPipe;
+import com.sots.tiles.TileRoutedPipe;
+
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -25,7 +27,7 @@ public interface IModule extends ICapabilitySerializable<NBTTagCompound> {
 	 * @param te The Pipe executing this Module
 	 * @return True if the Logic could be executed. If a module returns false, Items used in its operation will be spilled!
 	 */
-	boolean execute(TileGenericPipe te);
+	boolean execute(TileRoutedPipe te);
 	
 	/**
 	 * @return True if the Module can execute its Logic, False if not
@@ -88,12 +90,12 @@ public interface IModule extends ICapabilitySerializable<NBTTagCompound> {
 	@Nonnull
 	UUID getUUID();
 
-	void connect(TileGenericPipe te);
+	abstract void connect(TileRoutedPipe te);
 
-	void disconnect();
+	abstract void disconnect(TileRoutedPipe te);
 
-	void onRemoved();
+	abstract void onRemoved(TileRoutedPipe te);
 
-	void onAdd(TileGenericPipe te);
+	abstract void onAdd(TileRoutedPipe te);
 	
 }
