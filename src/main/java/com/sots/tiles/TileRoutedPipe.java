@@ -1,6 +1,18 @@
 package com.sots.tiles;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.Level;
+
 import com.sots.LogisticsPipes2;
+import com.sots.event.LPMakePromiseEvent;
 import com.sots.item.ItemWrench;
 import com.sots.module.CapabilityModule;
 import com.sots.routing.LPRoutedObject;
@@ -8,10 +20,13 @@ import com.sots.routing.LogisticsRoute;
 import com.sots.routing.interfaces.IDestination;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
+import com.sots.routing.promises.LogisticsPromise;
+import com.sots.routing.promises.PromiseType;
 import com.sots.util.Connections;
 import com.sots.util.ModuleInv;
 import com.sots.util.References;
-import com.sots.util.data.Tuple;
+import com.sots.util.data.Triple;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -24,22 +39,22 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.FluidStack;
-import org.apache.logging.log4j.Level;
-
-import java.util.*;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe, IDestination {
 
     protected boolean hasInv = false;
+    protected int ticksTillSparkle=0;
     private final ModuleInv moduleInv;
-    protected List<Tuple<LogisticsRoute, Object>> waitingToRoute = new ArrayList<>();
+    protected List<Triple<LogisticsRoute, Object, PromiseType>> waitingToRoute = new ArrayList<>();
     //protected List<Tuple<LogisticsRoute, FluidStack>> waitingToRoute_fluid = new ArrayList<Tuple<LogisticsRoute, FluidStack>>();
+    protected List<LogisticsPromise> promises = new ArrayList<>();
 
 
 	public TileRoutedPipe() {
-
         this.moduleInv = new ModuleInv(this, References.MOD_COUNT_BASE);
+        MinecraftForge.EVENT_BUS.register(this);
     }
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
@@ -110,6 +125,22 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	@Override
 	public int powerConsumed() {return 1;}
 	
+	@SubscribeEvent
+	public void receivePromise(LPMakePromiseEvent event) {
+		if(event.getTargetNode().equals(nodeID)) {
+			promises.add(event.getPromise());
+		}
+	}
+	
+	public void onItemCatch(LPRoutedObject item) {
+		if(!promises.isEmpty()) {
+			LogisticsPromise toRemove = promises.stream()
+					.filter(promise -> item.getID().equals(promise.getPromiseID()))
+					.findFirst().get();
+				promises.remove(toRemove);
+		}
+	}
+	
 	@Override
 	protected void network() {
 		super.network();
@@ -122,6 +153,12 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 					
 			}
 		}
+	}
+	
+	@Override
+	public boolean catchItem(LPRoutedObject item) {
+		onItemCatch(item);
+		return super.catchItem(item);
 	}
 	
 	@Override
@@ -149,7 +186,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 									ItemStack stack = stacks.get(slot).copy();
 									if(stack.getCount()>=count) {
 										stack.setCount(1);//Only send one item per destination
-										current.routeItemTo(nodeT, stack);
+										current.routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
 									}
 									else {
 										if (stacks.size() <= slot + 1) {
@@ -159,7 +196,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 										count = 1;
 										stack = stacks.get(slot).copy();
 										stack.setCount(1);//Only send one item per destination
-										current.routeItemTo(nodeT, stack);
+										current.routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
 									}
 								}
 							}
@@ -174,7 +211,6 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 					int slot = 0;
 					EnumFacing face = network.getDirectionForDestination(nodeID);
 					ArrayList<ItemStack> stacks = getItemsInInventory(face);
-					Iterator<ItemStack> iter = stacks.iterator();
 					for (UUID nodeT : nodes) {
 						if (stacks.isEmpty())
 							break;
@@ -184,18 +220,18 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 						ItemStack stack = stacks.get(slot).copy();
 						if(stack.getCount()>=count) {
 							stack.setCount(1);//Only send one item per destination
-							routeItemTo(nodeT, stack);
+							routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
 						}
 						else {
 							slot+=1;
 							count = 1;
 							stack = stacks.get(slot).copy();
 							stack.setCount(1);//Only send one item per destination
-							routeItemTo(nodeT, stack);
+							routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
 						}
 					}
 				}
-				if (hasNetwork) {
+				/*if (hasNetwork) {
 					LogisticsPipes2.logger.info("STARTING ROUTING OF FLUID");
 					Set<UUID> nodes = network.getAllDestinations();
 					int count = 0;
@@ -212,7 +248,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 						FluidStack stack = stacks.get(slot).copy();
 						if(stack.amount >= count*1000) {
 							stack.amount = 1000;//Only send one bucket per destination
-							routeItemTo(nodeT, stack);
+							routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
 							//routeFluidTo(nodeT, stack);
 						}
 						else {
@@ -220,11 +256,11 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 							count = 1;
 							stack = stacks.get(slot).copy();
 							stack.amount = 1000;//Only send one bucket per destination
-							routeItemTo(nodeT, stack);
+							routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
 							//routeFluidTo(nodeT, stack);
 						}
 					}
-				}
+				}*/
 			}
 			if(heldItem.getItem() instanceof ItemWrench) {
 				if (side == EnumFacing.UP || side == EnumFacing.DOWN){
@@ -301,6 +337,7 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	@Override
 	public void update() {
 		super.update();
+		ticksTillSparkle+=1;
 		if (this.hasNetwork && !(network.getNodeByID(this.nodeID).isDestination())) {
 			for (int i = 0; i < 6; i++) {
 				if (hasInventoryOnSide(i)) {
@@ -319,6 +356,16 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 			}
 			
 		}
+		if(ticksTillSparkle==10) {
+			if(!promises.isEmpty()) {
+				promises.forEach(promise -> {
+					Triple<Float, Float, Float> rgb = PromiseType.getRGBFromType(promise.getType());
+					this.spawnParticle(rgb.getFirst(), rgb.getSecnd(), rgb.getThird());
+				});
+			}
+			ticksTillSparkle=0;
+		}
+		
 		moduleInv.execute();
 		checkIfRoutesAreReady();
 		//checkIfFluidRoutesAreReady();
@@ -338,12 +385,13 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		moduleInv.disConnect();
 	}
 
-	public void routeItemTo(UUID nodeT, Object item) {
+	public void routeItemTo(UUID nodeT, Object item, PromiseType type) {
 		LogisticsRoute route = network.getRouteFromTo(nodeID, nodeT);
 		if (route == null) {
 			return;
 		}
-		waitingToRoute.add(new Tuple<>(route, item));
+		waitingToRoute.add(new Triple<>(route, item, type));
+		
 	}
 
 	//public void routeFluidTo(UUID nodeT, FluidStack fluid) {
@@ -358,14 +406,16 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 		if (!waitingToRoute.isEmpty()) {
 			
 			try {
-				Tuple<LogisticsRoute, Object> route = waitingToRoute.stream()
-						.filter(entry -> entry.getKey().isComplete())
+				Triple<LogisticsRoute, Object, PromiseType> route = waitingToRoute.stream()
+						.filter(entry -> entry.getFirst().isComplete())
 						.findFirst().get();
-				Object item = route.getVal();
+				Object item = route.getSecnd();
 				//ItemStack item = route.getVal();
-                Deque<EnumFacing> routeCopy = new ArrayDeque<>(route.getKey().getdirectionStack());
+                Deque<EnumFacing> routeCopy = new ArrayDeque<>(route.getFirst().getdirectionStack());
 				EnumFacing side = network.getDirectionForDestination(nodeID);
-				catchItem(LPRoutedObject.takeFromBlock(world.getTileEntity(getPos().offset(side)), side, item, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember(), this, item.getClass()));
+				LPRoutedObject toRoute = LPRoutedObject.takeFromBlock(world.getTileEntity(getPos().offset(side)), side, item, routeCopy, (TileGenericPipe) route.getFirst().getTarget().getMember(), this, item.getClass());
+				MinecraftForge.EVENT_BUS.post(new LPMakePromiseEvent(new LogisticsPromise(toRoute.getID(), route.getThird()), route.getFirst().getTarget().getId()));
+				catchItem(toRoute);
 				//if (hasItemInInventoryOnSide(side, item)) {
 					//ItemStack stack = takeFromInventoryOnSide(side, item);
 					//catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember()));

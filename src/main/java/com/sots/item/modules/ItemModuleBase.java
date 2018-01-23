@@ -47,11 +47,5 @@ public abstract class ItemModuleBase extends LPItemBase{
 		return super.onItemRightClick(worldIn, playerIn, handIn);
 	}
 
-	@Nullable
-	@Override
-	public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
-		return new ModuleCapabilityProvider(getModuleLogic());
-	}
-
 	protected abstract IModule getModuleLogic();
 }

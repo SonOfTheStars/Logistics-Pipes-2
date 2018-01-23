@@ -113,6 +113,10 @@ public abstract class LPRoutedObject<T> {
 	public TileGenericPipe getDestination() {
 		return destination;
 	}
+	
+	public UUID getID() {
+		return ID;
+	}
 
 	public Triple<Double, Double, Double> calculateTranslation(float partialTicks) {
 		float tmpTicks = ticks + partialTicks;

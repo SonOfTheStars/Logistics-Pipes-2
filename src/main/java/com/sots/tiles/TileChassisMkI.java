@@ -16,6 +16,7 @@ import com.sots.routing.*;
 import com.sots.routing.LogisticsRoute;
 import com.sots.routing.interfaces.IPipe;
 import com.sots.routing.interfaces.IRoutable;
+import com.sots.routing.promises.PromiseType;
 import com.sots.util.Connections;
 import com.sots.util.Misc;
 import com.sots.util.References;
@@ -146,7 +147,7 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 									ItemStack stack = stacks.get(slot).copy();
 									if(stack.getCount()>=count) {
 										stack.setCount(1);//Only send one item per destination
-										current.routeItemTo(nodeT, stack);
+										current.routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
 									}
 									else {
 										if (stacks.size() <= slot + 1) {
@@ -156,7 +157,7 @@ public class TileChassisMkI extends TileGenericPipe implements IPipe, IRoutable{
 										count = 1;
 										stack = stacks.get(slot).copy();
 										stack.setCount(1);//Only send one item per destination
-										current.routeItemTo(nodeT, stack);
+										current.routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
 									}
 								}
 							}

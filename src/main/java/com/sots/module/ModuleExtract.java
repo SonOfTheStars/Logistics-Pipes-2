@@ -7,6 +7,7 @@ import com.sots.tiles.TileGenericPipe;
 import org.apache.logging.log4j.Level;
 
 import com.sots.LogisticsPipes2;
+import com.sots.routing.promises.PromiseType;
 import com.sots.tiles.TileRoutedPipe;
 import com.sots.util.References;
 
@@ -53,7 +54,7 @@ public class ModuleExtract extends ModuleBase implements IModule{
 							if(stack.getCount()>References.MOD_EXTRACT_BASE_COUNT) {
 								stack.setCount(References.MOD_EXTRACT_BASE_COUNT);
 							}
-							te.routeItemTo(nodeT, stack);
+							te.routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
 							hasWorked=true;
 						}
 					}

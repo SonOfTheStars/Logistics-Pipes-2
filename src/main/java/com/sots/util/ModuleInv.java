@@ -159,7 +159,9 @@ public class ModuleInv implements ICapabilitySerializable<NBTTagCompound> {
         modules.clear();
         for (ItemStack stack : stacks) {
             IModule module = stack.getCapability(CapabilityModule.CAPABILITY_MODULE, null);
-            modules.put(Objects.requireNonNull(module).getUUID(), module);
+            if(module != null) {
+            	modules.put(Objects.requireNonNull(module).getUUID(), module);
+            }
         }
     }
 }

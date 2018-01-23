@@ -7,9 +7,7 @@ import com.sots.network.LPPacketHandler;
 import com.sots.network.message.MessagePipeContentUpdate;
 import com.sots.proxies.ClientProxy;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
