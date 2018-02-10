@@ -19,7 +19,7 @@ import net.minecraftforge.fluids.UniversalBucket;
 
 public class TileRenderBasicPipe extends TileEntitySpecialRenderer<TileGenericPipe> {
 
-	@Override
+	//@Override
 	public void renderTileEntityAt(TileGenericPipe te, double x, double y, double z, float partialTicks,
 			int destroyStage) {
 		if(!te.getWorld().isBlockLoaded(te.getPos(), false))
