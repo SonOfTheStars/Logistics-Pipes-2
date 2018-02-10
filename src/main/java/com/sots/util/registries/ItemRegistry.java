@@ -21,10 +21,11 @@ import com.sots.item.parts.PartSinkProc;
 import com.sots.util.StringUtil;
 
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.registries.GameData;
 import net.minecraftforge.oredict.OreDictionary;
 
 public class ItemRegistry {
-	
+
 	//All Items to be Registered
 	public static List<LPItemBase> registry = new ArrayList<LPItemBase>();
 	public static LPItemBase shard_rutile;
@@ -41,7 +42,7 @@ public class ItemRegistry {
 	public static LPItemBase module_sort;
 	public static LPItemBase module_extract;
 	public static LPItemBase item_wrench;
-	
+
 	/**
 	 * Initialize all Items for preInit
 	 * Call this in preInit on the Common Proxy
@@ -62,7 +63,7 @@ public class ItemRegistry {
 		module_sort = new ItemModuleSort();
 		module_extract = new ItemModuleExtract();
 		item_wrench = new ItemWrench();
-		
+
 		registry.add(shard_rutile);
 		registry.add(ingot_titanium);
 		registry.add(part_fpga);
@@ -76,18 +77,18 @@ public class ItemRegistry {
 		registry.add(module_order);
 		registry.add(module_extract);
 		registry.add(item_wrench);
-		
-		
+
+
 		//Register Items
 		for(LPItemBase item : registry) {
 			//Register Item
-			GameRegistry.register(item);
+			GameData.register_impl(item);
 			//Register Ordedict Names
 			if(!StringUtil.isNullOrWhitespace(item.getOreName()) && !StringUtil.isNullOrEmpty(item.getOreName()))
 				OreDictionary.registerOre(item.getOreName(), item);
 		}
 	}
-	
+
 	/**
 	 * Initializes Models and Textures for registered Items.
 	 * Call this in Init on the Client Proxy

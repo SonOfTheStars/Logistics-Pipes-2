@@ -17,7 +17,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.IChunkGenerator;
+import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.feature.WorldGenMinable;
 import net.minecraftforge.event.world.ChunkDataEvent;
@@ -34,7 +34,7 @@ public class LPWorldGen implements IWorldGenerator{
 		int minY;
 		int chunkOccurence;
 		int weight;
-		
+
 		public OreGen(String name, IBlockState state, int maxVeinSize, Block replaceTarget, int minY, int maxY, int chunkOccurence, int weight) {
 			this.name = name;
 			this.ore = new WorldGenMinable(state, maxVeinSize, BlockMatcher.forBlock(replaceTarget));
@@ -43,7 +43,7 @@ public class LPWorldGen implements IWorldGenerator{
 			this.chunkOccurence = chunkOccurence;
 			this. weight = weight;
 		}
-		
+
 		public void generate(World world, Random rand, int x, int z) {
 			BlockPos pos;
 			for(int i = 0; i<chunkOccurence; i++) {
@@ -54,11 +54,11 @@ public class LPWorldGen implements IWorldGenerator{
 			}
 		}
 	}
-	
+
 	public static ArrayList<OreGen> generators = new ArrayList<OreGen>();
 	public static ArrayList<Integer> oreDimBlacklist = new ArrayList<Integer>();
 	public static HashMap<String, Boolean> retrogenMap = new HashMap<String, Boolean>();
-	
+
 	public static OreGen addOreGen(String name, IBlockState state, int maxVeinSize, int minY, int maxY, int chunkOccurence, int weight) {
 		OreGen gen = new OreGen(name, state, maxVeinSize, Blocks.STONE, minY, maxY, chunkOccurence, weight);
 		generators.add(gen);
@@ -69,18 +69,18 @@ public class LPWorldGen implements IWorldGenerator{
 	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkGenerator chunkGenerator, IChunkProvider chunkProvider) {
 		this.generateOres(random, chunkX, chunkZ, world, true);
 	}
-	
+
 	public void generateOres(Random rand, int chunkX, int chunkZ, World world, boolean newGeneration) {
 		if(!oreDimBlacklist.contains(world.provider.getDimension())) {
 			for(OreGen gen : generators) {
 				if(newGeneration || retrogenMap.get("retrogen_"+gen.name)) {
 					gen.generate(world, rand, chunkX*16, chunkZ*16);
 				}
-			
+
 			}
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void chunkSave(ChunkDataEvent.Save event)
 	{
@@ -88,7 +88,7 @@ public class LPWorldGen implements IWorldGenerator{
 		event.getData().setTag("LPTwo", nbt);
 		nbt.setBoolean("LPRetroGen", true);
 	}
-	
+
 	@SubscribeEvent
 	public void chunkLoad(ChunkDataEvent.Load event)
 	{
@@ -100,7 +100,7 @@ public class LPWorldGen implements IWorldGenerator{
 			retrogenChunks.put(dimension, event.getChunk().getPos());
 		}
 	}
-	
+
 	public static ArrayListMultimap<Integer, ChunkPos> retrogenChunks = ArrayListMultimap.create();
 	@SubscribeEvent
 	public void serverWorldTick(TickEvent.WorldTickEvent event) {
@@ -117,14 +117,14 @@ public class LPWorldGen implements IWorldGenerator{
 					break;
 				}
 				counter++;
-				
+
 				ChunkPos loc = chunks.get(0);
 				long worldSeed = event.world.getSeed();
 				Random fmlRandom = new Random(worldSeed);
-				
+
 				long xSeed = (fmlRandom.nextLong()>>3);
 				long zSeed = (fmlRandom.nextLong()>>3);
-				
+
 				fmlRandom.setSeed(xSeed * loc.x + zSeed * loc.z ^ worldSeed);
 				this.generateOres(fmlRandom, loc.x, loc.z, event.world, false);
 				chunks.remove(0);
