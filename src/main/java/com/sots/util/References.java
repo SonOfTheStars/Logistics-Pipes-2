@@ -1,5 +1,7 @@
 package com.sots.util;
 
+import com.sots.util.data.Triple;
+
 public abstract class References {
 	public static final String MODID = "lptwo";
 	public static final String MODNAME = "Logistics Pipes 2";
@@ -85,5 +87,15 @@ public abstract class References {
 	public static final int MOD_EXTRACT_BASE_COUNT = 4;
 	//Module Operation rate delay in ticks
 	public static final int MOD_BASE_OPERATION_RATE = 20;
+	
+	//Colors
+	public static final Triple<Float, Float, Float> RGB_RED = new Triple<>(1f, 0f, 0f);
+	public static final Triple<Float, Float, Float> RGB_GREEN = new Triple<>(0f, 1f, 0f);
+	public static final Triple<Float, Float, Float> RGB_BLUE = new Triple<>(0f, 0f, 1f);
+	public static final Triple<Float, Float, Float> RGB_PURPLE = new Triple<>(.5f, 0f, .5f);
+	public static final Triple<Float, Float, Float> RGB_YELLOW = new Triple<>(1f, 1f, 0f);
+	public static final Triple<Float, Float, Float> RGB_ORANGE = new Triple<>(1f, .5f, 0f);
+	public static final Triple<Float, Float, Float> RGB_WHITE = new Triple<>(1f, 1f, 1f);
+	
 	
 }

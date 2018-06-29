@@ -1,7 +1,7 @@
 package com.sots.item.modules;
 
-import com.sots.item.LPItemBase;
-import com.sots.module.IModule;
+import com.sots.module.logic.IModuleLogic;
+import com.sots.module.logic.OrderLogic;
 import com.sots.util.References;
 
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -24,7 +24,12 @@ public class ItemModuleOrder extends ItemModuleBase{
 	}
 
 	@Override
-	protected IModule getModuleLogic() {
-		return null;
+	public IModuleLogic getModLogic() {
+		return new OrderLogic();
+	}
+
+	@Override
+	public boolean canInsert() {
+		return true;
 	}
 }

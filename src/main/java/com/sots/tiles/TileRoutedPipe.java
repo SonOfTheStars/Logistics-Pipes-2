@@ -3,18 +3,17 @@ package com.sots.tiles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
 
 import com.sots.LogisticsPipes2;
 import com.sots.event.LPMakePromiseEvent;
 import com.sots.item.ItemWrench;
-import com.sots.module.CapabilityModule;
+import com.sots.item.modules.IItemModule;
+import com.sots.module.logic.IModuleLogic;
 import com.sots.routing.LPRoutedObject;
 import com.sots.routing.LogisticsRoute;
 import com.sots.routing.interfaces.IDestination;
@@ -23,14 +22,17 @@ import com.sots.routing.interfaces.IRoutable;
 import com.sots.routing.promises.LogisticsPromise;
 import com.sots.routing.promises.PromiseType;
 import com.sots.util.Connections;
+import com.sots.util.Misc;
 import com.sots.util.ModuleInv;
 import com.sots.util.References;
+import com.sots.util.data.Quad;
 import com.sots.util.data.Triple;
+import com.sots.util.helpers.ItemHelper;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
-import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemSign;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -41,31 +43,40 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.items.ItemStackHandler;
 
 public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe, IDestination {
 
     protected boolean hasInv = false;
     protected int ticksTillSparkle=0;
     private final ModuleInv moduleInv;
-    protected List<Triple<LogisticsRoute, Object, PromiseType>> waitingToRoute = new ArrayList<>();
-    //protected List<Tuple<LogisticsRoute, FluidStack>> waitingToRoute_fluid = new ArrayList<Tuple<LogisticsRoute, FluidStack>>();
+    protected ItemStackHandler modules;
+    protected List<IModuleLogic> executables = new ArrayList<>();
+    protected List<Quad<LogisticsRoute, Item, PromiseType, Integer>> waitingToRoute = new ArrayList<>();
     protected List<LogisticsPromise> promises = new ArrayList<>();
-
-
+    
 	public TileRoutedPipe() {
         this.moduleInv = new ModuleInv(this, References.MOD_COUNT_BASE);
         MinecraftForge.EVENT_BUS.register(this);
+        modules = new ItemStackHandler(References.MOD_COUNT_BASE);
     }
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
-		moduleInv.deserializeNBT(compound.getCompoundTag("modules"));
+		modules.deserializeNBT(compound.getCompoundTag("modules"));
+		if(!world.isRemote) {
+			for(int i = 0; i<modules.getSlots(); i++) {
+				IItemModule mod = (IItemModule) modules.getStackInSlot(i).getItem();
+				executables.add(mod.getModLogic());
+			}
+		}
+		
 	}
 	
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound = super.writeToNBT(compound);
-		compound.setTag("modules", moduleInv.serializeNBT());
+		compound.setTag("modules", modules.serializeNBT());
 		
 	    return compound;
 	}
@@ -184,19 +195,8 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 										continue;
 									count+=1;
 									ItemStack stack = stacks.get(slot).copy();
-									if(stack.getCount()>=count) {
-										stack.setCount(1);//Only send one item per destination
-										current.routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
-									}
-									else {
-										if (stacks.size() <= slot + 1) {
-											break;
-										}
-										slot+=1;
-										count = 1;
-										stack = stacks.get(slot).copy();
-										stack.setCount(1);//Only send one item per destination
-										current.routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
+									if(!ItemHelper.isEmptyOrZero(stack)) {
+										current.routeItemTo(nodeT, stack.getItem(), PromiseType.PROMISE_SINK, 4);
 									}
 								}
 							}
@@ -218,49 +218,12 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 							continue;
 						count+=1;
 						ItemStack stack = stacks.get(slot).copy();
-						if(stack.getCount()>=count) {
-							stack.setCount(1);//Only send one item per destination
-							routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
-						}
-						else {
-							slot+=1;
-							count = 1;
-							stack = stacks.get(slot).copy();
-							stack.setCount(1);//Only send one item per destination
-							routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
+						if(!ItemHelper.isEmptyOrZero(stack)) {
+							routeItemTo(nodeT, stack.getItem(), PromiseType.PROMISE_SINK, 1);
 						}
 					}
 				}
-				/*if (hasNetwork) {
-					LogisticsPipes2.logger.info("STARTING ROUTING OF FLUID");
-					Set<UUID> nodes = network.getAllDestinations();
-					int count = 0;
-					int slot = 0;
-					EnumFacing face = network.getDirectionForDestination(nodeID);
-					ArrayList<FluidStack> stacks = getFluidStacksInInventory(face);
-					Iterator<FluidStack> iter = stacks.iterator();
-					for (UUID nodeT : nodes) {
-						if (stacks.isEmpty())
-							break;
-						if(nodeT.equals(nodeID))
-							continue;
-						count+=1;
-						FluidStack stack = stacks.get(slot).copy();
-						if(stack.amount >= count*1000) {
-							stack.amount = 1000;//Only send one bucket per destination
-							routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
-							//routeFluidTo(nodeT, stack);
-						}
-						else {
-							slot+=1;
-							count = 1;
-							stack = stacks.get(slot).copy();
-							stack.amount = 1000;//Only send one bucket per destination
-							routeItemTo(nodeT, stack, PromiseType.PROMISE_SINK);
-							//routeFluidTo(nodeT, stack);
-						}
-					}
-				}*/
+				
 			}
 			if(heldItem.getItem() instanceof ItemWrench) {
 				if (side == EnumFacing.UP || side == EnumFacing.DOWN){
@@ -322,15 +285,24 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 				return true;
 			}
 		}
-		
-		if (heldItem.hasCapability(CapabilityModule.CAPABILITY_MODULE, null)){
-		    if (moduleInv.putstack(heldItem)) {
-                player.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, ItemStack.EMPTY);
-                return true;
-            }
-
-        }
-		
+		if(heldItem.getItem() instanceof IItemModule){
+			int count = 0;
+			if(modules.getStackInSlot(0)!=null) {
+				count = modules.getStackInSlot(0).getCount();
+			}
+			if(count < References.MOD_COUNT_BASE){
+				IItemModule mod = (IItemModule) heldItem.getItem();
+				if(mod.canInsert()){
+					modules.insertItem(0, heldItem.splitStack(1), false);
+					if(heldItem.isEmpty()) {
+						heldItem = null;
+					}
+					executables.add(mod.getModLogic());
+					markDirty();
+				}
+				return true;
+			}
+		}
 		return false;
 	}
 	
@@ -338,88 +310,82 @@ public class TileRoutedPipe extends TileGenericPipe implements IRoutable, IPipe,
 	public void update() {
 		super.update();
 		ticksTillSparkle+=1;
-		if (this.hasNetwork && !(network.getNodeByID(this.nodeID).isDestination())) {
-			for (int i = 0; i < 6; i++) {
-				if (hasInventoryOnSide(i)) {
-					network.registerDestination(this.nodeID, EnumFacing.getFront(i));
-					break;
+		if(!world.isRemote) {
+			if (this.hasNetwork && !(network.getNodeByID(this.nodeID).isDestination())) {
+				for (int i = 0; i < 6; i++) {
+					if (hasInventoryOnSide(i)) {
+						EnumFacing face = EnumFacing.getFront(i);
+						network.registerDestination(this.nodeID, face);
+						hasInv=true;
+						break;
+					}
+				}
+			} else if (this.hasNetwork && (network.getNodeByID(this.nodeID).isDestination())) {
+				for (int i = 0; i < 6; i++) {
+					if (hasInventoryOnSide(i))
+						hasInv = true;
+				}
+				if (!hasInv) {
+					network.unregisterDestination(this.nodeID);
+					executables.forEach(exe -> exe.onInvalidate(this));
 				}
 			}
-		} else if (this.hasNetwork && (network.getNodeByID(this.nodeID).isDestination())) {
-			for (int i = 0; i < 6; i++) {
-				if (hasInventoryOnSide(i))
-					hasInv = true;
-			}
-			if (!hasInv) {
-				network.unregisterDestination(this.nodeID);
-				moduleInv.disConnect();
-			}
-			
 		}
 		if(ticksTillSparkle==10) {
 			if(!promises.isEmpty()) {
 				promises.forEach(promise -> {
 					Triple<Float, Float, Float> rgb = PromiseType.getRGBFromType(promise.getType());
-					this.spawnParticle(rgb.getFirst(), rgb.getSecnd(), rgb.getThird());
+					this.spawnParticle(rgb);
 				});
 			}
 			ticksTillSparkle=0;
 		}
 		
-		moduleInv.execute();
-		checkIfRoutesAreReady();
-		//checkIfFluidRoutesAreReady();
+		if(!world.isRemote) {
+			executables.forEach(exe -> exe.execute(this));
+			checkIfRoutesAreReady();
+		}
 	}
 	
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
-        moduleInv.dropInv(world, pos);
+        executables.forEach(exe -> exe.onInvalidate(this));
+        executables.clear();
+        Misc.spawnInventoryInWorld(world, pos, modules);
 		super.breakBlock(world, pos, state, player);
 	}
 	
 	@Override
 	public void disconnect() {
 		LogisticsPipes2.logger.log(Level.DEBUG, "Removed TileGenericPipe" + toString() + " from Network:" + network.getName());
+		executables.forEach(exe -> exe.onInvalidate(this));
 		hasNetwork=false;
 		network=null;
-		moduleInv.disConnect();
 	}
 
-	public void routeItemTo(UUID nodeT, Object item, PromiseType type) {
+	public void routeItemTo(UUID nodeT, Item item, PromiseType type, int amount) {
 		LogisticsRoute route = network.getRouteFromTo(nodeID, nodeT);
 		if (route == null) {
 			return;
 		}
-		waitingToRoute.add(new Triple<>(route, item, type));
+		waitingToRoute.add(new Quad<>(route, item, type, amount));
 		
 	}
 
-	//public void routeFluidTo(UUID nodeT, FluidStack fluid) {
-		//LogisticsRoute route = network.getRouteFromTo(nodeID, nodeT);
-		//if (route == null) {
-			//return;
-		//}
-		//waitingToRoute_fluid.add(new Tuple<LogisticsRoute, FluidStack>(route, fluid));
-	//}
-
+	@SuppressWarnings("rawtypes")
 	protected void checkIfRoutesAreReady() {
 		if (!waitingToRoute.isEmpty()) {
 			
 			try {
-				Triple<LogisticsRoute, Object, PromiseType> route = waitingToRoute.stream()
-						.filter(entry -> entry.getFirst().isComplete())
+				Quad<LogisticsRoute, Item, PromiseType, Integer> route = waitingToRoute.stream()
+						.filter(entry -> entry.getA().isComplete())
 						.findFirst().get();
-				Object item = route.getSecnd();
-				//ItemStack item = route.getVal();
-                Deque<EnumFacing> routeCopy = new ArrayDeque<>(route.getFirst().getdirectionStack());
+				ItemStack item = new ItemStack(route.getB());
+                Deque<EnumFacing> routeCopy = new ArrayDeque<>(route.getA().getdirectionStack());
 				EnumFacing side = network.getDirectionForDestination(nodeID);
-				LPRoutedObject toRoute = LPRoutedObject.takeFromBlock(world.getTileEntity(getPos().offset(side)), side, item, routeCopy, (TileGenericPipe) route.getFirst().getTarget().getMember(), this, item.getClass());
-				MinecraftForge.EVENT_BUS.post(new LPMakePromiseEvent(new LogisticsPromise(toRoute.getID(), route.getThird()), route.getFirst().getTarget().getId()));
+				LPRoutedObject toRoute = LPRoutedObject.takeFromBlock(world.getTileEntity(getPos().offset(side)), side, item, routeCopy, (TileGenericPipe) route.getA().getTarget().getMember(), this, item.getClass(), route.getD());
+				MinecraftForge.EVENT_BUS.post(new LPMakePromiseEvent(new LogisticsPromise(toRoute.getID(), route.getC()), route.getA().getTarget().getId()));
 				catchItem(toRoute);
-				//if (hasItemInInventoryOnSide(side, item)) {
-					//ItemStack stack = takeFromInventoryOnSide(side, item);
-					//catchItem(new LPRoutedItem((double) posX(), (double) posY(), (double) posZ(), stack, side.getOpposite(), this, routeCopy, (TileGenericPipe) route.getKey().getTarget().getMember()));
-				//}
 				waitingToRoute.remove(route);
 			} catch (Exception e) {
 				//Discard Exception. If we get any here that means there simply was no route ready yet.

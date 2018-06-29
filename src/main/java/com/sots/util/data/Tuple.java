@@ -10,6 +10,11 @@ public class Tuple<K, V> {
 		key = Key;
 		val = Val;
 	}
+	
+	public Tuple() {
+		key = null;
+		val = null;
+	}
 
 	public K getKey() {
 		return key;

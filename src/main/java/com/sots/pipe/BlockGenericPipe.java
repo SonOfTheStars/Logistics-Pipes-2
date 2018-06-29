@@ -6,9 +6,8 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.UnmodifiableIterator;
 import com.sots.block.BlockTileBase;
+import com.sots.tiles.ConnectionTypes;
 import com.sots.tiles.TileGenericPipe;
-import com.sots.tiles.TileGenericPipe.ConnectionTypes;
-
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;

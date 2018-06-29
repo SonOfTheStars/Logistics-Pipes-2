@@ -1,10 +1,7 @@
 package com.sots.item.modules;
 
-import java.util.UUID;
-
-import com.sots.item.LPItemBase;
-import com.sots.module.IModule;
-import com.sots.module.ModuleExtract;
+import com.sots.module.logic.ExtractLogic;
+import com.sots.module.logic.IModuleLogic;
 import com.sots.util.References;
 
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -27,7 +24,12 @@ public class ItemModuleExtract extends ItemModuleBase{
 	}
 
 	@Override
-	protected IModule getModuleLogic() {
-		return new ModuleExtract();
+	public IModuleLogic getModLogic() {
+		return new ExtractLogic();
+	}
+
+	@Override
+	public boolean canInsert() {
+		return true;
 	}
 }

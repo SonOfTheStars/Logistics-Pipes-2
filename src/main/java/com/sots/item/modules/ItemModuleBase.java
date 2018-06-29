@@ -5,30 +5,26 @@ import com.sots.LogisticsPipes2;
 import com.sots.item.LPItemBase;
 import com.sots.module.CapabilityModule;
 import com.sots.module.IModule;
-import com.sots.module.ModuleCapabilityProvider;
 import com.sots.util.References;
+
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import javax.annotation.Nullable;
-
-public abstract class ItemModuleBase extends LPItemBase{
+public abstract class ItemModuleBase extends LPItemBase implements IItemModule{
 	
 	public ItemModuleBase() {
 		//setRegistryName(References.RN_FPGA);
 		setUnlocalizedName(References.NAME_FPGA);
 		setCreativeTab(CreativeTabs.MATERIALS);
-		setMaxStackSize(1);
+		setMaxStackSize(16);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -46,6 +42,4 @@ public abstract class ItemModuleBase extends LPItemBase{
 		}
 		return super.onItemRightClick(worldIn, playerIn, handIn);
 	}
-
-	protected abstract IModule getModuleLogic();
 }

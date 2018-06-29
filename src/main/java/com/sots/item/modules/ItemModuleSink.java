@@ -1,10 +1,7 @@
 package com.sots.item.modules;
 
-import java.util.UUID;
-
-import com.sots.item.LPItemBase;
-import com.sots.module.IModule;
-import com.sots.module.ModuleSink;
+import com.sots.module.logic.IModuleLogic;
+import com.sots.module.logic.SinkLogic;
 import com.sots.util.References;
 
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -13,7 +10,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemModuleSink extends LPItemBase implements IItemModule{
+public class ItemModuleSink extends ItemModuleBase{
 	public ItemModuleSink() {
 		setRegistryName(References.RN_MODULE_SINK);
 		setUnlocalizedName(References.NAME_MODULE_SINK);
@@ -25,7 +22,14 @@ public class ItemModuleSink extends LPItemBase implements IItemModule{
 		ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(getRegistryName(), "inventory"));
 	}
 	
-	public IModule getModLogic() {
-		return new ModuleSink();
+	public IModuleLogic getModLogic() {
+		return new SinkLogic();
 	}
+
+	@Override
+	public boolean canInsert() {
+		return true;
+	}
+	
+	
 }

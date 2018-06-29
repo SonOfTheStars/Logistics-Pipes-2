@@ -1,6 +1,7 @@
 package com.sots.routing.interfaces;
 
 import com.sots.routing.Network;
+import com.sots.util.data.Triple;
 
 public interface IRoutable {
 	/**
@@ -52,5 +53,5 @@ public interface IRoutable {
 	
 	public int posZ();
 
-	void spawnParticle(float r, float g, float b);
+	void spawnParticle(Triple<Float, Float, Float> rgb);
 }

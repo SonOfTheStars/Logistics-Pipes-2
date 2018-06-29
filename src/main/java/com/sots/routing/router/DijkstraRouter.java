@@ -13,6 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import com.sots.LogisticsPipes2;
 import com.sots.routing.NetworkNode;
 import com.sots.routing.WeightedNetworkNode;
+import com.sots.util.References;
 import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
@@ -59,7 +60,7 @@ public class DijkstraRouter extends Router {
 							unvisited.add(start);
 							while(!unvisited.isEmpty()) {
 								WeightedNetworkNode current = unvisited.poll();
-								current.getMember().spawnParticle(0f, 1.000f, 0f);
+								current.getMember().spawnParticle(References.RGB_GREEN);
 								Thread.sleep(120);
 
 								if (current.equals(target)) {
@@ -70,7 +71,7 @@ public class DijkstraRouter extends Router {
 									while(help.parent != null) {
 										pushToRouteUntillParent(help, route);
 
-										help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
+										help.getMember().spawnParticle(References.RGB_ORANGE);
 										help = help.parent.getKey();
 									}
 									return new Triple<NetworkNode, NetworkNode, ArrayDeque<Tuple<UUID, EnumFacing>>>(start, target, route);
@@ -88,7 +89,7 @@ public class DijkstraRouter extends Router {
 									int distance = neighborT.getVal();
 									if (!(unvisited.contains(neighbor) || visited.contains(neighbor))) {
 										unvisited.add(neighbor);
-										neighbor.getMember().spawnParticle(0.502f, 0.000f, 0.502f);
+										neighbor.getMember().spawnParticle(References.RGB_ORANGE);
 									}
 									if (current.p_cost + distance < neighbor.p_cost) {
 										neighbor.p_cost = current.p_cost + distance;
@@ -123,7 +124,6 @@ public class DijkstraRouter extends Router {
 		while(help.getId() != parent.getId()) {
 			help = help.getNeighborAt(parentDirection);
 			route.push(new Tuple<UUID, EnumFacing>(help.getId(), direction));
-			//help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
 			Thread.sleep(120);
 		}
 	}

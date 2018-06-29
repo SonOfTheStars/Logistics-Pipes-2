@@ -99,7 +99,7 @@ public class LPRoutedFluid extends LPRoutedObject<FluidStack>{
 	}
 
 	@Override
-	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, FluidStack fluid, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder) {
+	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, FluidStack fluid, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder, int targetAmount) {
 		if (!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite())) {
 			return null;
 		}

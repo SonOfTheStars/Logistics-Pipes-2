@@ -1,26 +1,29 @@
 package com.sots.routing;
 
-import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Iterator;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.sots.tiles.TileGenericPipe;
+import com.sots.util.InventoryHelper;
 import com.sots.util.data.Triple;
 
-import net.minecraft.nbt.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
-
-import net.minecraftforge.items.*;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 
 public class LPRoutedItem extends LPRoutedObject<ItemStack>{
 
@@ -113,26 +116,15 @@ public class LPRoutedItem extends LPRoutedObject<ItemStack>{
 	}
 
 	@Override
-	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, ItemStack item, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder) {
-		if (!te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite())) {
-			return null;
+	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, ItemStack stack, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder, int targetAmount) {
+		Optional<ItemStack> extracted = InventoryHelper.extractStack(te, face.getOpposite(), stack.getItem(), targetAmount);
+		if(extracted.isPresent()) {
+			setContent(extracted.get());
+			setHeading(face.getOpposite());
+			setHolding(holder);
+			setRoute(route);
+			return this;
 		}
-		IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite());
-		ItemStack result = ItemStack.EMPTY;
-		for (int i = 0; i < itemHandler.getSlots(); i++) {
-			if (itemHandler.getStackInSlot(i).isItemEqual(item)) {
-				ItemStack tmp = itemHandler.extractItem(i, item.getCount() - result.getCount(), false);
-				result = new ItemStack(item.getItem(), tmp.getCount() + result.getCount());
-			}
-			if (result.getCount() >= item.getCount()) {
-				break;
-			}
-		}
-		//return result;
-		setContent(result);
-		setHeading(face.getOpposite());
-		setHolding(holder);
-		setRoute(route);
-		return this;
+		return null;
 	}
 }

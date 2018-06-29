@@ -13,12 +13,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
 
 import com.sots.LogisticsPipes2;
 import com.sots.routing.LogisticsRoute;
 import com.sots.routing.NetworkNode;
 import com.sots.routing.WeightedNetworkNode;
+import com.sots.util.References;
 import com.sots.util.data.Tuple;
 
 import net.minecraft.util.EnumFacing;
@@ -121,7 +121,7 @@ public class MultiCachedDijkstraRouter{
 								unvisitedNonWeighted.add(start);
 								while(!unvisitedNonWeighted.isEmpty()) {
 									NetworkNode current = unvisitedNonWeighted.poll();
-									current.getMember().spawnParticle(0f, 1.000f, 0f);
+									current.getMember().spawnParticle(References.RGB_GREEN);
 									for (int i = 0; i < 6; i++) {
 										NetworkNode neighbor = current.getNeighborAt(i);
 										if (neighbor == null) {
@@ -149,7 +149,7 @@ public class MultiCachedDijkstraRouter{
 							}
 							while(!unvisited.isEmpty()) {
 								WeightedNetworkNode current = unvisited.poll();
-								current.getMember().spawnParticle(0f, 1.000f, 0f);
+								current.getMember().spawnParticle(References.RGB_GREEN);
 								//Thread.sleep(120);
 
 								for (int i = 0; i < 6; i++) {
@@ -163,7 +163,7 @@ public class MultiCachedDijkstraRouter{
 									if (!(unvisited.contains(neighbor) || visited.contains(neighbor))) {
 										neighbor.p_cost = Integer.MAX_VALUE;
 										unvisited.add(neighbor);
-										neighbor.getMember().spawnParticle(0.502f, 0.000f, 0.502f);
+										neighbor.getMember().spawnParticle(References.RGB_PURPLE);
 									}
 									if (current.p_cost + distance < neighbor.p_cost) {
 										neighbor.p_cost = current.p_cost + distance;
@@ -184,7 +184,7 @@ public class MultiCachedDijkstraRouter{
 								while(help.parent != null) {
 									pushToRouteUntillParent(help, route);
 
-									help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
+									help.getMember().spawnParticle(References.RGB_ORANGE);
 									help = help.parent.getKey();
 								}
 								Deque<EnumFacing> tmp_result = route;
@@ -221,9 +221,7 @@ public class MultiCachedDijkstraRouter{
 		while(help.getId() != parent.getId()) {
 			help = help.getNeighborAt(parentDirection);
 			route.push(direction);
-			help.getMember().spawnParticle(1.0f, 0.0f, 0.0f);
-			//Thread.sleep(120);
-			//LogisticsPipes2.logger.info(route.size());
+			help.getMember().spawnParticle(References.RGB_RED);
 		}
 	}
 

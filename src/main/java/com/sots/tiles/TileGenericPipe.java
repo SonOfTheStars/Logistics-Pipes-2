@@ -43,11 +43,15 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import static com.sots.tiles.ConnectionTypes.*;
 
 public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITickable, ITileEntityBase{
 	
@@ -56,11 +60,9 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	private List<Triple<LogisticsRoute, Object, EnumFacing>> waitingToReroute = new ArrayList<>();
 	//private List<Triple<LogisticsRoute, FluidStack, EnumFacing>> waitingToReroute_fluid = new ArrayList<Triple<LogisticsRoute, FluidStack, EnumFacing>>();
 	
-	public static enum ConnectionTypes{
-		NONE, PIPE, BLOCK, FORCENONE
-	}
 	
-	public ConnectionTypes up = ConnectionTypes.NONE, down = ConnectionTypes.NONE, west = ConnectionTypes.NONE, east = ConnectionTypes.NONE, north = ConnectionTypes.NONE, south = ConnectionTypes.NONE;
+	
+	public ConnectionTypes up = NONE, down = NONE, west = NONE, east = NONE, north = NONE, south = NONE;
 	
 	protected boolean hasNetwork = false;
 	
@@ -70,15 +72,15 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	public static ConnectionTypes typeFromInt(int value) {
 		switch(value) {
 		case 0:
-				return ConnectionTypes.NONE;
+				return NONE;
 		case 1:
-				return ConnectionTypes.PIPE;
+				return PIPE;
 		case 2:
-				return ConnectionTypes.BLOCK;
+				return BLOCK;
 		case 3:
-				return ConnectionTypes.FORCENONE;
+				return FORCENONE;
 		}
-		return ConnectionTypes.NONE;
+		return NONE;
 	}
 
 	@Override
@@ -125,13 +127,6 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
         if(!list.hasNoTags()) {
         	compound.setTag("contents", list);
         }
-        //NBTTagList list_fluid = new NBTTagList();
-        //for(LPRoutedFluid lprf : contents_fluid) {
-            //list_fluid.appendTag(lprf.writeToNBT());
-        //}
-        //if(!list_fluid.hasNoTags()) {
-            //compound.setTag("contents_fluid", list_fluid);
-        //}
         
         return compound;
     }
@@ -202,7 +197,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 			return east;
 			
 		}
-		return ConnectionTypes.NONE;
+		return NONE;
 	}
 	
 	public void setConnection(EnumFacing side, ConnectionTypes con) {
@@ -225,23 +220,23 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	// TODO: 21-1-2018 move to Module
 	public ConnectionTypes getConnection(IBlockAccess world, BlockPos pos, EnumFacing side) {
 
-		if(getConnection(side) == ConnectionTypes.FORCENONE) {
-			return ConnectionTypes.FORCENONE;
+		if(getConnection(side) == FORCENONE) {
+			return FORCENONE;
 		}
 		TileEntity tile = world.getTileEntity(pos);
 		if (tile != null){
 			if(tile instanceof IPipe) {
-				return ConnectionTypes.PIPE;
+				return PIPE;
 			}
 			else {
 				if(world.getTileEntity(pos).hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side.getOpposite()))
-					return ConnectionTypes.BLOCK;
+					return BLOCK;
 				if(world.getTileEntity(pos).hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side.getOpposite()))
-					return ConnectionTypes.BLOCK;
+					return BLOCK;
 			}
 		}
 
-		return ConnectionTypes.NONE;
+		return NONE;
 	}
 	
 	@Override
@@ -270,7 +265,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 				}
 				if(item.ticks==item.TICK_MAX) {
 					//boolean debug = world.isRemote;
-					if(getConnection(item.getHeading())==ConnectionTypes.PIPE) {
+					if(getConnection(item.getHeading())==PIPE) {
 						IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(item.getHeading()));
 						if(pipe!=null) {
 							if (!pipe.catchItem(item)) {
@@ -283,7 +278,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 //							i.remove();
 						}
 					}
-					else if (getConnection(item.getHeading())==ConnectionTypes.BLOCK) {
+					else if (getConnection(item.getHeading())==BLOCK) {
 						TileEntity te = world.getTileEntity(getPos().offset(item.getHeading()));
 						item.putInBlock(te);
 						//if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, item.getHeading().getOpposite())) {
@@ -339,7 +334,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 				//}
 				//if(fluid.ticks==fluid.TICK_MAX) {
 					////boolean debug = world.isRemote;
-					//if(getConnection(fluid.getHeading())==ConnectionTypes.PIPE) {
+					//if(getConnection(fluid.getHeading())==PIPE) {
 						//IPipe pipe = (IPipe) world.getTileEntity(getPos().offset(fluid.getHeading()));
 						//if(pipe!=null) {
 							//if (!pipe.catchFluid(fluid)) {
@@ -351,7 +346,7 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 ////							i.remove();
 						//}
 					//}
-					//else if (getConnection(fluid.getHeading())==ConnectionTypes.BLOCK) {
+					//else if (getConnection(fluid.getHeading())==BLOCK) {
 						//TileEntity te = world.getTileEntity(getPos().offset(fluid.getHeading()));
 						//if (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, fluid.getHeading().getOpposite())) {
 							//IFluidHandler fluidHandler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, fluid.getHeading().getOpposite());
@@ -391,12 +386,12 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		//}
 		//checkIfFluidReroutesAreReady();
 	}
-	
+	@SideOnly(Side.SERVER)
 	protected void network() {
 		for(int i=0; i<6; i++) {
 			EnumFacing direction = EnumFacing.getFront(i);
 			
-			if(getConnection(direction) == ConnectionTypes.PIPE) {
+			if(getConnection(direction) == PIPE) {
 				TileGenericPipe target = ConnectionHelper.getAdjacentPipe(world, pos, direction);
 				//First network contact
 				if(target.hasNetwork() && !hasNetwork) {
@@ -431,27 +426,27 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	public boolean hasInventoryOnSide(int face) {
 		switch(face){
 		case 0:
-			if(down == ConnectionTypes.BLOCK)
+			if(down == BLOCK)
 				return true;
 			break;
 		case 1:
-			if(up == ConnectionTypes.BLOCK)
+			if(up == BLOCK)
 				return true;
 			break;
 		case 2:
-			if(north == ConnectionTypes.BLOCK)
+			if(north == BLOCK)
 				return true;
 			break;
 		case 3:
-			if(south == ConnectionTypes.BLOCK)
+			if(south == BLOCK)
 				return true;
 			break;
 		case 4:
-			if(west == ConnectionTypes.BLOCK)
+			if(west == BLOCK)
 				return true;
 			break;
 		case 5:
-			if(east == ConnectionTypes.BLOCK)
+			if(east == BLOCK)
 				return true;
 			break;
 		default:
@@ -459,95 +454,6 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 		}
 		return false;
 	}
-
-	//public ItemStack takeFromInventoryOnSide(EnumFacing face, ItemStack item) {
-		//if (!hasInventoryOnSide(face.getIndex())) {
-			//return null;
-		//}
-		//TileEntity te = world.getTileEntity(getPos().offset(face));
-		//if (!te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite())) {
-			//return null;
-		//}
-		//IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite());
-		//ItemStack result = ItemStack.EMPTY;
-		//for (int i = 0; i < itemHandler.getSlots(); i++) {
-			//if (itemHandler.getStackInSlot(i).isItemEqual(item)) {
-				//ItemStack tmp = itemHandler.extractItem(i, item.getCount() - result.getCount(), false);
-				//result = new ItemStack(item.getItem(), tmp.getCount() + result.getCount());
-			//}
-			//if (result.getCount() >= item.getCount()) {
-				//break;
-			//}
-		//}
-		//return result;
-	//}
-
-	//public FluidStack takeFluidFromInventoryOnSide(EnumFacing face, FluidStack fluid) {
-		//if (!hasInventoryOnSide(face.getIndex())) {
-			//return null;
-		//}
-		//TileEntity te = world.getTileEntity(getPos().offset(face));
-		//if (!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite())) {
-			//return null;
-		//}
-		//IFluidHandler fluidHandler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite());
-		//FluidStack result = new FluidStack(fluid.getFluid(), 0);
-		//for (int i = 0; i < fluidHandler.getTankProperties().length; i++) {
-			//if (fluidHandler.getTankProperties()[i].getContents().isFluidEqual(fluid)) {
-				//FluidStack tmp = fluidHandler.drain(fluid, true);
-				//result = new FluidStack(fluid.getFluid(), tmp.amount + result.amount);
-				//fluid = new FluidStack(fluid.getFluid(), fluid.amount - tmp.amount);
-			//}
-			//if (fluid.amount <= 0) {
-				//break;
-			//}
-		//}
-		//if (result.amount == 0)
-			//return null;
-		//return result;
-	//}
-	
-	//public boolean hasItemInInventoryOnSide(EnumFacing face, ItemStack item) {
-		//if (!hasInventoryOnSide(face.getIndex())) {
-			//return false;
-		//}
-		//TileEntity te = world.getTileEntity(getPos().offset(face));
-		//if (!te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite())) {
-			//return false;
-		//}
-		//IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite());
-		//ItemStack result = ItemStack.EMPTY;
-		//for (int i = 0; i < itemHandler.getSlots(); i++) {
-			//if (itemHandler.getStackInSlot(i).isItemEqual(item)) {
-				//result = new ItemStack(item.getItem(), itemHandler.getStackInSlot(i).getCount() + result.getCount());
-			//}
-			//if (result.getCount() >= item.getCount()) {
-				//return true;
-			//}
-		//}
-		//return false;
-	//}
-
-	//public boolean hasFluidInInventoryOnSide(EnumFacing face, FluidStack fluid) {
-		//if (!hasInventoryOnSide(face.getIndex())) {
-			//return false;
-		//}
-		//TileEntity te = world.getTileEntity(getPos().offset(face));
-		//if (!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite())) {
-			//return false;
-		//}
-		//IFluidHandler fluidHandler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite());
-		//FluidStack result = new FluidStack(fluid.getFluid(), 0);
-		//for (int i = 0; i < fluidHandler.getTankProperties().length; i++) {
-			//if (fluidHandler.getTankProperties()[i].getContents().isFluidEqual(fluid)) {
-				//result = new FluidStack(fluid.getFluid(), fluidHandler.getTankProperties()[i].getContents().amount + result.amount);
-			//}
-			//if (result.amount >= fluid.amount) {
-				//return true;
-			//}
-		//}
-		//return false;
-	//}
 	
 	public ArrayList<ItemStack> getItemsInInventory(EnumFacing face){
 		ArrayList<ItemStack> result = new ArrayList<ItemStack>();
@@ -621,18 +527,18 @@ public class TileGenericPipe extends TileEntity implements IRoutable, IPipe, ITi
 	public int posZ() {return pos.getZ();}
 	
 	@Override
-	public void spawnParticle(float r, float g, float b) {
-		ParticleUtil.spawnGlint(world, posX()+0.5f, posY()+0.5f, posZ()+0.5f, 0, 0, 0, r, g, b, 2.5f, 200);
+	public void spawnParticle(Triple<Float, Float, Float> rgb) {
+		ParticleUtil.spawnGlint(world, posX()+0.5f, posY()+0.5f, posZ()+0.5f, 0, 0, 0, rgb.getFirst(), rgb.getSecnd(), rgb.getThird(), 2.5f, 200);
 	}
 	
 	protected ConnectionTypes forceConnection(ConnectionTypes con) {
-		if(con== ConnectionTypes.FORCENONE) {
-			return ConnectionTypes.NONE;
+		if(con== FORCENONE) {
+			return NONE;
 		}
-		if(con != ConnectionTypes.FORCENONE) {
-			return ConnectionTypes.FORCENONE;
+		if(con != FORCENONE) {
+			return FORCENONE;
 		}
-		return ConnectionTypes.NONE;
+		return NONE;
 	}
 
 	@Nullable

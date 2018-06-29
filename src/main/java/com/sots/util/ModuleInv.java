@@ -64,7 +64,8 @@ public class ModuleInv implements ICapabilitySerializable<NBTTagCompound> {
     public void execute() {
         modules.values().forEach(iModule -> {
             if (iModule.canExecute()) {
-                iModule.execute(owner);
+                //iModule.execute(owner);
+            	//TODO: Fix MopduleInv.execute();
             }
         });
     }

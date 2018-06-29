@@ -2,22 +2,15 @@ package com.sots.tiles.tesr;
 
 import java.util.Set;
 
-import com.sots.routing.*;
+import com.sots.routing.LPRoutedObject;
 import com.sots.tiles.TileGenericPipe;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.RenderItem;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.fluids.UniversalBucket;
 
 public class TileRenderBasicPipe extends TileEntitySpecialRenderer<TileGenericPipe> {
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void renderTileEntityAt(TileGenericPipe te, double x, double y, double z, float partialTicks,
 			int destroyStage) {

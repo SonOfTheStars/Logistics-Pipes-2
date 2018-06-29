@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -14,12 +15,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
 
 import com.sots.LogisticsPipes2;
 import com.sots.routing.interfaces.IRoutable;
+import com.sots.routing.offers.LogisticsOffer;
+import com.sots.routing.offers.OfferType;
 import com.sots.routing.router.MultiCachedDijkstraRouter;
 import com.sots.util.data.Tuple;
 
@@ -33,6 +37,8 @@ public class Network {
 	private volatile Map<UUID, WeightedNetworkNode> junctions = new ConcurrentHashMap<>(); // Contains only nodes which have 3 or more neighbors or are destinations. All nodes in this map have other junctions or destinations listed as neighbors
 
 	private volatile Set<Tuple<UUID, Item>> stores = new HashSet<>();
+	
+	private volatile Set<LogisticsOffer> offers = new HashSet<>();
 	
 	private NetworkNode root = null;
 	private NetworkSimplifier networkSimplifier = new NetworkSimplifier();
@@ -163,46 +169,42 @@ public class Network {
 		return route;
 	}
 	
-	public ArrayList<UUID> getStorageNodesForItem(Item item){
-		ArrayList<UUID> output = new ArrayList<UUID>();
-		stores.stream()
-		.filter(p -> p.getVal().equals(item))
-		.collect(Collectors.toList())
-		.forEach(p -> output.add(p.getKey()));
-		return output;
+	public synchronized boolean addOffer(LogisticsOffer offer) {
+		return offers.add(offer);
 	}
 	
-	public boolean hasStorageForItem(Item item) {
-		return stores.stream().anyMatch(p -> p.getVal().equals(item));
+	public synchronized boolean deleteOffer(UUID offerId) {
+		return offers.removeIf(o -> o.id==offerId);
 	}
 	
-	public boolean registerItemStorage(Tuple<UUID, Item> input) {
-		if(!stores.contains(input)) {
-			stores.add(input);
-			return true;
+	public synchronized boolean deleteOffersOf(UUID nodeId) {
+		return offers.removeIf(o -> o.node==nodeId);
+	}
+	
+	public synchronized boolean hasTypedOfferFor(OfferType type, Item item) {
+		return offers.stream().anyMatch(o -> o.type==type && o.content==item);
+	}
+	
+	public synchronized Optional<UUID> getClosestOfferer(OfferType type, Item item, UUID source) {
+		try {
+			if(!hasTypedOfferFor(type, item)) {
+				return Optional.empty();
+			}
+			List<UUID> filteredOfferers = offers.stream().filter(o -> o.type==type && o.content==item).map(new Function<LogisticsOffer, UUID>(){
+				@Override
+				public UUID apply(LogisticsOffer offer) {
+					return offer.node;
+				}
+			}).collect(Collectors.toList());
+			if(filteredOfferers.size()==1) {
+				return Optional.of(filteredOfferers.get(0));
+			}
+			List<UUID> sortedOffers = sortRoutesByDistance(source, filteredOfferers);
+			sortedOffers.removeIf(o -> o==source);
+			return Optional.of(sortedOffers.get(0));
+		} catch (Exception e) {
+			return Optional.empty();
 		}
-		return false;
-	}
-	
-	public void unregisterItemStorage(UUID id) {
-		List<Tuple<UUID, Item>> toDelete = stores.parallelStream()
-			.filter(store -> store.getKey().equals(id))
-			.collect(Collectors.toList());
-		toDelete.forEach(entry -> stores.remove(entry));
-	}
-	
-	public UUID getClosestStorageNode(Item item, UUID source, int skip) {
-		UUID out = null;
-		List<UUID> stores = getStorageNodesForItem(item);
-		List<UUID> sorted = null;
-		if(!stores.isEmpty()) {
-			sorted = sortRoutesByDistance(source, stores);
-		}
-		if(sorted!=null && !sorted.isEmpty()) {
-			if(skip<sorted.size())
-				out=sorted.get(skip);
-		} 
-		return out;
 	}
 
 	public void recalculateNetwork() {

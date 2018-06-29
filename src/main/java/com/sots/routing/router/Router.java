@@ -12,9 +12,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
 import com.sots.routing.NetworkNode;
+import com.sots.util.References;
 import com.sots.util.data.Triple;
 import com.sots.util.data.Tuple;
 
+import io.netty.util.ReferenceCounted;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.EnumFacing;
 
@@ -44,7 +46,7 @@ public class Router {
 								while(!open.isEmpty()) {
 									NetworkNode current = open.poll();
 									closed.add(current);
-									current.getMember().spawnParticle(0f, 1.000f, 0f);
+									current.getMember().spawnParticle(References.RGB_GREEN);
 									//Thread.sleep(60);
 									
 									if(current.equals(target)) {
@@ -54,7 +56,7 @@ public class Router {
 										ArrayDeque<Tuple<UUID, EnumFacing>> route = new ArrayDeque<Tuple<UUID, EnumFacing>>();
 										while(help.parent != null) {
 											route.push(new Tuple<UUID, EnumFacing>(help.parent.getKey().getId(), help.parent.getVal()));
-											help.getMember().spawnParticle(1.0f, 0.549f, 0.0f);
+											help.getMember().spawnParticle(References.RGB_ORANGE);
 											help = help.parent.getKey();
 										}
 										
@@ -64,11 +66,11 @@ public class Router {
 									for(int i = 0; i<6; i++) {
 										NetworkNode _node =current.getNeighborAt(i);
 										if(_node == null || closed.contains(_node)) {
-											current.getMember().spawnParticle(1.000f, 0.000f, 0.000f);
+											current.getMember().spawnParticle(References.RGB_GREEN);
 											continue;
 										}
 										if(current.connections()==2 && !current.isDestination()) {
-											current.getMember().spawnParticle(0.000f, 1.000f, 1.000f);
+											current.getMember().spawnParticle(References.RGB_BLUE);
 												tryLookahead(current, EnumFacing.getFront(i));
 										}
 										else {
@@ -78,7 +80,7 @@ public class Router {
 											_node.p_cost=current.p_cost + _node.t_cost;
 											if(!open.contains(_node) && !closed.contains(_node)) {
 												open.offer(_node);
-												_node.getMember().spawnParticle(0.502f, 0.000f, 0.502f);
+												_node.getMember().spawnParticle(References.RGB_PURPLE);
 											}
 										}
 									}
@@ -89,7 +91,7 @@ public class Router {
 							
 							private void tryLookahead(NetworkNode current, EnumFacing direction) throws InterruptedException {
 								NetworkNode node = current.getNeighborAt(direction.getIndex());
-								current.getMember().spawnParticle(1.000f, 1.000f, 1.000f);
+								current.getMember().spawnParticle(References.RGB_WHITE);
 								if(node!=null) {
 									if(node.connections()!=2 || current.isDestination()) {
 										node.h_Cost(target);
@@ -97,7 +99,7 @@ public class Router {
 										node.p_cost = current.p_cost + node.t_cost;
 										if(!open.contains(node)) {
 											open.offer(node);
-											node.getMember().spawnParticle(0.502f, 0.000f, 0.502f);
+											node.getMember().spawnParticle(References.RGB_PURPLE);
 										}
 										return;
 									}
@@ -112,7 +114,7 @@ public class Router {
 											if(open.contains(node)) {
 												open.remove(node);
 											}
-											node.getMember().spawnParticle(0.000f, 0.000f, 1.000f);
+											node.getMember().spawnParticle(References.RGB_BLUE);
 											tryLookahead(node, direction);
 										}
 										else {
@@ -121,7 +123,7 @@ public class Router {
 											node.p_cost = current.p_cost + node.t_cost;
 											if(!open.contains(node)) {
 												open.offer(node);
-												node.getMember().spawnParticle(0.502f, 0.000f, 0.502f);
+												node.getMember().spawnParticle(References.RGB_PURPLE);
 											}
 											return;
 										}

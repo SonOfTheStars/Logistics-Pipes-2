@@ -1,16 +1,22 @@
 package com.sots.routing;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import com.sots.LogisticsPipes2;
 import com.sots.tiles.TileGenericPipe;
 import com.sots.util.data.Triple;
 
-import net.minecraft.nbt.*;
+import net.minecraft.item.Item;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
-
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -197,12 +203,14 @@ public abstract class LPRoutedObject<T> {
 
 	public void putInBlock(TileEntity te) {}
 
-	public static LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, Object stack, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder, Class type) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, Object stack, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder, Class type, int targetAmount) {
 		LPRoutedObject lpRoutedObject = makeLPRoutedObjectFromContent(0, UUID.randomUUID(), type);
-		return lpRoutedObject.takeFromBlock(te, face, stack, route, destination, holder);
+		return lpRoutedObject.takeFromBlock(te, face, stack, route, destination, holder, targetAmount);
 	}
 
-	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, T stack, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder) {
+	@SuppressWarnings("rawtypes")
+	protected LPRoutedObject takeFromBlock(TileEntity te, EnumFacing face, T item, Deque<EnumFacing> route, TileGenericPipe destination, TileGenericPipe holder, int targetAmount) {
 		return null;
 	}
 

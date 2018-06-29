@@ -23,13 +23,6 @@ public interface IModule extends ICapabilitySerializable<NBTTagCompound> {
 	}
 	
 	/**
-	 * Executes the Modules Logic
-	 * @param te The Pipe executing this Module
-	 * @return True if the Logic could be executed. If a module returns false, Items used in its operation will be spilled!
-	 */
-	boolean execute(TileRoutedPipe te);
-	
-	/**
 	 * @return True if the Module can execute its Logic, False if not
 	 */
 	boolean canExecute();

@@ -12,10 +12,7 @@ public class ModuleBase implements IModule {
 	
 	protected UUID MODULE_ID;
 
-	@Override
-	public boolean execute(TileRoutedPipe te) {
-		return false;
-	}
+	
 
 	@Override
 	public boolean canExecute() {
