@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/Logistics-Pipes-2.iml" filepath="$PROJECT_DIR$/.idea/Logistics-Pipes-2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Logistics-Pipes-2_api.iml" filepath="$PROJECT_DIR$/.idea/modules/Logistics-Pipes-2_api.iml" group="Logistics-Pipes-2" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Logistics-Pipes-2_main.iml" filepath="$PROJECT_DIR$/.idea/modules/Logistics-Pipes-2_main.iml" group="Logistics-Pipes-2" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Logistics-Pipes-2_test.iml" filepath="$PROJECT_DIR$/.idea/modules/Logistics-Pipes-2_test.iml" group="Logistics-Pipes-2" />
+    </modules>
+  </component>
+</project>
