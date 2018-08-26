@@ -1,4 +1,6 @@
 buildscript {
+    ext.mc_version = '1.11.2'
+    ext.jei_version = '4.2.2.220'
     repositories {
         jcenter()
         maven { url = "http://files.minecraftforge.net/maven" }
@@ -27,7 +29,8 @@ minecraft {
 }
 
 dependencies {
-    deobfCompile "mezz.jei:jei_1.11.2:4.2.2.220"
+    deobfCompile "mezz.jei:jei_$mc_version:$jei_version:api"
+    runtime "mezz.jei:jei_$mc_version:$jei_version"
     compile files('libs/')
 }
 
@@ -35,6 +38,11 @@ repositories {
     maven {
         name 'DVS1 Maven FS'
         url 'http://dvs1.progwml6.com/files/maven'
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "modmaven.k-4u.nl"
     }
 }
 
